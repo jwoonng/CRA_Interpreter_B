@@ -1,25 +1,135 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="소스 파일">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    <!-- ── 필터 정의 ── -->
+    <Filter Include="Common">
+      <UniqueIdentifier>{A1B2C3D4-0001-0001-0001-000000000001}</UniqueIdentifier>
     </Filter>
-    <Filter Include="헤더 파일">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+
+    <Filter Include="Assembler">
+      <UniqueIdentifier>{A1B2C3D4-0001-0001-0001-000000000002}</UniqueIdentifier>
     </Filter>
-    <Filter Include="리소스 파일">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    <Filter Include="Assembler\Interface">
+      <UniqueIdentifier>{A1B2C3D4-0001-0001-0001-000000000003}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assembler\Tokenizer">
+      <UniqueIdentifier>{A1B2C3D4-0001-0001-0001-000000000004}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assembler\Parser">
+      <UniqueIdentifier>{A1B2C3D4-0001-0001-0001-000000000005}</UniqueIdentifier>
+    </Filter>
+
+    <Filter Include="Checker">
+      <UniqueIdentifier>{A1B2C3D4-0001-0001-0001-000000000006}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Checker\Interface">
+      <UniqueIdentifier>{A1B2C3D4-0001-0001-0001-000000000007}</UniqueIdentifier>
+    </Filter>
+
+    <Filter Include="Executor">
+      <UniqueIdentifier>{A1B2C3D4-0001-0001-0001-000000000008}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Executor\Interface">
+      <UniqueIdentifier>{A1B2C3D4-0001-0001-0001-000000000009}</UniqueIdentifier>
+    </Filter>
+
+    <Filter Include="Test">
+      <UniqueIdentifier>{A1B2C3D4-0001-0001-0001-000000000010}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Test\Mocks">
+      <UniqueIdentifier>{A1B2C3D4-0001-0001-0001-000000000011}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
+
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+
+  <!-- ── 헤더 파일 ── -->
   <ItemGroup>
-    <ClCompile Include="test.cpp">
-      <Filter>소스 파일</Filter>
+    <ClInclude Include="src\common\Token.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="src\common\Expr.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="src\common\Stmt.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+
+    <ClInclude Include="src\assembler\ITokenizer.h">
+      <Filter>Assembler\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="src\assembler\Tokenizer.h">
+      <Filter>Assembler\Tokenizer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\assembler\IParser.h">
+      <Filter>Assembler\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="src\assembler\Parser.h">
+      <Filter>Assembler\Parser</Filter>
+    </ClInclude>
+
+    <ClInclude Include="src\checker\IChecker.h">
+      <Filter>Checker\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="src\checker\Checker.h">
+      <Filter>Checker</Filter>
+    </ClInclude>
+
+    <ClInclude Include="src\executor\IExecutor.h">
+      <Filter>Executor\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="src\executor\Executor.h">
+      <Filter>Executor</Filter>
+    </ClInclude>
+
+    <ClInclude Include="test\mocks\MockTokenizer.h">
+      <Filter>Test\Mocks</Filter>
+    </ClInclude>
+    <ClInclude Include="test\mocks\MockParser.h">
+      <Filter>Test\Mocks</Filter>
+    </ClInclude>
+    <ClInclude Include="test\mocks\MockChecker.h">
+      <Filter>Test\Mocks</Filter>
+    </ClInclude>
+    <ClInclude Include="test\mocks\MockExecutor.h">
+      <Filter>Test\Mocks</Filter>
+    </ClInclude>
+  </ItemGroup>
+
+  <!-- ── 소스 파일 ── -->
+  <ItemGroup>
+    <ClCompile Include="test_main.cpp">
+      <Filter>Test</Filter>
+    </ClCompile>
+
+    <ClCompile Include="src\assembler\Tokenizer.cpp">
+      <Filter>Assembler\Tokenizer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\assembler\Parser.cpp">
+      <Filter>Assembler\Parser</Filter>
+    </ClCompile>
+
+    <ClCompile Include="src\checker\Checker.cpp">
+      <Filter>Checker</Filter>
+    </ClCompile>
+
+    <ClCompile Include="src\executor\Executor.cpp">
+      <Filter>Executor</Filter>
+    </ClCompile>
+
+    <ClCompile Include="test\Tokenizer_test.cpp">
+      <Filter>Test</Filter>
+    </ClCompile>
+    <ClCompile Include="test\Parser_test.cpp">
+      <Filter>Test</Filter>
+    </ClCompile>
+    <ClCompile Include="test\Checker_test.cpp">
+      <Filter>Test</Filter>
+    </ClCompile>
+    <ClCompile Include="test\Executor_test.cpp">
+      <Filter>Test</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
