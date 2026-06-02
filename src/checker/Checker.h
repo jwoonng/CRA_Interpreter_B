@@ -3,5 +3,5 @@
 
 class Checker : public IChecker {
 public:
-    void check(const std::vector<std::unique_ptr<Stmt>>& stmts);
+    void check(const std::vector<std::unique_ptr<Stmt>>& stmts) override;
 };
