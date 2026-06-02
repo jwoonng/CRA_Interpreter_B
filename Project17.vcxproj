@@ -77,6 +77,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -92,6 +93,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -105,6 +107,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -120,6 +123,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -129,8 +133,37 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+
+  <!-- ── 헤더 파일 ── -->
   <ItemGroup>
-    <ClCompile Include="test.cpp" />
+    <ClInclude Include="src\common\Token.h" />
+    <ClInclude Include="src\common\Expr.h" />
+    <ClInclude Include="src\common\Stmt.h" />
+    <ClInclude Include="src\assembler\ITokenizer.h" />
+    <ClInclude Include="src\assembler\Tokenizer.h" />
+    <ClInclude Include="src\assembler\IParser.h" />
+    <ClInclude Include="src\assembler\Parser.h" />
+    <ClInclude Include="src\checker\IChecker.h" />
+    <ClInclude Include="src\checker\Checker.h" />
+    <ClInclude Include="src\executor\IExecutor.h" />
+    <ClInclude Include="src\executor\Executor.h" />
+    <ClInclude Include="test\mocks\MockTokenizer.h" />
+    <ClInclude Include="test\mocks\MockParser.h" />
+    <ClInclude Include="test\mocks\MockChecker.h" />
+    <ClInclude Include="test\mocks\MockExecutor.h" />
+  </ItemGroup>
+
+  <!-- ── 소스 파일 ── -->
+  <ItemGroup>
+    <ClCompile Include="test_main.cpp" />
+    <ClCompile Include="src\assembler\Tokenizer.cpp" />
+    <ClCompile Include="src\assembler\Parser.cpp" />
+    <ClCompile Include="src\checker\Checker.cpp" />
+    <ClCompile Include="src\executor\Executor.cpp" />
+    <ClCompile Include="test\Tokenizer_test.cpp" />
+    <ClCompile Include="test\Parser_test.cpp" />
+    <ClCompile Include="test\Checker_test.cpp" />
+    <ClCompile Include="test\Executor_test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
