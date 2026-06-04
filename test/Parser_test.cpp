@@ -67,7 +67,9 @@ TEST(ParserTest, BoolTrueLiteral) {
     });
 
     ASSERT_EQ(stmts.size(), 1u);
-    auto* lit = as<LiteralExpr>(as<ExpressionStmt>(stmts[0].get())->expression.get());
+    auto* es = as<ExpressionStmt>(stmts[0].get());
+    ASSERT_NE(es, nullptr);
+    auto* lit = as<LiteralExpr>(es->expression.get());
     ASSERT_NE(lit, nullptr);
     EXPECT_TRUE(std::get<bool>(lit->value));
 }
@@ -79,7 +81,9 @@ TEST(ParserTest, BoolFalseLiteral) {
         tok(TokenType::FALSE_KW, "false", false), tok(TokenType::SEMICOLON, ";"), eof()
     });
 
-    auto* lit = as<LiteralExpr>(as<ExpressionStmt>(stmts[0].get())->expression.get());
+    auto* es = as<ExpressionStmt>(stmts[0].get());
+    ASSERT_NE(es, nullptr);
+    auto* lit = as<LiteralExpr>(es->expression.get());
     ASSERT_NE(lit, nullptr);
     EXPECT_FALSE(std::get<bool>(lit->value));
 }
@@ -115,7 +119,9 @@ TEST(ParserTest, UnaryBang) {
         tok(TokenType::SEMICOLON, ";"), eof()
     });
 
-    auto* unary = as<UnaryExpr>(as<ExpressionStmt>(stmts[0].get())->expression.get());
+    auto* es = as<ExpressionStmt>(stmts[0].get());
+    ASSERT_NE(es, nullptr);
+    auto* unary = as<UnaryExpr>(es->expression.get());
     ASSERT_NE(unary, nullptr);
     EXPECT_EQ(unary->op.type, TokenType::BANG);
 }
@@ -131,11 +137,17 @@ TEST(ParserTest, Addition) {
         num(1), tok(TokenType::PLUS, "+"), num(2), tok(TokenType::SEMICOLON, ";"), eof()
     });
 
-    auto* bin = as<BinaryExpr>(as<ExpressionStmt>(stmts[0].get())->expression.get());
+    auto* es = as<ExpressionStmt>(stmts[0].get());
+    ASSERT_NE(es, nullptr);
+    auto* bin = as<BinaryExpr>(es->expression.get());
     ASSERT_NE(bin, nullptr);
     EXPECT_EQ(bin->op.type, TokenType::PLUS);
-    EXPECT_DOUBLE_EQ(std::get<double>(as<LiteralExpr>(bin->left.get())->value), 1.0);
-    EXPECT_DOUBLE_EQ(std::get<double>(as<LiteralExpr>(bin->right.get())->value), 2.0);
+    auto* lhs = as<LiteralExpr>(bin->left.get());
+    ASSERT_NE(lhs, nullptr);
+    EXPECT_DOUBLE_EQ(std::get<double>(lhs->value), 1.0);
+    auto* rhs = as<LiteralExpr>(bin->right.get());
+    ASSERT_NE(rhs, nullptr);
+    EXPECT_DOUBLE_EQ(std::get<double>(rhs->value), 2.0);
 }
 
 TEST(ParserTest, Subtraction) {
@@ -145,7 +157,9 @@ TEST(ParserTest, Subtraction) {
         num(5), tok(TokenType::MINUS, "-"), num(3), tok(TokenType::SEMICOLON, ";"), eof()
     });
 
-    auto* bin = as<BinaryExpr>(as<ExpressionStmt>(stmts[0].get())->expression.get());
+    auto* es = as<ExpressionStmt>(stmts[0].get());
+    ASSERT_NE(es, nullptr);
+    auto* bin = as<BinaryExpr>(es->expression.get());
     ASSERT_NE(bin, nullptr);
     EXPECT_EQ(bin->op.type, TokenType::MINUS);
 }
@@ -157,7 +171,9 @@ TEST(ParserTest, Multiplication) {
         num(2), tok(TokenType::STAR, "*"), num(3), tok(TokenType::SEMICOLON, ";"), eof()
     });
 
-    auto* bin = as<BinaryExpr>(as<ExpressionStmt>(stmts[0].get())->expression.get());
+    auto* es = as<ExpressionStmt>(stmts[0].get());
+    ASSERT_NE(es, nullptr);
+    auto* bin = as<BinaryExpr>(es->expression.get());
     ASSERT_NE(bin, nullptr);
     EXPECT_EQ(bin->op.type, TokenType::STAR);
 }
@@ -169,7 +185,9 @@ TEST(ParserTest, Division) {
         num(6), tok(TokenType::SLASH, "/"), num(2), tok(TokenType::SEMICOLON, ";"), eof()
     });
 
-    auto* bin = as<BinaryExpr>(as<ExpressionStmt>(stmts[0].get())->expression.get());
+    auto* es = as<ExpressionStmt>(stmts[0].get());
+    ASSERT_NE(es, nullptr);
+    auto* bin = as<BinaryExpr>(es->expression.get());
     ASSERT_NE(bin, nullptr);
     EXPECT_EQ(bin->op.type, TokenType::SLASH);
 }
@@ -187,7 +205,9 @@ TEST(ParserTest, MultiplicationBeforeAddition) {
         tok(TokenType::SEMICOLON, ";"), eof()
     });
 
-    auto* add = as<BinaryExpr>(as<ExpressionStmt>(stmts[0].get())->expression.get());
+    auto* es = as<ExpressionStmt>(stmts[0].get());
+    ASSERT_NE(es, nullptr);
+    auto* add = as<BinaryExpr>(es->expression.get());
     ASSERT_NE(add, nullptr);
     EXPECT_EQ(add->op.type, TokenType::PLUS);
 
@@ -207,7 +227,9 @@ TEST(ParserTest, GroupingOverridesPrecedence) {
         tok(TokenType::SEMICOLON, ";"), eof()
     });
 
-    auto* mul = as<BinaryExpr>(as<ExpressionStmt>(stmts[0].get())->expression.get());
+    auto* es = as<ExpressionStmt>(stmts[0].get());
+    ASSERT_NE(es, nullptr);
+    auto* mul = as<BinaryExpr>(es->expression.get());
     ASSERT_NE(mul, nullptr);
     EXPECT_EQ(mul->op.type, TokenType::STAR);
     ASSERT_NE(as<GroupingExpr>(mul->left.get()), nullptr);
@@ -225,7 +247,9 @@ TEST(ParserTest, EqualEqual) {
         tok(TokenType::SEMICOLON, ";"), eof()
     });
 
-    auto* bin = as<BinaryExpr>(as<ExpressionStmt>(stmts[0].get())->expression.get());
+    auto* es = as<ExpressionStmt>(stmts[0].get());
+    ASSERT_NE(es, nullptr);
+    auto* bin = as<BinaryExpr>(es->expression.get());
     ASSERT_NE(bin, nullptr);
     EXPECT_EQ(bin->op.type, TokenType::EQUAL_EQUAL);
 }
@@ -238,7 +262,9 @@ TEST(ParserTest, BangEqual) {
         tok(TokenType::SEMICOLON, ";"), eof()
     });
 
-    auto* bin = as<BinaryExpr>(as<ExpressionStmt>(stmts[0].get())->expression.get());
+    auto* es = as<ExpressionStmt>(stmts[0].get());
+    ASSERT_NE(es, nullptr);
+    auto* bin = as<BinaryExpr>(es->expression.get());
     ASSERT_NE(bin, nullptr);
     EXPECT_EQ(bin->op.type, TokenType::BANG_EQUAL);
 }
@@ -251,7 +277,9 @@ TEST(ParserTest, LessThan) {
         tok(TokenType::SEMICOLON, ";"), eof()
     });
 
-    auto* bin = as<BinaryExpr>(as<ExpressionStmt>(stmts[0].get())->expression.get());
+    auto* es = as<ExpressionStmt>(stmts[0].get());
+    ASSERT_NE(es, nullptr);
+    auto* bin = as<BinaryExpr>(es->expression.get());
     ASSERT_NE(bin, nullptr);
     EXPECT_EQ(bin->op.type, TokenType::LESS);
 }
@@ -266,7 +294,9 @@ TEST(ParserTest, LogicalAnd) {
         tok(TokenType::SEMICOLON, ";"), eof()
     });
 
-    auto* logical = as<LogicalExpr>(as<ExpressionStmt>(stmts[0].get())->expression.get());
+    auto* es = as<ExpressionStmt>(stmts[0].get());
+    ASSERT_NE(es, nullptr);
+    auto* logical = as<LogicalExpr>(es->expression.get());
     ASSERT_NE(logical, nullptr);
     EXPECT_EQ(logical->op.type, TokenType::AND);
 }
@@ -281,7 +311,9 @@ TEST(ParserTest, LogicalOr) {
         tok(TokenType::SEMICOLON, ";"), eof()
     });
 
-    auto* logical = as<LogicalExpr>(as<ExpressionStmt>(stmts[0].get())->expression.get());
+    auto* es = as<ExpressionStmt>(stmts[0].get());
+    ASSERT_NE(es, nullptr);
+    auto* logical = as<LogicalExpr>(es->expression.get());
     ASSERT_NE(logical, nullptr);
     EXPECT_EQ(logical->op.type, TokenType::OR);
 }
@@ -355,7 +387,9 @@ TEST(ParserTest, AssignExpression) {
     auto* assign = as<AssignExpr>(es->expression.get());
     ASSERT_NE(assign, nullptr);
     EXPECT_EQ(assign->name.lexeme, "x");
-    EXPECT_DOUBLE_EQ(std::get<double>(as<LiteralExpr>(assign->value.get())->value), 10.0);
+    auto* val = as<LiteralExpr>(assign->value.get());
+    ASSERT_NE(val, nullptr);
+    EXPECT_DOUBLE_EQ(std::get<double>(val->value), 10.0);
 }
 
 // ════════════════════════════════════════════════════
