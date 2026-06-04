@@ -56,7 +56,8 @@ TEST(ScriptTest, ComparisonGreaterThanFalse) {
 TEST(ScriptTest, StringConcatenation) {
     // print "Hello, " + "CodeFab!";  expect: Hello, CodeFab!
     Shell shell;
-    EXPECT_EQ(shell.runLine("print \"Hello, \" + \"CodeFab!\";"), "Hello, CodeFab!\n");
+    std::string r = shell.runLine(R"(print "Hello, " + "CodeFab!";)");
+    EXPECT_EQ(r, "Hello, CodeFab!\n");
 }
 
 TEST(ScriptTest, NumberFormatIntegerNoDecimal) {
@@ -132,7 +133,8 @@ TEST(ScriptTest, NestedScopeAccessOuterVars) {
     // var outer = "A"; { var inner = "B"; { print outer + inner; } }  expect: AB
     Shell shell;
     shell.runLine("var outer = \"A\";");
-    EXPECT_EQ(shell.runLine("{ var inner = \"B\"; { print outer + inner; } }"), "AB\n");
+    std::string result = shell.runLine("{ var inner = \"B\"; { print outer + inner; } }");
+    EXPECT_EQ(result, "AB\n");
 }
 
 // ════════════════════════════════════════════════════
@@ -142,26 +144,29 @@ TEST(ScriptTest, NestedScopeAccessOuterVars) {
 TEST(ScriptTest, IfTrue) {
     // if (true) print "bbq";  expect: bbq
     Shell shell;
-    EXPECT_EQ(shell.runLine("if (true) print \"bbq\";"), "bbq\n");
+    std::string r = shell.runLine(R"(if (true) print "bbq";)");
+    EXPECT_EQ(r, "bbq\n");
 }
 
 TEST(ScriptTest, IfFalseElse) {
     // if (false) print "no"; else print "kfc";  expect: kfc
     Shell shell;
-    EXPECT_EQ(shell.runLine("if (false) print \"no\"; else print \"kfc\";"), "kfc\n");
+    std::string r = shell.runLine(R"(if (false) print "no"; else print "kfc";)");
+    EXPECT_EQ(r, "kfc\n");
 }
 
 TEST(ScriptTest, DanglingElseBoundToInnerIf) {
     // if (true) if (false) print "kfc"; else print "bbq";  expect: bbq
     Shell shell;
-    EXPECT_EQ(shell.runLine("if (true) if (false) print \"kfc\"; else print \"bbq\";"), "bbq\n");
+    std::string r = shell.runLine(R"(if (true) if (false) print "kfc"; else print "bbq";)");
+    EXPECT_EQ(r, "bbq\n");
 }
 
 TEST(ScriptTest, ForLoopZeroToTwo) {
     // for (var j = 0; j < 3; j = j + 1) { print j; }  expect: 0\n1\n2\n
     Shell shell;
-    EXPECT_EQ(shell.runLine("for (var j = 0; j < 3; j = j + 1) { print j; }"),
-              "0\n1\n2\n");
+    std::string result = shell.runLine("for (var j = 0; j < 3; j = j + 1) { print j; }");
+    EXPECT_EQ(result, "0\n1\n2\n");
 }
 
 // ════════════════════════════════════════════════════

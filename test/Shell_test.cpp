@@ -32,7 +32,8 @@ TEST(ShellTest, PrintDecimalNumber) {
 
 TEST(ShellTest, PrintStringLiteral) {
     Shell shell;
-    EXPECT_EQ(shell.runLine("print \"hello\";"), "hello\n");
+    std::string r = shell.runLine(R"(print "hello";)");
+    EXPECT_EQ(r, "hello\n");
 }
 
 TEST(ShellTest, PrintBoolTrue) {
@@ -88,7 +89,8 @@ TEST(ShellTest, PrintUnaryMinus) {
 
 TEST(ShellTest, PrintStringConcatenation) {
     Shell shell;
-    EXPECT_EQ(shell.runLine("print \"Hello, \" + \"World!\";"), "Hello, World!\n");
+    std::string r = shell.runLine(R"(print "Hello, " + "World!";)");
+    EXPECT_EQ(r, "Hello, World!\n");
 }
 
 // ════════════════════════════════════════════════════
@@ -163,18 +165,20 @@ TEST(ShellTest, MultipleVarsIndependent) {
 
 TEST(ShellTest, IfTrue) {
     Shell shell;
-    EXPECT_EQ(shell.runLine("if (true) print \"yes\";"), "yes\n");
+    std::string r = shell.runLine(R"(if (true) print "yes";)");
+    EXPECT_EQ(r, "yes\n");
 }
 
 TEST(ShellTest, IfFalseElse) {
     Shell shell;
-    EXPECT_EQ(shell.runLine("if (false) print \"no\"; else print \"yes\";"), "yes\n");
+    std::string r = shell.runLine(R"(if (false) print "no"; else print "yes";)");
+    EXPECT_EQ(r, "yes\n");
 }
 
 TEST(ShellTest, ForLoopProducesMultipleLines) {
     Shell shell;
-    EXPECT_EQ(shell.runLine("for (var j = 0; j < 3; j = j + 1) { print j; }"),
-              "0\n1\n2\n");
+    std::string result = shell.runLine("for (var j = 0; j < 3; j = j + 1) { print j; }");
+    EXPECT_EQ(result, "0\n1\n2\n");
 }
 
 TEST(ShellTest, BlockScopeInSingleLine) {
