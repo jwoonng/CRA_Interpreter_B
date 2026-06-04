@@ -4,7 +4,7 @@ Code Review Agent (C++20 과정)
 
 **팀명**: Build Clean
 - 팀장: 우상욱 님
-- 팀원: 최정원 님, 이수련 님, 임지웅 님 
+- 팀원: 최종원 님, 이수련 님, 임지웅 님 
 - 팀명 의미 : 동작하는 코드에서 끝나지 않고, 읽기 쉽고 유지보수하기 좋은 클린 코드를 만들자.
 
 ### Ground Rule
@@ -125,7 +125,6 @@ src/
 └── shell/        Shell (REPL)
 
 test/
-├── mocks/        각 단계 인터페이스 Mock
 ├── Tokenizer_test.cpp
 ├── Parser_test.cpp
 ├── Checker_test.cpp
@@ -329,7 +328,6 @@ Shell(tokenizer, parser,       // 테스트: Mock 주입 가능
       checker, executor)
 ```
 
-테스트에서는 GoogleMock으로 각 단계를 Mock으로 교체하여 Shell 로직만 격리 검증한다 (`Shell_test.cpp`).  
 실제 파이프라인 전체의 End-to-End 검증은 `Script_test.cpp`에서 수행한다.
 
 ---
