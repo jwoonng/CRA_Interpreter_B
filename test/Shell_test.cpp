@@ -236,6 +236,12 @@ TEST(ShellTest, RuntimeErrorUndefinedVariable) {
     EXPECT_NE(out.find("notDefined"), std::string::npos);
 }
 
+TEST(ShellTest, RuntimeErrorDivisionByZero) {
+    Shell shell;
+    std::string out = shell.runLine("print 1 / 0;");
+    EXPECT_FALSE(out.empty());
+}
+
 TEST(ShellTest, RuntimeErrorUnaryMinusOnString) {
     Shell shell;
     std::string out = shell.runLine("print -\"FabCoding\";");

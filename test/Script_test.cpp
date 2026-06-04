@@ -47,6 +47,18 @@ TEST(ScriptTest, ComparisonLessThanTrue) {
     EXPECT_EQ(shell.runLine("print 1 < 2;"), "true\n");
 }
 
+TEST(ScriptTest, ComparisonGreaterEqualTrue) {
+    // print 2 >= 2;  expect: true
+    Shell shell;
+    EXPECT_EQ(shell.runLine("print 2 >= 2;"), "true\n");
+}
+
+TEST(ScriptTest, ComparisonLessEqualTrue) {
+    // print 1 <= 2;  expect: true
+    Shell shell;
+    EXPECT_EQ(shell.runLine("print 1 <= 2;"), "true\n");
+}
+
 TEST(ScriptTest, ComparisonGreaterThanFalse) {
     // print 3 > 5;  expect: false
     Shell shell;
