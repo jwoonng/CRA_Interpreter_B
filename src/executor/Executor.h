@@ -1,7 +1,66 @@
 #pragma once
 #include "IExecutor.h"
+#include "src/common/Expr.h"
+#include "src/common/Stmt.h"
+#include <map>
+#include <stdexcept>
+#include <string>
 
-class Executor : public IExecutor {
+// ── 스코프 환경 ──────────────────────────────────────────────────
+struct Environment {
+    std::map<std::string, LiteralValue> values;
+    Environment* enclosing = nullptr;
+
+    explicit Environment(Environment* enc = nullptr) : enclosing(enc) {}
+
+    void define(const std::string& name, LiteralValue val) {
+        values[name] = std::move(val);
+    }
+
+    LiteralValue get(const std::string& name) {
+        auto it = values.find(name);
+        if (it != values.end()) return it->second;
+        if (enclosing) return enclosing->get(name);
+        throw std::runtime_error("Undefined variable '" + name + "'.");
+    }
+
+    void assign(const std::string& name, LiteralValue val) {
+        auto it = values.find(name);
+        if (it != values.end()) { it->second = std::move(val); return; }
+        if (enclosing) { enclosing->assign(name, std::move(val)); return; }
+        throw std::runtime_error("Undefined variable '" + name + "'.");
+    }
+};
+
+// ── Executor ─────────────────────────────────────────────────────
+class Executor : public IExecutor, private ExprVisitor, private StmtVisitor {
 public:
-    void execute(const std::vector<std::unique_ptr<Stmt>>& stmts, std::ostream& output) override;
+    void execute(const std::vector<std::unique_ptr<Stmt>>& stmts,
+                 std::ostream& out) override;
+
+private:
+    Environment  global_;
+    Environment* env_ = &global_;
+    std::ostream* out_ = nullptr;
+
+    LiteralValue evaluate(Expr& e);
+    void         run(Stmt& s);
+    std::string  stringify(const LiteralValue& v);
+
+    // ExprVisitor
+    LiteralValue visitLiteralExpr(LiteralExpr& e)   override;
+    LiteralValue visitVariableExpr(VariableExpr& e) override;
+    LiteralValue visitAssignExpr(AssignExpr& e)     override;
+    LiteralValue visitBinaryExpr(BinaryExpr& e)     override;
+    LiteralValue visitUnaryExpr(UnaryExpr& e)       override;
+    LiteralValue visitGroupingExpr(GroupingExpr& e) override;
+    LiteralValue visitLogicalExpr(LogicalExpr& e)   override;
+
+    // StmtVisitor
+    void visitExpressionStmt(ExpressionStmt& s) override;
+    void visitPrintStmt(PrintStmt& s)           override;
+    void visitVarDeclareStmt(VarDeclareStmt& s) override;
+    void visitBlockStmt(BlockStmt& s)           override;
+    void visitIfStmt(IfStmt& s)                 override;
+    void visitForStmt(ForStmt& s)               override;
 };
