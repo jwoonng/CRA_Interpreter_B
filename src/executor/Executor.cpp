@@ -12,14 +12,32 @@ void Executor::execute(const std::vector<std::unique_ptr<Stmt>>& stmts,
 LiteralValue Executor::evaluate(Expr& e) { return e.accept(*this); }
 void         Executor::run(Stmt& s)      { s.accept(*this); }
 
-// ── 출력 포맷 ────────────────────────────────────────────────────
-std::string Executor::stringify(const LiteralValue& v) {
-    double d = std::get<double>(v);
+// ── 내부 헬퍼 ───────────────────────────────────────────────────
+static std::pair<double, double> numericOperands(const LiteralValue& l,
+                                                 const LiteralValue& r) {
+    auto* ld = std::get_if<double>(&l);
+    auto* rd = std::get_if<double>(&r);
+    if (!ld || !rd) throw std::runtime_error("Operands must be numbers.");
+    return {*ld, *rd};
+}
+
+static std::string formatDouble(double d) {
     if (d == static_cast<long long>(d))
         return std::to_string(static_cast<long long>(d));
     std::ostringstream oss;
     oss << d;
     return oss.str();
+}
+
+// ── 출력 포맷 ────────────────────────────────────────────────────
+std::string Executor::stringify(const LiteralValue& v) {
+    return std::visit([](auto&& val) -> std::string {
+        using T = std::decay_t<decltype(val)>;
+        if constexpr (std::is_same_v<T, std::monostate>) return "nil";
+        if constexpr (std::is_same_v<T, bool>)           return val ? "true" : "false";
+        if constexpr (std::is_same_v<T, std::string>)    return val;
+        if constexpr (std::is_same_v<T, double>)         return formatDouble(val);
+    }, v);
 }
 
 // ── ExprVisitor ──────────────────────────────────────────────────
@@ -31,35 +49,24 @@ LiteralValue Executor::visitVariableExpr(VariableExpr& e) {
     return env_->get(e.name.lexeme);
 }
 
-LiteralValue Executor::visitAssignExpr(AssignExpr& e) {
-    return std::monostate{};
-}
-
 LiteralValue Executor::visitBinaryExpr(BinaryExpr& e) {
     LiteralValue left  = evaluate(*e.left);
     LiteralValue right = evaluate(*e.right);
 
     switch (e.op.type) {
-        case TokenType::PLUS:
-            if (auto* l = std::get_if<double>(&left))
-                if (auto* r = std::get_if<double>(&right)) return *l + *r;
-            break;
-        case TokenType::STAR:
-            if (auto* l = std::get_if<double>(&left))
-                if (auto* r = std::get_if<double>(&right)) return *l * *r;
-            break;
+        case TokenType::PLUS: { auto [l, r] = numericOperands(left, right); return l + r; }
+        case TokenType::STAR: { auto [l, r] = numericOperands(left, right); return l * r; }
         default: break;
     }
     return std::monostate{};
 }
 
-LiteralValue Executor::visitUnaryExpr(UnaryExpr& e)       { return std::monostate{}; }
-LiteralValue Executor::visitGroupingExpr(GroupingExpr& e) { return std::monostate{}; }
-LiteralValue Executor::visitLogicalExpr(LogicalExpr& e)   { return std::monostate{}; }
+LiteralValue Executor::visitAssignExpr(AssignExpr&)     { return std::monostate{}; }
+LiteralValue Executor::visitUnaryExpr(UnaryExpr&)       { return std::monostate{}; }
+LiteralValue Executor::visitGroupingExpr(GroupingExpr&) { return std::monostate{}; }
+LiteralValue Executor::visitLogicalExpr(LogicalExpr&)   { return std::monostate{}; }
 
 // ── StmtVisitor ──────────────────────────────────────────────────
-void Executor::visitExpressionStmt(ExpressionStmt& s) {}
-
 void Executor::visitPrintStmt(PrintStmt& s) {
     *out_ << stringify(evaluate(*s.expression)) << "\n";
 }
@@ -69,6 +76,7 @@ void Executor::visitVarDeclareStmt(VarDeclareStmt& s) {
     env_->define(s.name.lexeme, std::move(val));
 }
 
-void Executor::visitBlockStmt(BlockStmt& s) {}
-void Executor::visitIfStmt(IfStmt& s)       {}
-void Executor::visitForStmt(ForStmt& s)     {}
+void Executor::visitExpressionStmt(ExpressionStmt&) {}
+void Executor::visitBlockStmt(BlockStmt&)           {}
+void Executor::visitIfStmt(IfStmt&)                 {}
+void Executor::visitForStmt(ForStmt&)               {}
