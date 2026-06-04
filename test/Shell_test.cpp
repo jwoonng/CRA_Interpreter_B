@@ -86,11 +86,17 @@ TEST(ShellTest, MultipleVarsIndependent) {
 }
 
 // ════════════════════════════════════════════════════
-// Wave 5 — 런타임 에러
+// Wave 5 — 런타임 에러 / 에러 복원
 // ════════════════════════════════════════════════════
 
 TEST(ShellTest, RuntimeErrorDivisionByZero) {
     Shell shell;
     std::string out = shell.runLine("print 1 / 0;");
     EXPECT_FALSE(out.empty());
+}
+
+TEST(ShellTest, ErrorDoesNotCrashShell) {
+    Shell shell;
+    shell.runLine("print notDefined;");
+    EXPECT_EQ(shell.runLine("print 42;"), "42\n");
 }
