@@ -130,32 +130,32 @@ ExprPtr Parser::assignment() {
 }
 
 ExprPtr Parser::logicalOr() {
-    return parseLogicalLeft([this] { return logicalAnd(); }, TokenType::OR);
+    return parseBinaryLeft<LogicalExpr>([this] { return logicalAnd(); }, {TokenType::OR});
 }
 
 ExprPtr Parser::logicalAnd() {
-    return parseLogicalLeft([this] { return equality(); }, TokenType::AND);
+    return parseBinaryLeft<LogicalExpr>([this] { return equality(); }, {TokenType::AND});
 }
 
 ExprPtr Parser::equality() {
-    return parseBinaryLeft([this] { return comparison(); },
-                           {TokenType::BANG_EQUAL, TokenType::EQUAL_EQUAL});
+    return parseBinaryLeft<BinaryExpr>([this] { return comparison(); },
+                                       {TokenType::BANG_EQUAL, TokenType::EQUAL_EQUAL});
 }
 
 ExprPtr Parser::comparison() {
-    return parseBinaryLeft([this] { return term(); },
-                           {TokenType::GREATER, TokenType::GREATER_EQUAL,
-                            TokenType::LESS,    TokenType::LESS_EQUAL});
+    return parseBinaryLeft<BinaryExpr>([this] { return term(); },
+                                       {TokenType::GREATER, TokenType::GREATER_EQUAL,
+                                        TokenType::LESS,    TokenType::LESS_EQUAL});
 }
 
 ExprPtr Parser::term() {
-    return parseBinaryLeft([this] { return factor(); },
-                           {TokenType::PLUS, TokenType::MINUS});
+    return parseBinaryLeft<BinaryExpr>([this] { return factor(); },
+                                       {TokenType::PLUS, TokenType::MINUS});
 }
 
 ExprPtr Parser::factor() {
-    return parseBinaryLeft([this] { return unary(); },
-                           {TokenType::STAR, TokenType::SLASH});
+    return parseBinaryLeft<BinaryExpr>([this] { return unary(); },
+                                       {TokenType::STAR, TokenType::SLASH});
 }
 
 ExprPtr Parser::unary() {
@@ -192,31 +192,6 @@ ExprPtr Parser::primary() {
 }
 
 // ══════════════════════════════════════════════════════════════
-// 이진 표현식 공통 헬퍼
-// ══════════════════════════════════════════════════════════════
-
-ExprPtr Parser::parseBinaryLeft(std::function<ExprPtr()> next,
-                                std::initializer_list<TokenType> ops) {
-    ExprPtr expr = next();
-    while (match(ops)) {
-        Token   op  = previous();
-        ExprPtr rhs = next();
-        expr = std::make_unique<BinaryExpr>(std::move(expr), std::move(op), std::move(rhs));
-    }
-    return expr;
-}
-
-ExprPtr Parser::parseLogicalLeft(std::function<ExprPtr()> next, TokenType opType) {
-    ExprPtr expr = next();
-    while (match({opType})) {
-        Token   op  = previous();
-        ExprPtr rhs = next();
-        expr = std::make_unique<LogicalExpr>(std::move(expr), std::move(op), std::move(rhs));
-    }
-    return expr;
-}
-
-// ══════════════════════════════════════════════════════════════
 // 유틸리티
 // ══════════════════════════════════════════════════════════════
 
@@ -228,7 +203,7 @@ void Parser::advance() {
     if (!isAtEnd()) current_++;
 }
 
-bool Parser::check(TokenType type) {
+bool Parser::check(TokenType type) const {
     return !isAtEnd() && peek().type == type;
 }
 
@@ -244,6 +219,6 @@ Token Parser::consume(TokenType type, const std::string& message) {
     throw error(peek(), message);
 }
 
-std::runtime_error Parser::error(const Token& token, const std::string& message) {
+std::runtime_error Parser::error(const Token& token, const std::string& message) const {
     return std::runtime_error("[line " + std::to_string(token.line) + "] " + message);
 }

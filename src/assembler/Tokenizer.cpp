@@ -3,9 +3,9 @@
 #include <stdexcept>
 #include <unordered_map>
 
-namespace {
+// ── static 멤버 정의 ──────────────────────────────────────
 
-const std::unordered_map<std::string, TokenType> KEYWORDS = {
+const std::unordered_map<std::string, TokenType> Tokenizer::Scanner::KEYWORDS = {
     {"var",   TokenType::VAR},
     {"if",    TokenType::IF},
     {"else",  TokenType::ELSE},
@@ -17,9 +17,7 @@ const std::unordered_map<std::string, TokenType> KEYWORDS = {
     {"print", TokenType::PRINT},
 };
 
-} // namespace
-
-// ── Scanner 구현 ─────────────────────────────────────────
+// ── 생성자 / 진입점 ───────────────────────────────────────
 
 Tokenizer::Scanner::Scanner(const std::string& source)
     : source_(source), start_(0), current_(0), line_(1) {}
@@ -33,31 +31,7 @@ std::vector<Token> Tokenizer::Scanner::scanAll() {
     return tokens_;
 }
 
-bool Tokenizer::Scanner::isAtEnd() const {
-    return current_ >= source_.size();
-}
-
-char Tokenizer::Scanner::advance() {
-    return source_[current_++];
-}
-
-char Tokenizer::Scanner::peek() const {
-    return isAtEnd() ? '\0' : source_[current_];
-}
-
-char Tokenizer::Scanner::peekNext() const {
-    return (current_ + 1 >= source_.size()) ? '\0' : source_[current_ + 1];
-}
-
-bool Tokenizer::Scanner::match(char expected) {
-    if (isAtEnd() || source_[current_] != expected) return false;
-    current_++;
-    return true;
-}
-
-void Tokenizer::Scanner::addToken(TokenType type, LiteralValue literal) {
-    tokens_.push_back({type, source_.substr(start_, current_ - start_), literal, line_});
-}
+// ── 스캔 메서드 ───────────────────────────────────────────
 
 void Tokenizer::Scanner::scanToken() {
     char c = advance();
@@ -71,10 +45,10 @@ void Tokenizer::Scanner::scanToken() {
         case '-': addToken(TokenType::MINUS);       break;
         case '*': addToken(TokenType::STAR);        break;
         case '/': addToken(TokenType::SLASH);       break;
-        case '!': addToken(match('=') ? TokenType::BANG_EQUAL    : TokenType::BANG);           break;
-        case '=': addToken(match('=') ? TokenType::EQUAL_EQUAL   : TokenType::EQUAL);          break;
-        case '<': addToken(match('=') ? TokenType::LESS_EQUAL    : TokenType::LESS);           break;
-        case '>': addToken(match('=') ? TokenType::GREATER_EQUAL : TokenType::GREATER);        break;
+        case '!': addToken(match('=') ? TokenType::BANG_EQUAL    : TokenType::BANG);    break;
+        case '=': addToken(match('=') ? TokenType::EQUAL_EQUAL   : TokenType::EQUAL);   break;
+        case '<': addToken(match('=') ? TokenType::LESS_EQUAL    : TokenType::LESS);    break;
+        case '>': addToken(match('=') ? TokenType::GREATER_EQUAL : TokenType::GREATER); break;
         case ' ': case '\r': case '\t': break;
         case '\n': line_++; break;
         case '"': scanString(); break;
@@ -117,6 +91,36 @@ void Tokenizer::Scanner::scanIdentifier() {
     std::string text = source_.substr(start_, current_ - start_);
     auto it = KEYWORDS.find(text);
     addToken(it != KEYWORDS.end() ? it->second : TokenType::IDENTIFIER);
+}
+
+// ── 문자 탐색 헬퍼 ────────────────────────────────────────
+
+bool Tokenizer::Scanner::isAtEnd() const {
+    return current_ >= source_.size();
+}
+
+char Tokenizer::Scanner::advance() {
+    return source_[current_++];
+}
+
+char Tokenizer::Scanner::peek() const {
+    return isAtEnd() ? '\0' : source_[current_];
+}
+
+char Tokenizer::Scanner::peekNext() const {
+    return (current_ + 1 >= source_.size()) ? '\0' : source_[current_ + 1];
+}
+
+bool Tokenizer::Scanner::match(char expected) {
+    if (isAtEnd() || source_[current_] != expected) return false;
+    current_++;
+    return true;
+}
+
+// ── 토큰 생성 ─────────────────────────────────────────────
+
+void Tokenizer::Scanner::addToken(TokenType type, LiteralValue literal) {
+    tokens_.push_back({type, source_.substr(start_, current_ - start_), literal, line_});
 }
 
 // ── Tokenizer 진입점 ──────────────────────────────────────
