@@ -29,10 +29,10 @@ TEST_F(ExecutorTest, PrintLiteral) {
     stmts.push_back(std::make_unique<PrintStmt>(
         std::make_unique<LiteralExpr>(42.0, 1), 1
     ));
-    EXPECT_EQ(runStmts(), "42");
+    EXPECT_EQ(runStmts(), "42\n");
 }
 
-// print 1 + 2 * 3;  →  "7"  (곱셈 우선)
+// print 1 + 2 * 3;  →  "7\n"  (곱셈 우선)
 TEST_F(ExecutorTest, ArithmeticPrecedence) {
     auto mul = std::make_unique<BinaryExpr>(
         std::make_unique<LiteralExpr>(2.0, 1),
@@ -45,7 +45,7 @@ TEST_F(ExecutorTest, ArithmeticPrecedence) {
         std::move(mul)
     );
     stmts.push_back(std::make_unique<PrintStmt>(std::move(add), 1));
-    EXPECT_EQ(runStmts(), "7");
+    EXPECT_EQ(runStmts(), "7\n");
 }
 
 // var a = 10; var b = 20; print a + b;  →  "30"
@@ -65,7 +65,7 @@ TEST_F(ExecutorTest, VarDeclAndUse) {
             std::make_unique<VariableExpr>(tok(TokenType::IDENTIFIER, "b"))
         ), 1
     ));
-    EXPECT_EQ(runStmts(), "30");
+    EXPECT_EQ(runStmts(), "30\n");
 }
 
 TEST_F(ExecutorTest, BlockScopeAndShadowing) {
