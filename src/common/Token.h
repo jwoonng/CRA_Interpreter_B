@@ -12,11 +12,11 @@ enum class TokenType {
     EOF_TOKEN
 };
 
-using Value = std::variant<std::monostate, double, std::string, bool>;
+using LiteralValue = std::variant<std::monostate, double, std::string, bool>;
 
 struct Token {
     TokenType    type;
     std::string  lexeme;
-    Value literal;
+    LiteralValue literal;
     int          line;
 };
