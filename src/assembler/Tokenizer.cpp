@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <unordered_map>
 
-// ── static 멤버 정의 ──────────────────────────────────────
+// -- static member definition --
 
 const std::unordered_map<std::string, TokenType> Tokenizer::Scanner::KEYWORDS = {
     {"var",   TokenType::VAR},
@@ -17,7 +17,7 @@ const std::unordered_map<std::string, TokenType> Tokenizer::Scanner::KEYWORDS = 
     {"print", TokenType::PRINT},
 };
 
-// ── 생성자 / 진입점 ───────────────────────────────────────
+// -- constructor / entry point --
 
 Tokenizer::Scanner::Scanner(const std::string& source)
     : source_(source), start_(0), current_(0), line_(1) {}
@@ -31,7 +31,7 @@ std::vector<Token> Tokenizer::Scanner::scanAll() {
     return tokens_;
 }
 
-// ── 스캔 메서드 ───────────────────────────────────────────
+// -- scan methods --
 
 void Tokenizer::Scanner::scanToken() {
     char c = advance();
@@ -71,7 +71,7 @@ void Tokenizer::Scanner::scanString() {
     if (isAtEnd())
         throw std::runtime_error(
             "[line " + std::to_string(line_) + "] Unterminated string");
-    advance(); // 닫는 "
+    advance(); // closing "
     std::string value = source_.substr(start_ + 1, current_ - start_ - 2);
     addToken(TokenType::STRING, value);
 }
@@ -82,18 +82,16 @@ void Tokenizer::Scanner::scanNumber() {
         advance();
         while (std::isdigit(static_cast<unsigned char>(peek()))) advance();
     }
-    double value = std::stod(source_.substr(start_, current_ - start_));
-    addToken(TokenType::NUMBER, value);
+    addToken(TokenType::NUMBER, std::stod(currentLexeme()));
 }
 
 void Tokenizer::Scanner::scanIdentifier() {
     while (std::isalnum(static_cast<unsigned char>(peek())) || peek() == '_') advance();
-    std::string text = source_.substr(start_, current_ - start_);
-    auto it = KEYWORDS.find(text);
+    auto it = KEYWORDS.find(currentLexeme());
     addToken(it != KEYWORDS.end() ? it->second : TokenType::IDENTIFIER);
 }
 
-// ── 문자 탐색 헬퍼 ────────────────────────────────────────
+// -- navigation helpers --
 
 bool Tokenizer::Scanner::isAtEnd() const {
     return current_ >= source_.size();
@@ -117,13 +115,17 @@ bool Tokenizer::Scanner::match(char expected) {
     return true;
 }
 
-// ── 토큰 생성 ─────────────────────────────────────────────
+// -- token creation --
 
-void Tokenizer::Scanner::addToken(TokenType type, LiteralValue literal) {
-    tokens_.push_back({type, source_.substr(start_, current_ - start_), literal, line_});
+std::string Tokenizer::Scanner::currentLexeme() const {
+    return source_.substr(start_, current_ - start_);
 }
 
-// ── Tokenizer 진입점 ──────────────────────────────────────
+void Tokenizer::Scanner::addToken(TokenType type, LiteralValue literal) {
+    tokens_.push_back({type, currentLexeme(), literal, line_});
+}
+
+// -- Tokenizer entry point --
 
 std::vector<Token> Tokenizer::tokenize(const std::string& source) {
     return Scanner(source).scanAll();

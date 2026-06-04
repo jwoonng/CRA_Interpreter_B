@@ -110,29 +110,24 @@ TEST_F(TokenizerTest, StringLiteral) {
 
 TEST_F(TokenizerTest, BoolLiteral) {
     // true/false -> TokenType encodes the value (no literal field needed)
-    {
-        auto tokens = tokenizer.tokenize("true");
-        ASSERT_EQ(tokens.size(), 2u);
-        EXPECT_EQ(tokens[0].type,   TokenType::TRUE_KW);
-        EXPECT_EQ(tokens[0].lexeme, "true");
-    }
-    {
-        auto tokens = tokenizer.tokenize("false");
-        ASSERT_EQ(tokens.size(), 2u);
-        EXPECT_EQ(tokens[0].type,   TokenType::FALSE_KW);
-        EXPECT_EQ(tokens[0].lexeme, "false");
+    struct Case { std::string src; TokenType expected; };
+    std::vector<Case> keywordCases = {
+        {"true",  TokenType::TRUE_KW},
+        {"false", TokenType::FALSE_KW},
+    };
+    for (auto& [src, expected] : keywordCases) {
+        auto tokens = tokenizer.tokenize(src);
+        ASSERT_EQ(tokens.size(), 2u) << "source: " << src;
+        EXPECT_EQ(tokens[0].type,   expected) << "source: " << src;
+        EXPECT_EQ(tokens[0].lexeme, src)      << "source: " << src;
     }
 
     // starts with true/false but treated as identifier
-    {
-        auto tokens = tokenizer.tokenize("truex");
-        ASSERT_EQ(tokens.size(), 2u);
-        EXPECT_EQ(tokens[0].type, TokenType::IDENTIFIER);
-    }
-    {
-        auto tokens = tokenizer.tokenize("falsey");
-        ASSERT_EQ(tokens.size(), 2u);
-        EXPECT_EQ(tokens[0].type, TokenType::IDENTIFIER);
+    std::vector<std::string> identCases = {"truex", "falsey"};
+    for (auto& src : identCases) {
+        auto tokens = tokenizer.tokenize(src);
+        ASSERT_EQ(tokens.size(), 2u) << "source: " << src;
+        EXPECT_EQ(tokens[0].type, TokenType::IDENTIFIER) << "source: " << src;
     }
 }
 
@@ -196,9 +191,13 @@ TEST_F(TokenizerTest, WhitespaceIgnored) {
     {
         auto tokens = tokenizer.tokenize("var\na\n=\n10;");
         ASSERT_EQ(tokens.size(), 6u);
-        EXPECT_EQ(tokens[0].type, TokenType::VAR);        EXPECT_EQ(tokens[0].line, 1);
-        EXPECT_EQ(tokens[1].type, TokenType::IDENTIFIER); EXPECT_EQ(tokens[1].line, 2);
-        EXPECT_EQ(tokens[2].type, TokenType::EQUAL);      EXPECT_EQ(tokens[2].line, 3);
-        EXPECT_EQ(tokens[3].type, TokenType::NUMBER);     EXPECT_EQ(tokens[3].line, 4);
+        EXPECT_EQ(tokens[0].type, TokenType::VAR);
+        EXPECT_EQ(tokens[0].line, 1);
+        EXPECT_EQ(tokens[1].type, TokenType::IDENTIFIER);
+        EXPECT_EQ(tokens[1].line, 2);
+        EXPECT_EQ(tokens[2].type, TokenType::EQUAL);
+        EXPECT_EQ(tokens[2].line, 3);
+        EXPECT_EQ(tokens[3].type, TokenType::NUMBER);
+        EXPECT_EQ(tokens[3].line, 4);
     }
 }
