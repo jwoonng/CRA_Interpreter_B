@@ -685,24 +685,9 @@ TEST(ParserTest, ComparisonPrecedenceOverEquality) {
 }
 
 // ════════════════════════════════════════════════════
-// Wave 14 — 비교 연산자 4종 완성
-// Note: LessThan(<)은 Wave 5에도 단독 TC 있음
+// Wave 14 — 비교 연산자 나머지 3종 (>, >=, <=)
+// Note: LessThan(<)은 Wave 5에 있음
 // ════════════════════════════════════════════════════
-
-TEST(ParserTest, LessThanStandalone) {
-    // 1 < 2;  — 비교 연산자 4종 균형을 위한 단독 TC
-    Parser parser;
-    auto stmts = parser.parse({
-        num(1), tok(TokenType::LESS, "<"), num(2),
-        tok(TokenType::SEMICOLON, ";"), eof()
-    });
-
-    auto* es = as<ExpressionStmt>(stmts[0].get());
-    ASSERT_NE(es, nullptr);
-    auto* bin = as<BinaryExpr>(es->expression.get());
-    ASSERT_NE(bin, nullptr);
-    EXPECT_EQ(bin->op.type, TokenType::LESS);
-}
 
 TEST(ParserTest, GreaterThan) {
     // 2 > 1;

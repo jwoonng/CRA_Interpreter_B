@@ -151,10 +151,7 @@
     <ClInclude Include="src\checker\Checker.h" />
     <ClInclude Include="src\executor\IExecutor.h" />
     <ClInclude Include="src\executor\Executor.h" />
-    <ClInclude Include="test\mocks\MockTokenizer.h" />
-    <ClInclude Include="test\mocks\MockParser.h" />
-    <ClInclude Include="test\mocks\MockChecker.h" />
-    <ClInclude Include="test\mocks\MockExecutor.h" />
+
     <ClInclude Include="src\shell\Shell.h" />
   </ItemGroup>
 
