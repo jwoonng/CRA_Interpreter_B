@@ -227,8 +227,8 @@ ExprPtr Parser::primary() {
 // 유틸리티
 // ══════════════════════════════════════════════════════════════
 
-Token& Parser::peek()     { return tokens_[current_]; }
-Token& Parser::previous() { return tokens_[current_ - 1]; }
+const Token& Parser::peek()     { return tokens_[current_]; }
+const Token& Parser::previous() { return tokens_[current_ - 1]; }
 bool   Parser::isAtEnd()  { return peek().type == TokenType::EOF_TOKEN; }
 
 Token Parser::advance() {

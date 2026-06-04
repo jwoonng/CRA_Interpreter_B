@@ -33,8 +33,8 @@ private:
     ExprPtr primary();
 
     // ── 유틸리티 ─────────────────────────────
-    Token&             peek();
-    Token&             previous();
+    const Token&       peek();
+    const Token&       previous();
     bool               isAtEnd();
     Token              advance();
     bool               check(TokenType type);
