@@ -1,7 +1,15 @@
 ﻿#pragma once
-#include "IChecker.h"         // → src/common/Stmt.h → src/common/Expr.h → Token.h
-#include <unordered_map>
+#include <stdexcept>
 #include <string>
+#include "IChecker.h"
+#include <unordered_map>
+
+// CheckError: Checker가 발생시키는 의미 분석 오류
+struct CheckError : std::runtime_error {
+    int line;
+    CheckError(int line, const std::string& msg)
+        : std::runtime_error("[" + std::to_string(line) + "번째 줄] " + msg), line(line) {}
+};
 
 class Checker : public IChecker {
 public:
