@@ -92,7 +92,7 @@ LiteralValue Executor::visitBinaryExpr(BinaryExpr& e) {
         case TokenType::GREATER_EQUAL: { auto [l, r] = numericOperands(left, right); return l >= r; }
         case TokenType::LESS:          { auto [l, r] = numericOperands(left, right); return l < r; }
         case TokenType::LESS_EQUAL:    { auto [l, r] = numericOperands(left, right); return l <= r; }
-        default: throw std::runtime_error("Unknown binary operator.");
+        default: throw std::runtime_error("Unimplemented operator: " + e.op.lexeme);
     }
 }
 
@@ -111,9 +111,8 @@ LiteralValue Executor::visitUnaryExpr(UnaryExpr& e) {
             if (!d) throw std::runtime_error("Operand must be a number.");
             return -*d;
         }
-        default: break;
+        default: throw std::runtime_error("Unimplemented operator: " + e.op.lexeme);
     }
-    return std::monostate{};
 }
 
 LiteralValue Executor::visitGroupingExpr(GroupingExpr& e) {
@@ -126,7 +125,7 @@ LiteralValue Executor::visitLogicalExpr(LogicalExpr& e) {
         return isTruthy(left) ? left : evaluate(*e.right);
     if (e.op.type == TokenType::AND)
         return !isTruthy(left) ? left : evaluate(*e.right);
-    throw std::runtime_error("Unknown logical operator.");
+    throw std::runtime_error("Unimplemented operator: " + e.op.lexeme);
 }
 
 // ── StmtVisitor ──────────────────────────────────────────────────
