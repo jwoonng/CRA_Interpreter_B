@@ -79,10 +79,13 @@ void Tokenizer::Scanner::scanToken() {
         case '\n': line_++; break;
         case '"': scanString(); break;
         default:
-            if (std::isdigit(static_cast<unsigned char>(c)))                          { scanNumber();     break; }
-            if (std::isalpha(static_cast<unsigned char>(c)) || c == '_')              { scanIdentifier(); break; }
-            throw std::runtime_error(
-                "[line " + std::to_string(line_) + "] Unexpected character: " + c);
+            if (std::isdigit(static_cast<unsigned char>(c)))
+                scanNumber();
+            else if (std::isalpha(static_cast<unsigned char>(c)) || c == '_')
+                scanIdentifier();
+            else
+                throw std::runtime_error(
+                    "[line " + std::to_string(line_) + "] Unexpected character: " + c);
     }
 }
 
