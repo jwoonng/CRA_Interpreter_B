@@ -685,8 +685,24 @@ TEST(ParserTest, ComparisonPrecedenceOverEquality) {
 }
 
 // ════════════════════════════════════════════════════
-// Wave 14 — 비교 연산자 나머지
+// Wave 14 — 비교 연산자 4종 완성
+// Note: LessThan(<)은 Wave 5에도 단독 TC 있음
 // ════════════════════════════════════════════════════
+
+TEST(ParserTest, LessThanStandalone) {
+    // 1 < 2;  — 비교 연산자 4종 균형을 위한 단독 TC
+    Parser parser;
+    auto stmts = parser.parse({
+        num(1), tok(TokenType::LESS, "<"), num(2),
+        tok(TokenType::SEMICOLON, ";"), eof()
+    });
+
+    auto* es = as<ExpressionStmt>(stmts[0].get());
+    ASSERT_NE(es, nullptr);
+    auto* bin = as<BinaryExpr>(es->expression.get());
+    ASSERT_NE(bin, nullptr);
+    EXPECT_EQ(bin->op.type, TokenType::LESS);
+}
 
 TEST(ParserTest, GreaterThan) {
     // 2 > 1;
@@ -861,6 +877,78 @@ TEST(ParserTest, ForStatementIncrementOnly) {
     ASSERT_NE(fs->increment,   nullptr);
 }
 
+TEST(ParserTest, ForStatementInitOnly) {
+    // for (var i = 0;;) print i;
+    Parser parser;
+    auto stmts = parser.parse({
+        tok(TokenType::FOR,         "for"),
+        tok(TokenType::LEFT_PAREN,  "("),
+        tok(TokenType::VAR,        "var"),
+        tok(TokenType::IDENTIFIER, "i"),
+        tok(TokenType::EQUAL,      "="), num(0),
+        tok(TokenType::SEMICOLON,   ";"),
+        tok(TokenType::SEMICOLON,   ";"),
+        tok(TokenType::RIGHT_PAREN, ")"),
+        tok(TokenType::PRINT, "print"), tok(TokenType::IDENTIFIER, "i"), tok(TokenType::SEMICOLON, ";"),
+        eof()
+    });
+
+    auto* fs = as<ForStmt>(stmts[0].get());
+    ASSERT_NE(fs, nullptr);
+    ASSERT_NE(fs->initializer, nullptr);
+    EXPECT_EQ(fs->condition,   nullptr);
+    EXPECT_EQ(fs->increment,   nullptr);
+}
+
+TEST(ParserTest, ForStatementInitAndCond) {
+    // for (var i = 0; i < 3;) print i;
+    Parser parser;
+    auto stmts = parser.parse({
+        tok(TokenType::FOR,         "for"),
+        tok(TokenType::LEFT_PAREN,  "("),
+        tok(TokenType::VAR,        "var"),
+        tok(TokenType::IDENTIFIER, "i"),
+        tok(TokenType::EQUAL,      "="), num(0),
+        tok(TokenType::SEMICOLON,   ";"),
+        tok(TokenType::IDENTIFIER,  "i"), tok(TokenType::LESS, "<"), num(3),
+        tok(TokenType::SEMICOLON,   ";"),
+        tok(TokenType::RIGHT_PAREN, ")"),
+        tok(TokenType::PRINT, "print"), tok(TokenType::IDENTIFIER, "i"), tok(TokenType::SEMICOLON, ";"),
+        eof()
+    });
+
+    auto* fs = as<ForStmt>(stmts[0].get());
+    ASSERT_NE(fs, nullptr);
+    ASSERT_NE(fs->initializer, nullptr);
+    ASSERT_NE(fs->condition,   nullptr);
+    EXPECT_EQ(fs->increment,   nullptr);
+}
+
+TEST(ParserTest, ForStatementInitAndIncr) {
+    // for (var i = 0;; i = i + 1) print i;
+    Parser parser;
+    auto stmts = parser.parse({
+        tok(TokenType::FOR,         "for"),
+        tok(TokenType::LEFT_PAREN,  "("),
+        tok(TokenType::VAR,        "var"),
+        tok(TokenType::IDENTIFIER, "i"),
+        tok(TokenType::EQUAL,      "="), num(0),
+        tok(TokenType::SEMICOLON,   ";"),
+        tok(TokenType::SEMICOLON,   ";"),
+        tok(TokenType::IDENTIFIER,  "i"), tok(TokenType::EQUAL, "="),
+        tok(TokenType::IDENTIFIER,  "i"), tok(TokenType::PLUS,  "+"), num(1),
+        tok(TokenType::RIGHT_PAREN, ")"),
+        tok(TokenType::PRINT, "print"), tok(TokenType::IDENTIFIER, "i"), tok(TokenType::SEMICOLON, ";"),
+        eof()
+    });
+
+    auto* fs = as<ForStmt>(stmts[0].get());
+    ASSERT_NE(fs, nullptr);
+    ASSERT_NE(fs->initializer, nullptr);
+    EXPECT_EQ(fs->condition,   nullptr);
+    ASSERT_NE(fs->increment,   nullptr);
+}
+
 // ════════════════════════════════════════════════════
 // Wave 17 — 에러 케이스 추가
 // ════════════════════════════════════════════════════
@@ -886,6 +974,36 @@ TEST(ParserTest, IfMissingLeftParenThrows) {
             tok(TokenType::TRUE_KW,     "true", true),
             tok(TokenType::RIGHT_PAREN, ")"),
             tok(TokenType::PRINT, "print"), num(1), tok(TokenType::SEMICOLON, ";"),
+            eof()
+        }),
+        std::exception
+    );
+}
+
+TEST(ParserTest, IfMissingRightParenThrows) {
+    // if (true print 1;  — ) 없음
+    Parser parser;
+    EXPECT_THROW(
+        parser.parse({
+            tok(TokenType::IF,         "if"),
+            tok(TokenType::LEFT_PAREN, "("),
+            tok(TokenType::TRUE_KW,    "true", true),
+            tok(TokenType::PRINT, "print"), num(1), tok(TokenType::SEMICOLON, ";"),
+            eof()
+        }),
+        std::exception
+    );
+}
+
+TEST(ParserTest, ForMissingLeftParenThrows) {
+    // for ;; )  — ( 없음
+    Parser parser;
+    EXPECT_THROW(
+        parser.parse({
+            tok(TokenType::FOR,        "for"),
+            tok(TokenType::SEMICOLON,  ";"),
+            tok(TokenType::SEMICOLON,  ";"),
+            tok(TokenType::RIGHT_PAREN,")"),
             eof()
         }),
         std::exception
