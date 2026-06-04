@@ -43,6 +43,10 @@
     <Filter Include="Shell">
       <UniqueIdentifier>{A1B2C3D4-0001-0001-0001-000000000012}</UniqueIdentifier>
     </Filter>
+
+    <Filter Include="Optimizer">
+      <UniqueIdentifier>{A1B2C3D4-0001-0001-0001-000000000013}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 
   <ItemGroup>
@@ -103,6 +107,13 @@
 
     <ClInclude Include="src\shell\Shell.h">
       <Filter>Shell</Filter>
+    </ClInclude>
+
+    <ClInclude Include="src\optimizer\IOptimizer.h">
+      <Filter>Optimizer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\optimizer\NoOpOptimizer.h">
+      <Filter>Optimizer</Filter>
     </ClInclude>
   </ItemGroup>
 

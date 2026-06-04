@@ -1,10 +1,11 @@
 #pragma once
 #include "Expr.h"
+#include <optional>
+#include <stdexcept>
 #include <vector>
 #include <memory>
-#include <optional>
 
-// 전방 선언
+// 전방 선언 — 기존 노드
 class StmtVisitor;
 struct ExpressionStmt;
 struct PrintStmt;
@@ -12,6 +13,10 @@ struct VarDeclareStmt;
 struct BlockStmt;
 struct IfStmt;
 struct ForStmt;
+
+// 전방 선언 — 확장 노드 (함수)
+struct FunctionStmt;
+struct ReturnStmt;
 
 // ── Stmt 기반 클래스 ─────────────────────────────────────────
 struct Stmt {
@@ -22,7 +27,7 @@ struct Stmt {
 
 using StmtPtr = std::unique_ptr<Stmt>;
 
-// ── Stmt 서브 클래스 ─────────────────────────────────────────
+// ── Stmt 서브 클래스 (기존) ───────────────────────────────────
 
 // Expr를 Stmt로 감싸는 Wrapper
 struct ExpressionStmt : Stmt {
@@ -94,22 +99,62 @@ struct ForStmt : Stmt {
     void accept(StmtVisitor& v) override;
 };
 
+// ── Stmt 서브 클래스 (확장) ───────────────────────────────────
+
+// fun name(params) { body }
+struct FunctionStmt : Stmt {
+    Token                name;
+    std::vector<Token>   params;
+    std::vector<StmtPtr> body;
+    FunctionStmt(Token name, std::vector<Token> params, std::vector<StmtPtr> body)
+        : name(std::move(name))
+        , params(std::move(params))
+        , body(std::move(body)) {
+        line = this->name.line;
+    }
+    void accept(StmtVisitor& v) override;
+};
+
+// return [value];
+struct ReturnStmt : Stmt {
+    Token   keyword;
+    ExprPtr value;  // nullable
+    ReturnStmt(Token keyword, ExprPtr value = nullptr)
+        : keyword(std::move(keyword))
+        , value(std::move(value)) {
+        line = this->keyword.line;
+    }
+    void accept(StmtVisitor& v) override;
+};
+
 // ── StmtVisitor 인터페이스 ────────────────────────────────────
 class StmtVisitor {
 public:
     virtual ~StmtVisitor() = default;
+
+    // 기존 — 순수 가상 (모든 구현체 필수)
     virtual void visitExpressionStmt(ExpressionStmt& s) = 0;
     virtual void visitPrintStmt(PrintStmt& s) = 0;
     virtual void visitVarDeclareStmt(VarDeclareStmt& s) = 0;
     virtual void visitBlockStmt(BlockStmt& s) = 0;
     virtual void visitIfStmt(IfStmt& s) = 0;
     virtual void visitForStmt(ForStmt& s) = 0;
+
+    // 확장 — 기본 throw 구현 (기능 구현 시 override)
+    virtual void visitFunctionStmt(FunctionStmt& s) {
+        throw std::runtime_error("[line " + std::to_string(s.line) + "] Not implemented: function declaration");
+    }
+    virtual void visitReturnStmt(ReturnStmt& s) {
+        throw std::runtime_error("[line " + std::to_string(s.line) + "] Not implemented: return statement");
+    }
 };
 
 // ── accept 메서드 정의 ────────────────────────────────────────
 inline void ExpressionStmt::accept(StmtVisitor& v) { v.visitExpressionStmt(*this); }
-inline void PrintStmt::accept(StmtVisitor& v) { v.visitPrintStmt(*this); }
-inline void VarDeclareStmt::accept(StmtVisitor& v) { v.visitVarDeclareStmt(*this); }
-inline void BlockStmt::accept(StmtVisitor& v) { v.visitBlockStmt(*this); }
-inline void IfStmt::accept(StmtVisitor& v) { v.visitIfStmt(*this); }
-inline void ForStmt::accept(StmtVisitor& v) { v.visitForStmt(*this); }
+inline void PrintStmt::accept(StmtVisitor& v)       { v.visitPrintStmt(*this); }
+inline void VarDeclareStmt::accept(StmtVisitor& v)  { v.visitVarDeclareStmt(*this); }
+inline void BlockStmt::accept(StmtVisitor& v)       { v.visitBlockStmt(*this); }
+inline void IfStmt::accept(StmtVisitor& v)          { v.visitIfStmt(*this); }
+inline void ForStmt::accept(StmtVisitor& v)         { v.visitForStmt(*this); }
+inline void FunctionStmt::accept(StmtVisitor& v)    { v.visitFunctionStmt(*this); }
+inline void ReturnStmt::accept(StmtVisitor& v)      { v.visitReturnStmt(*this); }

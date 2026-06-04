@@ -153,6 +153,8 @@
     <ClInclude Include="src\executor\Executor.h" />
 
     <ClInclude Include="src\shell\Shell.h" />
+    <ClInclude Include="src\optimizer\IOptimizer.h" />
+    <ClInclude Include="src\optimizer\NoOpOptimizer.h" />
   </ItemGroup>
 
   <!-- ── 소스 파일 ── -->
