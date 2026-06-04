@@ -97,9 +97,27 @@ LiteralValue Executor::visitAssignExpr(AssignExpr& e) {
     return val;
 }
 
-LiteralValue Executor::visitUnaryExpr(UnaryExpr&)       { return std::monostate{}; }
-LiteralValue Executor::visitGroupingExpr(GroupingExpr&) { return std::monostate{}; }
-LiteralValue Executor::visitLogicalExpr(LogicalExpr&)   { return std::monostate{}; }
+LiteralValue Executor::visitUnaryExpr(UnaryExpr& e) {
+    LiteralValue right = evaluate(*e.right);
+    if (e.op.type == TokenType::BANG)  return !isTruthy(right);
+    if (e.op.type == TokenType::MINUS) {
+        auto* d = std::get_if<double>(&right);
+        if (!d) throw std::runtime_error("Operand must be a number.");
+        return -*d;
+    }
+    return std::monostate{};
+}
+
+LiteralValue Executor::visitGroupingExpr(GroupingExpr& e) {
+    return evaluate(*e.expression);
+}
+
+LiteralValue Executor::visitLogicalExpr(LogicalExpr& e) {
+    LiteralValue left = evaluate(*e.left);
+    if (e.op.type == TokenType::OR)
+        return isTruthy(left) ? left : evaluate(*e.right);
+    return !isTruthy(left) ? left : evaluate(*e.right);
+}
 
 // ── StmtVisitor ──────────────────────────────────────────────────
 void Executor::visitPrintStmt(PrintStmt& s) {
