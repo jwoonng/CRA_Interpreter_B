@@ -151,16 +151,20 @@
     <ClInclude Include="src\checker\Checker.h" />
     <ClInclude Include="src\executor\IExecutor.h" />
     <ClInclude Include="src\executor\Executor.h" />
-    <ClInclude Include="test\mocks\MockTokenizer.h" />
-    <ClInclude Include="test\mocks\MockParser.h" />
-    <ClInclude Include="test\mocks\MockChecker.h" />
-    <ClInclude Include="test\mocks\MockExecutor.h" />
+
     <ClInclude Include="src\shell\Shell.h" />
   </ItemGroup>
 
   <!-- ── 소스 파일 ── -->
   <ItemGroup>
-    <ClCompile Include="test_main.cpp" />
+    <ClCompile Include="test_main.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\assembler\Tokenizer.cpp" />
     <ClCompile Include="src\assembler\Parser.cpp" />
     <ClCompile Include="src\checker\Checker.cpp" />
