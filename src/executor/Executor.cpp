@@ -92,9 +92,8 @@ LiteralValue Executor::visitBinaryExpr(BinaryExpr& e) {
         case TokenType::GREATER_EQUAL: { auto [l, r] = numericOperands(left, right); return l >= r; }
         case TokenType::LESS:          { auto [l, r] = numericOperands(left, right); return l < r; }
         case TokenType::LESS_EQUAL:    { auto [l, r] = numericOperands(left, right); return l <= r; }
-        default: break;
+        default: throw std::runtime_error("Unknown binary operator.");
     }
-    return std::monostate{};
 }
 
 LiteralValue Executor::visitAssignExpr(AssignExpr& e) {
@@ -125,7 +124,9 @@ LiteralValue Executor::visitLogicalExpr(LogicalExpr& e) {
     LiteralValue left = evaluate(*e.left);
     if (e.op.type == TokenType::OR)
         return isTruthy(left) ? left : evaluate(*e.right);
-    return !isTruthy(left) ? left : evaluate(*e.right);
+    if (e.op.type == TokenType::AND)
+        return !isTruthy(left) ? left : evaluate(*e.right);
+    throw std::runtime_error("Unknown logical operator.");
 }
 
 // ── StmtVisitor ──────────────────────────────────────────────────
