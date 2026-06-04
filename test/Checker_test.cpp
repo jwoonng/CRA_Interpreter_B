@@ -1,9 +1,5 @@
 ﻿#include <gtest/gtest.h>
-#include <gmock/gmock.h>
 #include "src/checker/Checker.h"
-#include "test/mocks/MockChecker.h"
-
-using namespace testing;
 
 // ── 헬퍼 ────────────────────────────────────────────
 namespace {
@@ -123,7 +119,7 @@ TEST(CheckerTest, DuplicateVarErrorContainsLineAndName) {
     }
     catch (const CheckError& e) {
         EXPECT_EQ(e.line, 2);
-        EXPECT_THAT(e.what(), HasSubstr("x"));
+        EXPECT_NE(std::string(e.what()).find("x"), std::string::npos);
     }
 }
 
@@ -179,7 +175,7 @@ TEST(CheckerTest, SelfReferenceErrorContainsLineAndName) {
     }
     catch (const CheckError& e) {
         EXPECT_EQ(e.line, 3);
-        EXPECT_THAT(e.what(), HasSubstr("x"));
+        EXPECT_NE(std::string(e.what()).find("x"), std::string::npos);
     }
 }
 
@@ -424,39 +420,13 @@ TEST(CheckerTest, ForStmtVarSelfRefInInitThrows) {
 }
 
 // ════════════════════════════════════════════════════
-// Wave 6 — Mock 인터페이스 테스트 (IChecker 계약 검증)
+// Wave 6 — CheckError 타입 계층 검증
 // ════════════════════════════════════════════════════
 
-TEST(CheckerMockTest, MockCheckerCallsCheckOnce) {
-    MockChecker mock;
-    std::vector<std::unique_ptr<Stmt>> stmts;
-    EXPECT_CALL(mock, check(_)).Times(1);
-    EXPECT_NO_THROW(mock.check(stmts));
-}
-
-TEST(CheckerMockTest, MockCheckerCanThrowCheckError) {
-    // MockChecker can throw CheckError (self-reference scenario)
-    MockChecker mock;
-    std::vector<std::unique_ptr<Stmt>> stmts;
-    EXPECT_CALL(mock, check(_))
-        .WillOnce(Throw(CheckError(1, "self-reference in initializer: 'x'")));
-    EXPECT_THROW(mock.check(stmts), CheckError);
-}
-
-TEST(CheckerMockTest, MockCheckerCanThrowForDuplicate) {
-    // MockChecker can throw CheckError for duplicate declaration
-    MockChecker mock;
-    std::vector<std::unique_ptr<Stmt>> stmts;
-    EXPECT_CALL(mock, check(_))
-        .WillOnce(Throw(CheckError(2, "variable 'x' already declared in this scope")));
-    EXPECT_THROW(mock.check(stmts), CheckError);
-}
-
-TEST(CheckerMockTest, CheckErrorIsRuntimeError) {
-    // CheckError is a subtype of std::runtime_error
-    MockChecker mock;
-    std::vector<std::unique_ptr<Stmt>> stmts;
-    EXPECT_CALL(mock, check(_))
-        .WillOnce(Throw(CheckError(1, "test error")));
-    EXPECT_THROW(mock.check(stmts), std::runtime_error);
+TEST(CheckerTest, CheckErrorIsRuntimeError) {
+    // CheckError가 std::runtime_error의 파생 타입임을 검증
+    EXPECT_THROW(
+        ([]() { throw CheckError(1, "test error"); }()),
+        std::runtime_error
+    );
 }
