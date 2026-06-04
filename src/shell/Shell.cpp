@@ -23,6 +23,11 @@ Shell::Shell(std::unique_ptr<ITokenizer> tokenizer,
     , executor_(std::move(executor))
 {}
 
+// ── Optimizer 체인 관리 ───────────────────────────────────────────
+void Shell::addOptimizer(std::unique_ptr<IOptimizer> optimizer) {
+    optimizers_.push_back(std::move(optimizer));
+}
+
 // ── 공개 인터페이스 ───────────────────────────────────────────────
 void Shell::run(std::istream& in, std::ostream& out) {
     std::string line;
@@ -40,12 +45,15 @@ std::string Shell::runLine(const std::string& line) {
 }
 
 // ── 파이프라인 ────────────────────────────────────────────────────
+// Tokenizer → Parser → Checker → [Optimizer*] → Executor
 void Shell::processLine(const std::string& line, std::ostream& out) {
     if (line.empty()) return;
     try {
         auto tokens = tokenizer_->tokenize(line);
         auto stmts  = parser_->parse(tokens);
         checker_->check(stmts);
+        for (auto& opt : optimizers_)
+            stmts = opt->optimize(std::move(stmts));
         executor_->execute(stmts, out);
     } catch (const std::exception& e) {
         out << e.what() << "\n";

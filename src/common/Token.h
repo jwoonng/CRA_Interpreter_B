@@ -9,6 +9,13 @@ enum class TokenType {
     GREATER, GREATER_EQUAL, LESS, LESS_EQUAL,
     IDENTIFIER, STRING, NUMBER,
     VAR, IF, ELSE, FOR, TRUE_KW, FALSE_KW, AND, OR, PRINT,
+
+    // ── 함수 관련 (예정) ──────────────────────────────────────
+    FUN, RETURN, COMMA,
+
+    // ── 배열 관련 (예정) ──────────────────────────────────────
+    LEFT_BRACKET, RIGHT_BRACKET,
+
     EOF_TOKEN
 };
 
