@@ -44,7 +44,10 @@ void Tokenizer::Scanner::scanToken() {
         case '+': addToken(TokenType::PLUS);        break;
         case '-': addToken(TokenType::MINUS);       break;
         case '*': addToken(TokenType::STAR);        break;
-        case '/': addToken(TokenType::SLASH);       break;
+        case '/':
+            if (match('/')) skipLineComment();
+            else            addToken(TokenType::SLASH);
+            break;
         case '!': addToken(match('=') ? TokenType::BANG_EQUAL    : TokenType::BANG);    break;
         case '=': addToken(match('=') ? TokenType::EQUAL_EQUAL   : TokenType::EQUAL);   break;
         case '<': addToken(match('=') ? TokenType::LESS_EQUAL    : TokenType::LESS);    break;
@@ -61,6 +64,10 @@ void Tokenizer::Scanner::scanToken() {
                 throw std::runtime_error(
                     "[line " + std::to_string(line_) + "] Unexpected character: " + c);
     }
+}
+
+void Tokenizer::Scanner::skipLineComment() {
+    while (peek() != '\n' && !isAtEnd()) advance();
 }
 
 void Tokenizer::Scanner::scanString() {

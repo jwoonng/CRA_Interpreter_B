@@ -168,6 +168,37 @@ TEST_F(TokenizerTest, OperatorTokens) {
     }
 }
 
+TEST_F(TokenizerTest, EmptySource) {
+    auto tokens = tokenizer.tokenize("");
+    ASSERT_EQ(tokens.size(), 1u);
+    EXPECT_EQ(tokens[0].type, TokenType::EOF_TOKEN);
+}
+
+TEST_F(TokenizerTest, UnknownCharacterThrows) {
+    std::vector<std::string> cases = {"@", "#", "$", "~"};
+    for (auto& src : cases) {
+        EXPECT_THROW(tokenizer.tokenize(src), std::runtime_error) << "source: " << src;
+    }
+}
+
+TEST_F(TokenizerTest, LineComment) {
+    // comment only -> only EOF
+    {
+        auto tokens = tokenizer.tokenize("// this is a comment");
+        ASSERT_EQ(tokens.size(), 1u);
+        EXPECT_EQ(tokens[0].type, TokenType::EOF_TOKEN);
+    }
+
+    // tokens before comment are tokenized normally
+    {
+        auto tokens = tokenizer.tokenize("var a = 1; // assign a");
+        ASSERT_EQ(tokens.size(), 6u);
+        EXPECT_EQ(tokens[0].type, TokenType::VAR);
+        EXPECT_EQ(tokens[4].type, TokenType::SEMICOLON);
+        EXPECT_EQ(tokens[5].type, TokenType::EOF_TOKEN);
+    }
+}
+
 TEST_F(TokenizerTest, WhitespaceIgnored) {
     // multiple spaces -- token count unaffected
     {

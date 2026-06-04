@@ -18,6 +18,7 @@ private:
         void scanString();
         void scanNumber();
         void scanIdentifier();
+        void skipLineComment();
 
         // navigation helpers
         bool isAtEnd()  const;
