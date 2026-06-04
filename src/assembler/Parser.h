@@ -1,5 +1,6 @@
 #pragma once
 #include "IParser.h"
+#include <functional>
 #include <initializer_list>
 #include <stdexcept>
 
@@ -8,8 +9,8 @@ public:
     std::vector<std::unique_ptr<Stmt>> parse(const std::vector<Token>& tokens) override;
 
 private:
-    std::vector<Token> tokens_;
-    int current_ = 0;
+    const std::vector<Token>* tokens_  = nullptr;
+    int                       current_ = 0;
 
     // ── 문장 ─────────────────────────────────
     StmtPtr statement();
@@ -32,11 +33,16 @@ private:
     ExprPtr unary();
     ExprPtr primary();
 
+    // ── 이진 표현식 공통 헬퍼 ────────────────
+    ExprPtr parseBinaryLeft(std::function<ExprPtr()> next,
+                            std::initializer_list<TokenType> ops);
+    ExprPtr parseLogicalLeft(std::function<ExprPtr()> next, TokenType opType);
+
     // ── 유틸리티 ─────────────────────────────
     const Token&       peek();
     const Token&       previous();
     bool               isAtEnd();
-    Token              advance();
+    void               advance();
     bool               check(TokenType type);
     bool               match(std::initializer_list<TokenType> types);
     Token              consume(TokenType type, const std::string& message);

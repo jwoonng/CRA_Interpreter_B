@@ -2,7 +2,7 @@
 
 // ── 공개 진입점 ────────────────────────────────────────────────
 std::vector<std::unique_ptr<Stmt>> Parser::parse(const std::vector<Token>& tokens) {
-    tokens_  = tokens;
+    tokens_  = &tokens;
     current_ = 0;
 
     std::vector<StmtPtr> stmts;
@@ -130,64 +130,32 @@ ExprPtr Parser::assignment() {
 }
 
 ExprPtr Parser::logicalOr() {
-    ExprPtr expr = logicalAnd();
-    while (match({TokenType::OR})) {
-        Token   op  = previous();
-        ExprPtr rhs = logicalAnd();
-        expr = std::make_unique<LogicalExpr>(std::move(expr), std::move(op), std::move(rhs));
-    }
-    return expr;
+    return parseLogicalLeft([this] { return logicalAnd(); }, TokenType::OR);
 }
 
 ExprPtr Parser::logicalAnd() {
-    ExprPtr expr = equality();
-    while (match({TokenType::AND})) {
-        Token   op  = previous();
-        ExprPtr rhs = equality();
-        expr = std::make_unique<LogicalExpr>(std::move(expr), std::move(op), std::move(rhs));
-    }
-    return expr;
+    return parseLogicalLeft([this] { return equality(); }, TokenType::AND);
 }
 
 ExprPtr Parser::equality() {
-    ExprPtr expr = comparison();
-    while (match({TokenType::BANG_EQUAL, TokenType::EQUAL_EQUAL})) {
-        Token   op  = previous();
-        ExprPtr rhs = comparison();
-        expr = std::make_unique<BinaryExpr>(std::move(expr), std::move(op), std::move(rhs));
-    }
-    return expr;
+    return parseBinaryLeft([this] { return comparison(); },
+                           {TokenType::BANG_EQUAL, TokenType::EQUAL_EQUAL});
 }
 
 ExprPtr Parser::comparison() {
-    ExprPtr expr = term();
-    while (match({TokenType::GREATER, TokenType::GREATER_EQUAL,
-                  TokenType::LESS,    TokenType::LESS_EQUAL})) {
-        Token   op  = previous();
-        ExprPtr rhs = term();
-        expr = std::make_unique<BinaryExpr>(std::move(expr), std::move(op), std::move(rhs));
-    }
-    return expr;
+    return parseBinaryLeft([this] { return term(); },
+                           {TokenType::GREATER, TokenType::GREATER_EQUAL,
+                            TokenType::LESS,    TokenType::LESS_EQUAL});
 }
 
 ExprPtr Parser::term() {
-    ExprPtr expr = factor();
-    while (match({TokenType::PLUS, TokenType::MINUS})) {
-        Token   op  = previous();
-        ExprPtr rhs = factor();
-        expr = std::make_unique<BinaryExpr>(std::move(expr), std::move(op), std::move(rhs));
-    }
-    return expr;
+    return parseBinaryLeft([this] { return factor(); },
+                           {TokenType::PLUS, TokenType::MINUS});
 }
 
 ExprPtr Parser::factor() {
-    ExprPtr expr = unary();
-    while (match({TokenType::STAR, TokenType::SLASH})) {
-        Token   op  = previous();
-        ExprPtr rhs = unary();
-        expr = std::make_unique<BinaryExpr>(std::move(expr), std::move(op), std::move(rhs));
-    }
-    return expr;
+    return parseBinaryLeft([this] { return unary(); },
+                           {TokenType::STAR, TokenType::SLASH});
 }
 
 ExprPtr Parser::unary() {
@@ -207,7 +175,7 @@ ExprPtr Parser::primary() {
         return std::make_unique<LiteralExpr>(LiteralValue{true}, previous().line);
 
     if (match({TokenType::NUMBER, TokenType::STRING})) {
-        auto& prev = previous();
+        const auto& prev = previous();
         return std::make_unique<LiteralExpr>(prev.literal, prev.line);
     }
 
@@ -224,16 +192,40 @@ ExprPtr Parser::primary() {
 }
 
 // ══════════════════════════════════════════════════════════════
+// 이진 표현식 공통 헬퍼
+// ══════════════════════════════════════════════════════════════
+
+ExprPtr Parser::parseBinaryLeft(std::function<ExprPtr()> next,
+                                std::initializer_list<TokenType> ops) {
+    ExprPtr expr = next();
+    while (match(ops)) {
+        Token   op  = previous();
+        ExprPtr rhs = next();
+        expr = std::make_unique<BinaryExpr>(std::move(expr), std::move(op), std::move(rhs));
+    }
+    return expr;
+}
+
+ExprPtr Parser::parseLogicalLeft(std::function<ExprPtr()> next, TokenType opType) {
+    ExprPtr expr = next();
+    while (match({opType})) {
+        Token   op  = previous();
+        ExprPtr rhs = next();
+        expr = std::make_unique<LogicalExpr>(std::move(expr), std::move(op), std::move(rhs));
+    }
+    return expr;
+}
+
+// ══════════════════════════════════════════════════════════════
 // 유틸리티
 // ══════════════════════════════════════════════════════════════
 
-const Token& Parser::peek()     { return tokens_[current_]; }
-const Token& Parser::previous() { return tokens_[current_ - 1]; }
-bool   Parser::isAtEnd()  { return peek().type == TokenType::EOF_TOKEN; }
+const Token& Parser::peek()     { return (*tokens_)[current_]; }
+const Token& Parser::previous() { return (*tokens_)[current_ - 1]; }
+bool         Parser::isAtEnd()  { return peek().type == TokenType::EOF_TOKEN; }
 
-Token Parser::advance() {
+void Parser::advance() {
     if (!isAtEnd()) current_++;
-    return previous();
 }
 
 bool Parser::check(TokenType type) {
@@ -248,7 +240,7 @@ bool Parser::match(std::initializer_list<TokenType> types) {
 }
 
 Token Parser::consume(TokenType type, const std::string& message) {
-    if (check(type)) return advance();
+    if (check(type)) { advance(); return previous(); }
     throw error(peek(), message);
 }
 
