@@ -1,6 +1,6 @@
 # CodeFab Interpreter
 
-Code Review Agent (C++20 과정)
+Code Review Agent (C++ 과정)
 
 **팀명**: Build Clean
 - 팀장: 우상욱 님
@@ -95,19 +95,34 @@ var x = 10; // 인라인 주석도 가능
 
 ---
 
-## 빌드 및 테스트
+## 빌드 및 실행
 
 **환경**: Visual Studio 2022, Windows, C++20
 
+진입점은 빌드 구성에 따라 분리된다. `vcxproj`의 `ExcludedFromBuild`로 구성별로 전환된다.
+
+#### Debug 빌드 — 테스트 실행 (`test_main.cpp`)
+
 ```
-# 빌드 (x64 Debug)
 msbuild Project17.vcxproj /p:Configuration=Debug /p:Platform=x64
 
 # 전체 테스트 실행
 .\x64\Debug\Project17.exe
 
 # 특정 테스트만 실행
-.\x64\Debug\Project17.exe --gtest_filter=ExecutorTest.*
+.\x64\Debug\Project17.exe --gtest_filter=ShellTest.*
+
+# Shell(REPL) 대화형 실행
+.\x64\Debug\Project17.exe --shell
+```
+
+#### Release 빌드 — Shell 자동 실행 (`main.cpp`)
+
+```
+msbuild Project17.vcxproj /p:Configuration=Release /p:Platform=x64
+
+# 실행하면 곧바로 REPL 진입
+.\x64\Release\Project17.exe
 ```
 
 테스트 프레임워크: Google Test / GoogleMock 1.11.0 (NuGet)
@@ -129,7 +144,7 @@ test/
 ├── Parser_test.cpp
 ├── Checker_test.cpp
 ├── Executor_test.cpp
-├── Shell_test.cpp    — Shell 단위 테스트 (Mock 주입)
+├── Shell_test.cpp    — Shell 고유 동작 테스트 (실제 구현 사용)
 └── Script_test.cpp   — 전체 파이프라인 End-to-End 통합 테스트
 ```
 
@@ -315,20 +330,13 @@ assign(name, val)   현재 → 상위 재귀 탐색 후 덮어쓰기; 없으면 
 #### 동작 방식
 
 - 빈 줄은 파이프라인을 거치지 않고 즉시 반환
-- 오류(`std::exception`) 발생 시 예외를 캡처하여 오류 메시지를 `ostream`에 출력 후 다음 줄 계속 처리
-- **실행 상태(변수 등)는 줄 간에 유지**되지 않음 — `Executor` 인스턴스가 `runLine`/`run` 호출마다 내부적으로 새로 시작
+- 오류(`std::exception`) 발생 시 예외를 캡처하여 오류 메시지를 `ostream`에 출력 후 다음 줄 계속 처리 — Shell이 크래시되지 않고 다음 입력을 정상 처리함
+- **실행 상태(변수 등)는 줄 간에 유지됨** — `Executor` 인스턴스가 Shell과 동일한 생명주기를 가지므로 `global_` 환경이 `runLine`/`run` 호출 사이에 유지됨
 
-#### 의존성 주입
+#### 테스트 구조
 
-생성자 오버로딩으로 두 가지 방식을 지원한다:
-
-```cpp
-Shell()                        // 기본: 구체 구현 사용
-Shell(tokenizer, parser,       // 테스트: Mock 주입 가능
-      checker, executor)
-```
-
-실제 파이프라인 전체의 End-to-End 검증은 `Script_test.cpp`에서 수행한다.
+`Shell_test.cpp`는 Mock 없이 실제 구현체를 사용하여 Shell 고유 동작을 검증한다.  
+전체 파이프라인 End-to-End 검증은 `Script_test.cpp`에서 수행한다.
 
 ---
 
