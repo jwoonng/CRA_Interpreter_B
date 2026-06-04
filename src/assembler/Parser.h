@@ -2,6 +2,7 @@
 #include "IParser.h"
 #include <functional>
 #include <initializer_list>
+#include <span>
 #include <stdexcept>
 
 class Parser : public IParser {
@@ -9,8 +10,8 @@ public:
     std::vector<std::unique_ptr<Stmt>> parse(const std::vector<Token>& tokens) override;
 
 private:
-    const std::vector<Token>* tokens_  = nullptr;
-    int                       current_ = 0;
+    std::span<const Token> tokens_;
+    int                    current_ = 0;
 
     // ── 문장 ─────────────────────────────────
     StmtPtr statement();

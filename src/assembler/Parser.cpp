@@ -2,7 +2,7 @@
 
 // ── 공개 진입점 ────────────────────────────────────────────────
 std::vector<std::unique_ptr<Stmt>> Parser::parse(const std::vector<Token>& tokens) {
-    tokens_  = &tokens;
+    tokens_  = tokens;
     current_ = 0;
 
     std::vector<StmtPtr> stmts;
@@ -220,8 +220,8 @@ ExprPtr Parser::parseLogicalLeft(std::function<ExprPtr()> next, TokenType opType
 // 유틸리티
 // ══════════════════════════════════════════════════════════════
 
-const Token& Parser::peek()     const { return (*tokens_)[current_]; }
-const Token& Parser::previous() const { return (*tokens_)[current_ - 1]; }
+const Token& Parser::peek()     const { return tokens_[current_]; }
+const Token& Parser::previous() const { return tokens_[current_ - 1]; }
 bool         Parser::isAtEnd()  const { return peek().type == TokenType::EOF_TOKEN; }
 
 void Parser::advance() {
