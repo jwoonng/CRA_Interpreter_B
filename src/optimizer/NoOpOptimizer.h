@@ -7,6 +7,6 @@
 struct NoOpOptimizer : IOptimizer {
     std::vector<std::unique_ptr<Stmt>> optimize(
         std::vector<std::unique_ptr<Stmt>> stmts) override {
-        return stmts;
+        return std::move(stmts);
     }
 };
