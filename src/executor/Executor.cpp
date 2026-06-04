@@ -31,6 +31,12 @@ static bool isTruthy(const LiteralValue& v) {
     return true;
 }
 
+struct ScopeGuard {
+    Environment*& ref;
+    Environment*  prev;
+    ~ScopeGuard() { ref = prev; }
+};
+
 static std::string formatDouble(double d) {
     constexpr double LLONG_MIN_D = static_cast<double>(std::numeric_limits<long long>::min());
     constexpr double LLONG_MAX_D = static_cast<double>(std::numeric_limits<long long>::max());
@@ -99,11 +105,14 @@ LiteralValue Executor::visitAssignExpr(AssignExpr& e) {
 
 LiteralValue Executor::visitUnaryExpr(UnaryExpr& e) {
     LiteralValue right = evaluate(*e.right);
-    if (e.op.type == TokenType::BANG)  return !isTruthy(right);
-    if (e.op.type == TokenType::MINUS) {
-        auto* d = std::get_if<double>(&right);
-        if (!d) throw std::runtime_error("Operand must be a number.");
-        return -*d;
+    switch (e.op.type) {
+        case TokenType::BANG:  return !isTruthy(right);
+        case TokenType::MINUS: {
+            auto* d = std::get_if<double>(&right);
+            if (!d) throw std::runtime_error("Operand must be a number.");
+            return -*d;
+        }
+        default: break;
     }
     return std::monostate{};
 }
@@ -135,8 +144,7 @@ void Executor::visitExpressionStmt(ExpressionStmt& s) {
 
 void Executor::visitBlockStmt(BlockStmt& s) {
     Environment local(env_);
-    struct Guard { Environment*& e; Environment* p; ~Guard() { e = p; } }
-        g{env_, std::exchange(env_, &local)};
+    ScopeGuard g{env_, std::exchange(env_, &local)};
     for (auto& stmt : s.statements) run(*stmt);
 }
 
@@ -149,8 +157,7 @@ void Executor::visitIfStmt(IfStmt& s) {
 
 void Executor::visitForStmt(ForStmt& s) {
     Environment forScope(env_);
-    struct Guard { Environment*& e; Environment* p; ~Guard() { e = p; } }
-        g{env_, std::exchange(env_, &forScope)};
+    ScopeGuard g{env_, std::exchange(env_, &forScope)};
     if (s.initializer) run(*s.initializer);
     while (true) {
         if (s.condition && !isTruthy(evaluate(*s.condition))) break;
