@@ -3,6 +3,7 @@
 #include <limits>
 #include <sstream>
 #include <stdexcept>
+#include <utility>
 
 // ── 진입점 ───────────────────────────────────────────────────────
 void Executor::execute(const std::vector<std::unique_ptr<Stmt>>& stmts,
@@ -95,6 +96,7 @@ LiteralValue Executor::visitAssignExpr(AssignExpr& e) {
     env_->assign(e.name.lexeme, val);
     return val;
 }
+
 LiteralValue Executor::visitUnaryExpr(UnaryExpr&)       { return std::monostate{}; }
 LiteralValue Executor::visitGroupingExpr(GroupingExpr&) { return std::monostate{}; }
 LiteralValue Executor::visitLogicalExpr(LogicalExpr&)   { return std::monostate{}; }
@@ -115,10 +117,9 @@ void Executor::visitExpressionStmt(ExpressionStmt& s) {
 
 void Executor::visitBlockStmt(BlockStmt& s) {
     Environment local(env_);
-    Environment* prev = env_;
-    env_ = &local;
+    struct Guard { Environment*& e; Environment* p; ~Guard() { e = p; } }
+        g{env_, std::exchange(env_, &local)};
     for (auto& stmt : s.statements) run(*stmt);
-    env_ = prev;
 }
 
 void Executor::visitIfStmt(IfStmt& s) {
@@ -129,8 +130,12 @@ void Executor::visitIfStmt(IfStmt& s) {
 }
 
 void Executor::visitForStmt(ForStmt& s) {
+    Environment forScope(env_);
+    struct Guard { Environment*& e; Environment* p; ~Guard() { e = p; } }
+        g{env_, std::exchange(env_, &forScope)};
     if (s.initializer) run(*s.initializer);
-    while (!s.condition || isTruthy(evaluate(*s.condition))) {
+    while (true) {
+        if (s.condition && !isTruthy(evaluate(*s.condition))) break;
         run(*s.body);
         if (s.increment) evaluate(*s.increment);
     }
