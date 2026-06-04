@@ -1,4 +1,6 @@
 #include "Executor.h"
+#include <cmath>
+#include <limits>
 #include <sstream>
 #include <stdexcept>
 
@@ -22,7 +24,9 @@ static std::pair<double, double> numericOperands(const LiteralValue& l,
 }
 
 static std::string formatDouble(double d) {
-    if (d == static_cast<long long>(d))
+    constexpr double LLONG_MIN_D = static_cast<double>(std::numeric_limits<long long>::min());
+    constexpr double LLONG_MAX_D = static_cast<double>(std::numeric_limits<long long>::max());
+    if (d == std::floor(d) && d >= LLONG_MIN_D && d <= LLONG_MAX_D)
         return std::to_string(static_cast<long long>(d));
     std::ostringstream oss;
     oss << d;
