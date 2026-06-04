@@ -14,12 +14,6 @@ namespace {
     Token ident(std::string name, int line = 1) {
         return tok(TokenType::IDENTIFIER, std::move(name), {}, line);
     }
-    Token numTok(double v, int line = 1) {
-        return tok(TokenType::NUMBER, std::to_string(v), v, line);
-    }
-    Token opTok(TokenType type, std::string lex, int line = 1) {
-        return tok(type, std::move(lex), {}, line);
-    }
 
 } // namespace
 
@@ -203,7 +197,7 @@ TEST(CheckerTest, BinaryExprWithDeclaredVarsNoThrow) {
     ));
     auto addExpr = std::make_unique<BinaryExpr>(
         std::make_unique<VariableExpr>(aTok),
-        opTok(TokenType::PLUS, "+"),
+        tok(TokenType::PLUS, "+"),
         std::make_unique<LiteralExpr>(1.0, 1)
     );
     inner.push_back(std::make_unique<VarDeclareStmt>(
@@ -220,7 +214,7 @@ TEST(CheckerTest, UnaryMinusExprNoThrow) {
     std::vector<std::unique_ptr<Stmt>> stmts;
     stmts.push_back(std::make_unique<ExpressionStmt>(
         std::make_unique<UnaryExpr>(
-            opTok(TokenType::MINUS, "-"),
+            tok(TokenType::MINUS, "-"),
             std::make_unique<LiteralExpr>(42.0, 1)
         )
     ));
@@ -233,7 +227,7 @@ TEST(CheckerTest, UnaryBangExprNoThrow) {
     std::vector<std::unique_ptr<Stmt>> stmts;
     stmts.push_back(std::make_unique<ExpressionStmt>(
         std::make_unique<UnaryExpr>(
-            opTok(TokenType::BANG, "!"),
+            tok(TokenType::BANG, "!"),
             std::make_unique<LiteralExpr>(true, 1)
         )
     ));
@@ -248,7 +242,7 @@ TEST(CheckerTest, GroupingExprNoThrow) {
         std::make_unique<GroupingExpr>(
             std::make_unique<BinaryExpr>(
                 std::make_unique<LiteralExpr>(1.0, 1),
-                opTok(TokenType::PLUS, "+"),
+                tok(TokenType::PLUS, "+"),
                 std::make_unique<LiteralExpr>(2.0, 1)
             )
         )
@@ -263,7 +257,7 @@ TEST(CheckerTest, LogicalAndExprNoThrow) {
     stmts.push_back(std::make_unique<ExpressionStmt>(
         std::make_unique<LogicalExpr>(
             std::make_unique<LiteralExpr>(true, 1),
-            opTok(TokenType::AND, "and"),
+            tok(TokenType::AND, "and"),
             std::make_unique<LiteralExpr>(false, 1)
         )
     ));
@@ -277,7 +271,7 @@ TEST(CheckerTest, LogicalOrExprNoThrow) {
     stmts.push_back(std::make_unique<ExpressionStmt>(
         std::make_unique<LogicalExpr>(
             std::make_unique<LiteralExpr>(false, 1),
-            opTok(TokenType::OR, "or"),
+            tok(TokenType::OR, "or"),
             std::make_unique<LiteralExpr>(true, 1)
         )
     ));
@@ -363,7 +357,7 @@ TEST(CheckerTest, IfConditionWithBinaryExprNoThrow) {
     stmts.push_back(std::make_unique<IfStmt>(
         std::make_unique<BinaryExpr>(
             std::make_unique<LiteralExpr>(1.0, 1),
-            opTok(TokenType::LESS, "<"),
+            tok(TokenType::LESS, "<"),
             std::make_unique<LiteralExpr>(2.0, 1)
         ),
         std::make_unique<PrintStmt>(std::make_unique<LiteralExpr>(1.0, 1), 1)
@@ -380,14 +374,14 @@ TEST(CheckerTest, ForStmtNoThrow) {
     );
     auto cond = std::make_unique<BinaryExpr>(
         std::make_unique<VariableExpr>(iTok),
-        opTok(TokenType::LESS, "<"),
+        tok(TokenType::LESS, "<"),
         std::make_unique<LiteralExpr>(3.0, 1)
     );
     auto incr = std::make_unique<AssignExpr>(
         iTok,
         std::make_unique<BinaryExpr>(
             std::make_unique<VariableExpr>(iTok),
-            opTok(TokenType::PLUS, "+"),
+            tok(TokenType::PLUS, "+"),
             std::make_unique<LiteralExpr>(1.0, 1)
         )
     );
