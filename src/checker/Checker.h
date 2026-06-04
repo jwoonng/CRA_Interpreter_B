@@ -1,8 +1,11 @@
-#pragma once
+﻿#pragma once
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
-#include "IChecker.h"   // -> src/common/Stmt.h -> src/common/Expr.h -> Token.h
+#include <vector>
+#include "IChecker.h"
+#include "src/common/Expr.h"
+#include "src/common/Stmt.h"
 
 // CheckError: Checker가 발생시키는 의미 분석 오류
 struct CheckError : std::runtime_error {
@@ -11,9 +14,7 @@ struct CheckError : std::runtime_error {
         : std::runtime_error("[" + std::to_string(line) + "번째 줄] " + msg), line(line) {}
 };
 
-// Checker는 IChecker를 구현하고, StmtVisitor/ExprVisitor를 통해 AST를 순회한다.
-// StmtVisitor/ExprVisitor는 구현 세부사항이므로 private 상속
-class Checker : public IChecker, private StmtVisitor, private ExprVisitor {
+class Checker : public IChecker, public ExprVisitor, public StmtVisitor {
 public:
     void check(const std::vector<std::unique_ptr<Stmt>>& stmts) override;
 
@@ -26,21 +27,23 @@ private:
     void declare(const Token& name);
     void define(const Token& name);
     void resolveVar(const Token& name);
+    void checkStmt(Stmt& s);
+    void checkExpr(Expr& e);
 
-    // ── StmtVisitor ──────────────────────────────────────────────
+    // StmtVisitor 구현
     void visitExpressionStmt(ExpressionStmt& s) override;
-    void visitPrintStmt(PrintStmt& s)           override;
+    void visitPrintStmt(PrintStmt& s) override;
     void visitVarDeclareStmt(VarDeclareStmt& s) override;
-    void visitBlockStmt(BlockStmt& s)           override;
-    void visitIfStmt(IfStmt& s)                 override;
-    void visitForStmt(ForStmt& s)               override;
+    void visitBlockStmt(BlockStmt& s) override;
+    void visitIfStmt(IfStmt& s) override;
+    void visitForStmt(ForStmt& s) override;
 
-    // ── ExprVisitor (반환값은 사용하지 않음) ────────────────────
-    LiteralValue visitLiteralExpr(LiteralExpr& e)     override;
-    LiteralValue visitVariableExpr(VariableExpr& e)   override;
-    LiteralValue visitAssignExpr(AssignExpr& e)       override;
-    LiteralValue visitBinaryExpr(BinaryExpr& e)       override;
-    LiteralValue visitUnaryExpr(UnaryExpr& e)         override;
-    LiteralValue visitGroupingExpr(GroupingExpr& e)   override;
-    LiteralValue visitLogicalExpr(LogicalExpr& e)     override;
+    // ExprVisitor 구현 (의미 검사용 — 반환값은 dummy)
+    LiteralValue visitLiteralExpr(LiteralExpr& e) override;
+    LiteralValue visitVariableExpr(VariableExpr& e) override;
+    LiteralValue visitAssignExpr(AssignExpr& e) override;
+    LiteralValue visitBinaryExpr(BinaryExpr& e) override;
+    LiteralValue visitUnaryExpr(UnaryExpr& e) override;
+    LiteralValue visitGroupingExpr(GroupingExpr& e) override;
+    LiteralValue visitLogicalExpr(LogicalExpr& e) override;
 };
