@@ -305,3 +305,186 @@ TEST_F(ExecutorTest, TypeMismatchThrows) {
     ));
     EXPECT_THROW(runStmts(), std::runtime_error);
 }
+
+// ── visitUnaryExpr 테스트 ─────────────────────────────────────────────
+
+// print !true;  →  "false"
+TEST_F(ExecutorTest, UnaryNot_True) {
+    stmts.push_back(std::make_unique<PrintStmt>(
+        std::make_unique<UnaryExpr>(
+            tok(TokenType::BANG, "!"),
+            std::make_unique<LiteralExpr>(true, 1)
+        ), 1
+    ));
+    EXPECT_EQ(runStmts(), "false\n");
+}
+
+// print !false;  →  "true"
+TEST_F(ExecutorTest, UnaryNot_False) {
+    stmts.push_back(std::make_unique<PrintStmt>(
+        std::make_unique<UnaryExpr>(
+            tok(TokenType::BANG, "!"),
+            std::make_unique<LiteralExpr>(false, 1)
+        ), 1
+    ));
+    EXPECT_EQ(runStmts(), "true\n");
+}
+
+// print !0;  →  "true"  (0은 falsy)
+TEST_F(ExecutorTest, UnaryNot_Falsy) {
+    stmts.push_back(std::make_unique<PrintStmt>(
+        std::make_unique<UnaryExpr>(
+            tok(TokenType::BANG, "!"),
+            std::make_unique<LiteralExpr>(0.0, 1)
+        ), 1
+    ));
+    EXPECT_EQ(runStmts(), "true\n");
+}
+
+// print -5;  →  "-5"
+TEST_F(ExecutorTest, UnaryMinus) {
+    stmts.push_back(std::make_unique<PrintStmt>(
+        std::make_unique<UnaryExpr>(
+            tok(TokenType::MINUS, "-"),
+            std::make_unique<LiteralExpr>(5.0, 1)
+        ), 1
+    ));
+    EXPECT_EQ(runStmts(), "-5\n");
+}
+
+// var x = 3; print -x;  →  "-3"
+TEST_F(ExecutorTest, UnaryMinus_Variable) {
+    stmts.push_back(std::make_unique<VarDeclareStmt>(
+        tok(TokenType::IDENTIFIER, "x"),
+        std::make_unique<LiteralExpr>(3.0, 1)
+    ));
+    stmts.push_back(std::make_unique<PrintStmt>(
+        std::make_unique<UnaryExpr>(
+            tok(TokenType::MINUS, "-"),
+            std::make_unique<VariableExpr>(tok(TokenType::IDENTIFIER, "x"))
+        ), 1
+    ));
+    EXPECT_EQ(runStmts(), "-3\n");
+}
+
+// -"hello"  →  예외 (숫자가 아님)
+TEST_F(ExecutorTest, UnaryMinus_TypeMismatch) {
+    stmts.push_back(std::make_unique<PrintStmt>(
+        std::make_unique<UnaryExpr>(
+            tok(TokenType::MINUS, "-"),
+            std::make_unique<LiteralExpr>(std::string("hello"), 1)
+        ), 1
+    ));
+    EXPECT_THROW(runStmts(), std::runtime_error);
+}
+
+// ── visitGroupingExpr 테스트 ──────────────────────────────────────────
+
+// print (42);  →  "42"
+TEST_F(ExecutorTest, Grouping_Simple) {
+    stmts.push_back(std::make_unique<PrintStmt>(
+        std::make_unique<GroupingExpr>(
+            std::make_unique<LiteralExpr>(42.0, 1)
+        ), 1
+    ));
+    EXPECT_EQ(runStmts(), "42\n");
+}
+
+// print (1 + 2) * 3;  →  "9"  (괄호로 우선순위 변경)
+TEST_F(ExecutorTest, Grouping_Precedence) {
+    auto add = std::make_unique<BinaryExpr>(
+        std::make_unique<LiteralExpr>(1.0, 1),
+        tok(TokenType::PLUS, "+"),
+        std::make_unique<LiteralExpr>(2.0, 1)
+    );
+    stmts.push_back(std::make_unique<PrintStmt>(
+        std::make_unique<BinaryExpr>(
+            std::make_unique<GroupingExpr>(std::move(add)),
+            tok(TokenType::STAR, "*"),
+            std::make_unique<LiteralExpr>(3.0, 1)
+        ), 1
+    ));
+    EXPECT_EQ(runStmts(), "9\n");
+}
+
+// ── visitLogicalExpr 테스트 ───────────────────────────────────────────
+
+// print true or false;  →  "true"
+TEST_F(ExecutorTest, LogicalOr_TrueOrFalse) {
+    stmts.push_back(std::make_unique<PrintStmt>(
+        std::make_unique<LogicalExpr>(
+            std::make_unique<LiteralExpr>(true, 1),
+            tok(TokenType::OR, "or"),
+            std::make_unique<LiteralExpr>(false, 1)
+        ), 1
+    ));
+    EXPECT_EQ(runStmts(), "true\n");
+}
+
+// print false or false;  →  "false"
+TEST_F(ExecutorTest, LogicalOr_FalseOrFalse) {
+    stmts.push_back(std::make_unique<PrintStmt>(
+        std::make_unique<LogicalExpr>(
+            std::make_unique<LiteralExpr>(false, 1),
+            tok(TokenType::OR, "or"),
+            std::make_unique<LiteralExpr>(false, 1)
+        ), 1
+    ));
+    EXPECT_EQ(runStmts(), "false\n");
+}
+
+// print true and true;  →  "true"
+TEST_F(ExecutorTest, LogicalAnd_TrueAndTrue) {
+    stmts.push_back(std::make_unique<PrintStmt>(
+        std::make_unique<LogicalExpr>(
+            std::make_unique<LiteralExpr>(true, 1),
+            tok(TokenType::AND, "and"),
+            std::make_unique<LiteralExpr>(true, 1)
+        ), 1
+    ));
+    EXPECT_EQ(runStmts(), "true\n");
+}
+
+// print true and false;  →  "false"
+TEST_F(ExecutorTest, LogicalAnd_TrueAndFalse) {
+    stmts.push_back(std::make_unique<PrintStmt>(
+        std::make_unique<LogicalExpr>(
+            std::make_unique<LiteralExpr>(true, 1),
+            tok(TokenType::AND, "and"),
+            std::make_unique<LiteralExpr>(false, 1)
+        ), 1
+    ));
+    EXPECT_EQ(runStmts(), "false\n");
+}
+
+// true or (3/0)  →  단락 평가로 우변 미실행, "true"
+TEST_F(ExecutorTest, LogicalOr_ShortCircuit) {
+    stmts.push_back(std::make_unique<PrintStmt>(
+        std::make_unique<LogicalExpr>(
+            std::make_unique<LiteralExpr>(true, 1),
+            tok(TokenType::OR, "or"),
+            std::make_unique<BinaryExpr>(
+                std::make_unique<LiteralExpr>(3.0, 1),
+                tok(TokenType::SLASH, "/"),
+                std::make_unique<LiteralExpr>(0.0, 1)
+            )
+        ), 1
+    ));
+    EXPECT_EQ(runStmts(), "true\n");
+}
+
+// false and (3/0)  →  단락 평가로 우변 미실행, "false"
+TEST_F(ExecutorTest, LogicalAnd_ShortCircuit) {
+    stmts.push_back(std::make_unique<PrintStmt>(
+        std::make_unique<LogicalExpr>(
+            std::make_unique<LiteralExpr>(false, 1),
+            tok(TokenType::AND, "and"),
+            std::make_unique<BinaryExpr>(
+                std::make_unique<LiteralExpr>(3.0, 1),
+                tok(TokenType::SLASH, "/"),
+                std::make_unique<LiteralExpr>(0.0, 1)
+            )
+        ), 1
+    ));
+    EXPECT_EQ(runStmts(), "false\n");
+}
