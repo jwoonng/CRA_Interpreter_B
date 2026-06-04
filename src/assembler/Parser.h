@@ -39,9 +39,9 @@ private:
     ExprPtr parseLogicalLeft(std::function<ExprPtr()> next, TokenType opType);
 
     // ── 유틸리티 ─────────────────────────────
-    const Token&       peek();
-    const Token&       previous();
-    bool               isAtEnd();
+    const Token&       peek()     const;
+    const Token&       previous() const;
+    bool               isAtEnd()  const;
     void               advance();
     bool               check(TokenType type);
     bool               match(std::initializer_list<TokenType> types);

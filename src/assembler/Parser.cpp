@@ -220,9 +220,9 @@ ExprPtr Parser::parseLogicalLeft(std::function<ExprPtr()> next, TokenType opType
 // 유틸리티
 // ══════════════════════════════════════════════════════════════
 
-const Token& Parser::peek()     { return (*tokens_)[current_]; }
-const Token& Parser::previous() { return (*tokens_)[current_ - 1]; }
-bool         Parser::isAtEnd()  { return peek().type == TokenType::EOF_TOKEN; }
+const Token& Parser::peek()     const { return (*tokens_)[current_]; }
+const Token& Parser::previous() const { return (*tokens_)[current_ - 1]; }
+bool         Parser::isAtEnd()  const { return peek().type == TokenType::EOF_TOKEN; }
 
 void Parser::advance() {
     if (!isAtEnd()) current_++;
