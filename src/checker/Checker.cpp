@@ -83,6 +83,7 @@ LiteralValue Checker::visitVariableExpr(VariableExpr& e) {
 }
 
 LiteralValue Checker::visitAssignExpr(AssignExpr& e) {
+    resolveVar(e.name);      // 대입 대상 변수가 선언되어 있는지 확인
     e.value->accept(*this);
     return {};
 }

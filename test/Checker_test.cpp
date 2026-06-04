@@ -82,3 +82,21 @@ TEST(CheckerTest, DuplicateVarInSameScopeThrows) {
 
     EXPECT_THROW(checker.check(stmts), CheckError);
 }
+
+// 초기화식 안에서 자기 자신에 대입 → CheckError 발생
+// { var x = (x = 5); }  — x가 미초기화 상태일 때 대입 대상으로 사용
+TEST(CheckerTest, AssignToUninitializedVarInInitializerThrows) {
+    Checker checker;
+
+    // var x = (x = 5);
+    std::vector<StmtPtr> body;
+    body.push_back(std::make_unique<VarDeclareStmt>(
+        ident("x", 1),
+        std::make_unique<AssignExpr>(ident("x", 1), numLit(5.0, 1))
+    ));
+
+    std::vector<std::unique_ptr<Stmt>> stmts;
+    stmts.push_back(std::make_unique<BlockStmt>(std::move(body)));
+
+    EXPECT_THROW(checker.check(stmts), CheckError);
+}
