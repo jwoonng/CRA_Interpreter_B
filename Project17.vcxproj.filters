@@ -39,6 +39,10 @@
     <Filter Include="Test\Mocks">
       <UniqueIdentifier>{A1B2C3D4-0001-0001-0001-000000000011}</UniqueIdentifier>
     </Filter>
+
+    <Filter Include="Shell">
+      <UniqueIdentifier>{A1B2C3D4-0001-0001-0001-000000000012}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 
   <ItemGroup>
@@ -96,6 +100,10 @@
     <ClInclude Include="test\mocks\MockExecutor.h">
       <Filter>Test\Mocks</Filter>
     </ClInclude>
+
+    <ClInclude Include="src\shell\Shell.h">
+      <Filter>Shell</Filter>
+    </ClInclude>
   </ItemGroup>
 
   <!-- ── 소스 파일 ── -->
@@ -129,6 +137,16 @@
       <Filter>Test</Filter>
     </ClCompile>
     <ClCompile Include="test\Executor_test.cpp">
+      <Filter>Test</Filter>
+    </ClCompile>
+
+    <ClCompile Include="src\shell\Shell.cpp">
+      <Filter>Shell</Filter>
+    </ClCompile>
+    <ClCompile Include="test\Shell_test.cpp">
+      <Filter>Test</Filter>
+    </ClCompile>
+    <ClCompile Include="test\Script_test.cpp">
       <Filter>Test</Filter>
     </ClCompile>
   </ItemGroup>

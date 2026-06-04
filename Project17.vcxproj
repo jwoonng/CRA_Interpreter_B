@@ -151,6 +151,7 @@
     <ClInclude Include="test\mocks\MockParser.h" />
     <ClInclude Include="test\mocks\MockChecker.h" />
     <ClInclude Include="test\mocks\MockExecutor.h" />
+    <ClInclude Include="src\shell\Shell.h" />
   </ItemGroup>
 
   <!-- ── 소스 파일 ── -->
@@ -164,6 +165,9 @@
     <ClCompile Include="test\Parser_test.cpp" />
     <ClCompile Include="test\Checker_test.cpp" />
     <ClCompile Include="test\Executor_test.cpp" />
+    <ClCompile Include="src\shell\Shell.cpp" />
+    <ClCompile Include="test\Shell_test.cpp" />
+    <ClCompile Include="test\Script_test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
