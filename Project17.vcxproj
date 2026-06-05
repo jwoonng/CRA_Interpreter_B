@@ -137,7 +137,6 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-
   <!-- ── 헤더 파일 ── -->
   <ItemGroup>
     <ClInclude Include="src\common\Token.h" />
@@ -151,12 +150,11 @@
     <ClInclude Include="src\checker\Checker.h" />
     <ClInclude Include="src\executor\IExecutor.h" />
     <ClInclude Include="src\executor\Executor.h" />
-
     <ClInclude Include="src\shell\Shell.h" />
     <ClInclude Include="src\optimizer\IOptimizer.h" />
     <ClInclude Include="src\optimizer\NoOpOptimizer.h" />
+    <ClInclude Include="src\optimizer\ConstantFoldingOptimizer.h" />
   </ItemGroup>
-
   <!-- ── 소스 파일 ── -->
   <ItemGroup>
     <ClCompile Include="test_main.cpp">
@@ -171,15 +169,18 @@
     <ClCompile Include="src\assembler\Parser.cpp" />
     <ClCompile Include="src\checker\Checker.cpp" />
     <ClCompile Include="src\executor\Executor.cpp" />
+    <ClCompile Include="src\optimizer\ConstantFoldingOptimizer.cpp" />
+    <ClCompile Include="src\shell\Shell.cpp" />
     <ClCompile Include="test\Tokenizer_test.cpp" />
     <ClCompile Include="test\Parser_test.cpp" />
     <ClCompile Include="test\Checker_test.cpp" />
     <ClCompile Include="test\Executor_test.cpp" />
-    <ClCompile Include="src\shell\Shell.cpp" />
     <ClCompile Include="test\Shell_test.cpp" />
     <ClCompile Include="test\Script_test.cpp" />
     <ClCompile Include="test\Function_test.cpp" />
-  </ItemGroup>
+    <ClCompile Include="test\ConstantFoldingOptimizer_test.cpp" />
+    <ClCompile Include="test\ShellConstantFoldingOptimizer_test.cpp" />
+   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="packages\gmock.1.11.0\build\native\gmock.targets" Condition="Exists('packages\gmock.1.11.0\build\native\gmock.targets')" />

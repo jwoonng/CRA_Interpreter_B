@@ -5,7 +5,6 @@
     <Filter Include="Common">
       <UniqueIdentifier>{A1B2C3D4-0001-0001-0001-000000000001}</UniqueIdentifier>
     </Filter>
-
     <Filter Include="Assembler">
       <UniqueIdentifier>{A1B2C3D4-0001-0001-0001-000000000002}</UniqueIdentifier>
     </Filter>
@@ -18,41 +17,34 @@
     <Filter Include="Assembler\Parser">
       <UniqueIdentifier>{A1B2C3D4-0001-0001-0001-000000000005}</UniqueIdentifier>
     </Filter>
-
     <Filter Include="Checker">
       <UniqueIdentifier>{A1B2C3D4-0001-0001-0001-000000000006}</UniqueIdentifier>
     </Filter>
     <Filter Include="Checker\Interface">
       <UniqueIdentifier>{A1B2C3D4-0001-0001-0001-000000000007}</UniqueIdentifier>
     </Filter>
-
     <Filter Include="Executor">
       <UniqueIdentifier>{A1B2C3D4-0001-0001-0001-000000000008}</UniqueIdentifier>
     </Filter>
     <Filter Include="Executor\Interface">
       <UniqueIdentifier>{A1B2C3D4-0001-0001-0001-000000000009}</UniqueIdentifier>
     </Filter>
-
     <Filter Include="Test">
       <UniqueIdentifier>{A1B2C3D4-0001-0001-0001-000000000010}</UniqueIdentifier>
     </Filter>
     <Filter Include="Test\Mocks">
       <UniqueIdentifier>{A1B2C3D4-0001-0001-0001-000000000011}</UniqueIdentifier>
     </Filter>
-
     <Filter Include="Shell">
       <UniqueIdentifier>{A1B2C3D4-0001-0001-0001-000000000012}</UniqueIdentifier>
     </Filter>
-
     <Filter Include="Optimizer">
       <UniqueIdentifier>{A1B2C3D4-0001-0001-0001-000000000013}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
-
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-
   <!-- ── 헤더 파일 ── -->
   <ItemGroup>
     <ClInclude Include="src\common\Token.h">
@@ -64,7 +56,6 @@
     <ClInclude Include="src\common\Stmt.h">
       <Filter>Common</Filter>
     </ClInclude>
-
     <ClInclude Include="src\assembler\ITokenizer.h">
       <Filter>Assembler\Interface</Filter>
     </ClInclude>
@@ -77,67 +68,48 @@
     <ClInclude Include="src\assembler\Parser.h">
       <Filter>Assembler\Parser</Filter>
     </ClInclude>
-
     <ClInclude Include="src\checker\IChecker.h">
       <Filter>Checker\Interface</Filter>
     </ClInclude>
     <ClInclude Include="src\checker\Checker.h">
       <Filter>Checker</Filter>
     </ClInclude>
-
     <ClInclude Include="src\executor\IExecutor.h">
       <Filter>Executor\Interface</Filter>
     </ClInclude>
     <ClInclude Include="src\executor\Executor.h">
       <Filter>Executor</Filter>
     </ClInclude>
-
-    <ClInclude Include="test\mocks\MockTokenizer.h">
-      <Filter>Test\Mocks</Filter>
-    </ClInclude>
-    <ClInclude Include="test\mocks\MockParser.h">
-      <Filter>Test\Mocks</Filter>
-    </ClInclude>
-    <ClInclude Include="test\mocks\MockChecker.h">
-      <Filter>Test\Mocks</Filter>
-    </ClInclude>
-    <ClInclude Include="test\mocks\MockExecutor.h">
-      <Filter>Test\Mocks</Filter>
-    </ClInclude>
-
     <ClInclude Include="src\shell\Shell.h">
       <Filter>Shell</Filter>
     </ClInclude>
-
     <ClInclude Include="src\optimizer\IOptimizer.h">
       <Filter>Optimizer</Filter>
     </ClInclude>
     <ClInclude Include="src\optimizer\NoOpOptimizer.h">
       <Filter>Optimizer</Filter>
     </ClInclude>
+    <ClInclude Include="src\optimizer\ConstantFoldingOptimizer.h">
+      <Filter>Optimizer</Filter>
+    </ClInclude>
   </ItemGroup>
-
   <!-- ── 소스 파일 ── -->
   <ItemGroup>
     <ClCompile Include="test_main.cpp">
       <Filter>Test</Filter>
     </ClCompile>
-
     <ClCompile Include="src\assembler\Tokenizer.cpp">
       <Filter>Assembler\Tokenizer</Filter>
     </ClCompile>
     <ClCompile Include="src\assembler\Parser.cpp">
       <Filter>Assembler\Parser</Filter>
     </ClCompile>
-
     <ClCompile Include="src\checker\Checker.cpp">
       <Filter>Checker</Filter>
     </ClCompile>
-
     <ClCompile Include="src\executor\Executor.cpp">
       <Filter>Executor</Filter>
     </ClCompile>
-
     <ClCompile Include="test\Tokenizer_test.cpp">
       <Filter>Test</Filter>
     </ClCompile>
@@ -150,7 +122,6 @@
     <ClCompile Include="test\Executor_test.cpp">
       <Filter>Test</Filter>
     </ClCompile>
-
     <ClCompile Include="src\shell\Shell.cpp">
       <Filter>Shell</Filter>
     </ClCompile>
@@ -159,6 +130,19 @@
     </ClCompile>
     <ClCompile Include="test\Script_test.cpp">
       <Filter>Test</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="test\Function_test.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\lib\native\src\gtest\gtest-all.cc" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\lib\native\src\gmock\gmock-all.cc" />
+    <ClCompile Include="test\ShellConstantFoldingOptimizer_test.cpp">
+      <Filter>Test</Filter>
+    </ClCompile>
+    <ClCompile Include="test\ConstantFoldingOptimizer_test.cpp">
+      <Filter>Test</Filter>
+    </ClCompile>
+    <ClCompile Include="src\optimizer\ConstantFoldingOptimizer.cpp">
+      <Filter>Optimizer</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
