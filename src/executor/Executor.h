@@ -37,6 +37,36 @@ struct Environment {
         if (enclosing) return enclosing->contains(name);
         return false;
     }
+
+    // StaticBindingOptimizer가 계산한 distance 기반 O(1) 직접 접근
+    LiteralValue getAt(int distance, const std::string& name) {
+        auto* env = ancestor(distance);
+        auto  it  = env->values.find(name);
+        if (it != env->values.end()) return it->second;
+        throw std::runtime_error("Undefined variable '" + name + "'.");
+    }
+
+    void assignAt(int distance, const std::string& name, LiteralValue val) {
+        auto* env = ancestor(distance);
+        auto  it  = env->values.find(name);
+        if (it == env->values.end())
+            throw std::runtime_error(
+                "Internal error: variable '" + name +
+                "' not found at distance " + std::to_string(distance) + ".");
+        it->second = std::move(val);
+    }
+
+    Environment* ancestor(int distance) {
+        auto* env = this;
+        for (int i = 0; i < distance; ++i) {
+            if (!env->enclosing)
+                throw std::runtime_error(
+                    "Internal error: scope chain shorter than expected (distance=" +
+                    std::to_string(distance) + ").");
+            env = env->enclosing;
+        }
+        return env;
+    }
 };
 
 // ── Function storage (raw, non-owning: valid during execute()) ────────

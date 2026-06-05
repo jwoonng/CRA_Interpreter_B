@@ -67,7 +67,9 @@ LiteralValue Executor::visitLiteralExpr(LiteralExpr& e) {
 }
 
 LiteralValue Executor::visitVariableExpr(VariableExpr& e) {
-    return env_->get(e.name.lexeme, e.name.line);
+    if (e.distance >= 0)
+        return env_->getAt(e.distance, e.name.lexeme);   // O(1): StaticBindingOptimizer가 설정
+    return env_->get(e.name.lexeme, e.name.line);         // fallback: 글로벌 또는 미최적화
 }
 
 LiteralValue Executor::visitBinaryExpr(BinaryExpr& e) {
@@ -89,6 +91,11 @@ LiteralValue Executor::visitBinaryExpr(BinaryExpr& e) {
             if (r == 0.0) throw std::runtime_error("[line " + std::to_string(e.op.line) + "] Division by zero.");
             return l / r;
         }
+        case TokenType::PERCENT: {
+            auto [l, r] = numericOperands(left, right, e.op.line);
+            if (r == 0.0) throw std::runtime_error("[line " + std::to_string(e.op.line) + "] Division by zero.");
+            return std::fmod(l, r);
+        }
         case TokenType::EQUAL_EQUAL:   return left == right;
         case TokenType::BANG_EQUAL:    return left != right;
         case TokenType::GREATER:       { auto [l, r] = numericOperands(left, right, e.op.line); return l > r; }
@@ -101,7 +108,10 @@ LiteralValue Executor::visitBinaryExpr(BinaryExpr& e) {
 
 LiteralValue Executor::visitAssignExpr(AssignExpr& e) {
     LiteralValue val = evaluate(*e.value);
-    env_->assign(e.name.lexeme, val, e.name.line);
+    if (e.distance >= 0)
+        env_->assignAt(e.distance, e.name.lexeme, val);  // O(1): StaticBindingOptimizer가 설정
+    else
+        env_->assign(e.name.lexeme, val, e.name.line);   // fallback: 글로벌 또는 미최적화
     return val;
 }
 
