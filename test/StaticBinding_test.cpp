@@ -50,7 +50,7 @@ TEST_F(StaticBindingOptimizerFixture, SetsDistanceZeroForSameScope) {
     std::vector<StmtPtr> stmts;
     stmts.push_back(std::make_unique<BlockStmt>(std::move(block)));
 
-    optimizer_.optimize(std::move(stmts));
+    auto kept = optimizer_.optimize(std::move(stmts));  // 소유권 유지 — raw ptr 유효성 보장
 
     EXPECT_EQ(raw->distance, 0);
 }
@@ -71,7 +71,7 @@ TEST_F(StaticBindingOptimizerFixture, SetsDistanceOneForOuterScope) {
     std::vector<StmtPtr> stmts;
     stmts.push_back(std::make_unique<BlockStmt>(std::move(outerBlock)));
 
-    optimizer_.optimize(std::move(stmts));
+    auto kept = optimizer_.optimize(std::move(stmts));  // 소유권 유지 — raw ptr 유효성 보장
 
     EXPECT_EQ(raw->distance, 1);
 }
@@ -86,7 +86,7 @@ TEST_F(StaticBindingOptimizerFixture, GlobalVariableDistanceRemainsMinusOne) {
     stmts.push_back(std::make_unique<VarDeclareStmt>(varTok));
     stmts.push_back(std::make_unique<PrintStmt>(std::move(varExpr), 2));
 
-    optimizer_.optimize(std::move(stmts));
+    auto kept = optimizer_.optimize(std::move(stmts));  // 소유권 유지 — raw ptr 유효성 보장
 
     EXPECT_EQ(raw->distance, -1);
 }
@@ -108,7 +108,7 @@ TEST_F(StaticBindingOptimizerFixture, AssignExprDistanceSetForOuterScope) {
     std::vector<StmtPtr> stmts;
     stmts.push_back(std::make_unique<BlockStmt>(std::move(outer)));
 
-    optimizer_.optimize(std::move(stmts));
+    auto kept = optimizer_.optimize(std::move(stmts));  // 소유권 유지 — raw ptr 유효성 보장
 
     EXPECT_EQ(rawA->distance, 1);
 }
