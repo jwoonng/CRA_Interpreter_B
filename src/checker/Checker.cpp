@@ -111,13 +111,11 @@ LiteralValue Checker::visitLogicalExpr(LogicalExpr& e) {
 }
 
 void Checker::visitFunctionStmt(FunctionStmt& s) {
-    // Check for duplicate parameter names
     std::unordered_set<std::string> seen;
     for (const auto& param : s.params) {
-        if (seen.count(param.lexeme))
+        if (!seen.insert(param.lexeme).second)
             throw CheckError(param.line,
                 "Duplicate parameter name '" + param.lexeme + "' in function '" + s.name.lexeme + "'.");
-        seen.insert(param.lexeme);
     }
 
     // Check body in a new scope with params defined
