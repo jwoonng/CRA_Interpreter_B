@@ -6,15 +6,17 @@
 // -- static member definition --
 
 const std::unordered_map<std::string, TokenType> Tokenizer::Scanner::KEYWORDS = {
-    {"var",   TokenType::VAR},
-    {"if",    TokenType::IF},
-    {"else",  TokenType::ELSE},
-    {"for",   TokenType::FOR},
-    {"true",  TokenType::TRUE_KW},
-    {"false", TokenType::FALSE_KW},
-    {"and",   TokenType::AND},
-    {"or",    TokenType::OR},
-    {"print", TokenType::PRINT},
+    {"var",    TokenType::VAR},
+    {"if",     TokenType::IF},
+    {"else",   TokenType::ELSE},
+    {"for",    TokenType::FOR},
+    {"true",   TokenType::TRUE_KW},
+    {"false",  TokenType::FALSE_KW},
+    {"and",    TokenType::AND},
+    {"or",     TokenType::OR},
+    {"print",  TokenType::PRINT},
+    {"Func",   TokenType::FUN},
+    {"return", TokenType::RETURN},
 };
 
 // -- constructor / entry point --
@@ -41,6 +43,7 @@ void Tokenizer::Scanner::scanToken() {
         case '{': addToken(TokenType::LEFT_BRACE);  break;
         case '}': addToken(TokenType::RIGHT_BRACE); break;
         case ';': addToken(TokenType::SEMICOLON);   break;
+        case ',': addToken(TokenType::COMMA);       break;
         case '+': addToken(TokenType::PLUS);        break;
         case '-': addToken(TokenType::MINUS);       break;
         case '*': addToken(TokenType::STAR);        break;

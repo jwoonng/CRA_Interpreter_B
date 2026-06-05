@@ -16,12 +16,45 @@ std::vector<std::unique_ptr<Stmt>> Parser::parse(const std::vector<Token>& token
 // ══════════════════════════════════════════════════════════════
 
 StmtPtr Parser::statement() {
+    if (match({TokenType::FUN}))        return functionDeclaration();
+    if (match({TokenType::RETURN}))     return returnStatement();
     if (match({TokenType::FOR}))        return forStatement();
     if (match({TokenType::IF}))         return ifStatement();
     if (match({TokenType::PRINT}))      return printStatement();
     if (match({TokenType::VAR}))        return varDeclaration();
     if (match({TokenType::LEFT_BRACE})) return block();
     return expressionStatement();
+}
+
+StmtPtr Parser::functionDeclaration() {
+    Token name = consume(TokenType::IDENTIFIER, "Expected function name.");
+    consume(TokenType::LEFT_PAREN, "Expected '(' after function name.");
+
+    std::vector<Token> params;
+    if (!check(TokenType::RIGHT_PAREN)) {
+        do {
+            params.push_back(consume(TokenType::IDENTIFIER, "Expected parameter name."));
+        } while (match({TokenType::COMMA}));
+    }
+    consume(TokenType::RIGHT_PAREN, "Expected ')' after parameters.");
+    consume(TokenType::LEFT_BRACE,  "Expected '{' before function body.");
+
+    std::vector<StmtPtr> body;
+    while (!check(TokenType::RIGHT_BRACE) && !isAtEnd())
+        body.push_back(statement());
+    consume(TokenType::RIGHT_BRACE, "Expected '}' after function body.");
+
+    return std::make_unique<FunctionStmt>(
+        std::move(name), std::move(params), std::move(body));
+}
+
+StmtPtr Parser::returnStatement() {
+    Token keyword = previous();
+    ExprPtr value;
+    if (!check(TokenType::SEMICOLON))
+        value = expression();
+    consume(TokenType::SEMICOLON, "Expected ';' after return value.");
+    return std::make_unique<ReturnStmt>(std::move(keyword), std::move(value));
 }
 
 StmtPtr Parser::forStatement() {
@@ -164,7 +197,25 @@ ExprPtr Parser::unary() {
         ExprPtr rhs = unary();
         return std::make_unique<UnaryExpr>(std::move(op), std::move(rhs));
     }
-    return primary();
+    return call();
+}
+
+ExprPtr Parser::call() {
+    ExprPtr expr = primary();
+    while (match({TokenType::LEFT_PAREN}))
+        expr = finishCall(std::move(expr));
+    return expr;
+}
+
+ExprPtr Parser::finishCall(ExprPtr callee) {
+    std::vector<ExprPtr> args;
+    if (!check(TokenType::RIGHT_PAREN)) {
+        do {
+            args.push_back(expression());
+        } while (match({TokenType::COMMA}));
+    }
+    Token paren = consume(TokenType::RIGHT_PAREN, "Expected ')' after arguments.");
+    return std::make_unique<CallExpr>(std::move(callee), std::move(paren), std::move(args));
 }
 
 ExprPtr Parser::primary() {

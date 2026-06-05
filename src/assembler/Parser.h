@@ -20,6 +20,8 @@ private:
     StmtPtr varDeclaration();
     StmtPtr block();
     StmtPtr expressionStatement();
+    StmtPtr functionDeclaration();
+    StmtPtr returnStatement();
 
     // ── 표현식 (우선순위 낮은 순) ─────────────
     ExprPtr expression();
@@ -31,6 +33,8 @@ private:
     ExprPtr term();
     ExprPtr factor();
     ExprPtr unary();
+    ExprPtr call();
+    ExprPtr finishCall(ExprPtr callee);
     ExprPtr primary();
 
     // ── 이진 표현식 공통 헬퍼 ─────────────────

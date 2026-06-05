@@ -109,3 +109,41 @@ LiteralValue Checker::visitLogicalExpr(LogicalExpr& e) {
     checkExpr(*e.right);
     return {};
 }
+
+void Checker::visitFunctionStmt(FunctionStmt& s) {
+    // Check for duplicate parameter names
+    std::unordered_set<std::string> seen;
+    for (const auto& param : s.params) {
+        if (seen.count(param.lexeme))
+            throw CheckError(param.line,
+                "Duplicate parameter name '" + param.lexeme + "' in function '" + s.name.lexeme + "'.");
+        seen.insert(param.lexeme);
+    }
+
+    // Check body in a new scope with params defined
+    beginScope();
+    for (const auto& param : s.params)
+        define(param);
+
+    ++functionDepth_;
+    for (auto& stmt : s.body)
+        checkStmt(*stmt);
+    --functionDepth_;
+
+    endScope();
+}
+
+void Checker::visitReturnStmt(ReturnStmt& s) {
+    if (functionDepth_ == 0)
+        throw CheckError(s.keyword.line,
+            "Cannot use 'return' outside of a function.");
+    if (s.value)
+        checkExpr(*s.value);
+}
+
+LiteralValue Checker::visitCallExpr(CallExpr& e) {
+    checkExpr(*e.callee);
+    for (auto& arg : e.arguments)
+        checkExpr(*arg);
+    return {};
+}
