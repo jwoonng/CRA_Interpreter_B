@@ -149,9 +149,12 @@
     <ClInclude Include="src\checker\IChecker.h" />
     <ClInclude Include="src\checker\Checker.h" />
     <ClInclude Include="src\executor\IExecutor.h" />
+    <ClInclude Include="src\executor\IStmtHook.h" />
     <ClInclude Include="src\executor\Executor.h" />
     <ClInclude Include="src\optimizer\StaticBindingOptimizer.h" />
     <ClInclude Include="src\shell\Shell.h" />
+    <ClInclude Include="src\shell\Debugger.h" />
+    <ClInclude Include="src\shell\ShellLauncher.h" />
     <ClInclude Include="src\optimizer\IOptimizer.h" />
     <ClInclude Include="src\optimizer\NoOpOptimizer.h" />
     <ClInclude Include="src\optimizer\ConstantFoldingOptimizer.h" />
@@ -173,6 +176,8 @@
     <ClCompile Include="src\executor\Executor.cpp" />
     <ClCompile Include="src\optimizer\ConstantFoldingOptimizer.cpp" />
     <ClCompile Include="src\shell\Shell.cpp" />
+    <ClCompile Include="src\shell\Debugger.cpp" />
+    <ClCompile Include="src\shell\ShellLauncher.cpp" />
     <ClCompile Include="test\Tokenizer_test.cpp" />
     <ClCompile Include="test\Parser_test.cpp" />
     <ClCompile Include="test\Checker_test.cpp" />
@@ -183,6 +188,7 @@
     <ClCompile Include="test\Array_test.cpp" />
     <ClCompile Include="test\ConstantFoldingOptimizer_test.cpp" />
     <ClCompile Include="test\ShellConstantFoldingOptimizer_test.cpp" />
+    <ClCompile Include="test\FactoryShell_test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

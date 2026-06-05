@@ -1,5 +1,6 @@
 #pragma once
 #include "IExecutor.h"
+#include "IStmtHook.h"
 #include "src/common/Expr.h"
 #include "src/common/Stmt.h"
 #include <map>
@@ -86,16 +87,23 @@ public:
     void execute(std::vector<std::unique_ptr<Stmt>> stmts,
                  std::ostream& out) override;
 
+    // 디버거/Test Double 용 훅 등록 (nullptr 이면 해제)
+    void setStmtHook(IStmtHook* hook) { hook_ = hook; }
+
+    // LiteralValue → 출력 문자열 (디버거 watch/inspect 에서도 사용)
+    static std::string stringify(const LiteralValue& v);
+
 private:
     Environment  global_;
     Environment* env_ = &global_;
     std::ostream* out_ = nullptr;
+    IStmtHook*   hook_ = nullptr;
+    int          depth_ = 0;   // run() 중첩 깊이 (훅에 전달)
     std::unordered_map<std::string, FunctionEntry> functions_;
     std::vector<std::vector<std::unique_ptr<Stmt>>> ownedStmts_;
 
     LiteralValue evaluate(Expr& e);
     void         run(Stmt& s);
-    std::string  stringify(const LiteralValue& v);
 
     // ExprVisitor
     LiteralValue visitLiteralExpr(LiteralExpr& e)   override;

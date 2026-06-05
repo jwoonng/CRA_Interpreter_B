@@ -48,15 +48,17 @@ Code Review Agent (C++ 과정)
 ## 파이프라인 구조
 
 ```
-Shell       REPL — 줄 단위로 아래 파이프라인 반복 실행
+Shell       공장 제어 쉘 — REPL / 파일 / 디버그 모드로 파이프라인 실행
    ↓
-소스 코드 (한 줄)
+소스 코드 (REPL: 한 줄, 파일·디버그: 전체)
    ↓
 Tokenizer   소스 문자열 → Token 목록
    ↓
 Parser      Token 목록 → AST (Stmt 목록)
    ↓
 Checker     AST 의미 검증 (미선언 변수 등)
+   ↓
+Optimizer   실행 전 최적화 체인 (상수 폴딩 → 정적 바인딩, 선택적)
    ↓
 Executor    AST 실행 → 출력
 ```
@@ -83,10 +85,25 @@ for (var i = 0; i < 3; i = i + 1) { print i; }
 { var y = "inner"; print y; }
 
 // 연산자
-// 산술: + - * /
+// 산술: + - * / %
 // 비교: == != > >= < <=
 // 논리: and or !
 // 문자열 연결: "hello" + " world"
+
+// 함수 선언·호출·재귀 (키워드: Func)
+Func add(a, b) { return a + b; }
+var ret = add(3, 7);          // ret = 10
+Func fact(n) { if (n <= 1) return 1; return n * fact(n - 1); }
+print fact(5);                // 120
+// return; 만 쓰면 null 반환, 함수 외부 return은 오류
+
+// 정적 배열 (고정 크기, 인덱스 읽기/쓰기)
+var arr = Array(3);           // [null, null, null]
+arr[0] = 10;
+var i = 2;
+arr[i - 1] = 7;
+print arr[0];                 // 10
+// 범위 밖 인덱스 / 숫자가 아닌 인덱스 / 배열 아닌 대상 [] / 크기가 숫자 아님 → 런타임 오류
 
 // 줄 주석
 // 이 줄은 무시됩니다
@@ -112,20 +129,106 @@ msbuild Project17.vcxproj /p:Configuration=Debug /p:Platform=x64
 # 특정 테스트만 실행
 .\x64\Debug\Project17.exe --gtest_filter=ShellTest.*
 
-# Shell(REPL) 대화형 실행
-.\x64\Debug\Project17.exe --shell
+# '--shell' 이후 인자는 공장 제어 쉘로 전달됨
+.\x64\Debug\Project17.exe --shell                    # REPL 모드
+.\x64\Debug\Project17.exe --shell script.cf          # 파일 모드
+.\x64\Debug\Project17.exe --shell --debug script.cf  # 디버그 모드
 ```
 
-#### Release 빌드 — Shell 자동 실행 (`main.cpp`)
+#### Release 빌드 — 공장 제어 쉘 (`main.cpp`)
 
 ```
 msbuild Project17.vcxproj /p:Configuration=Release /p:Platform=x64
 
-# 실행하면 곧바로 REPL 진입
-.\x64\Release\Project17.exe
+.\x64\Release\Project17.exe                    # REPL 모드 (인자 없음)
+.\x64\Release\Project17.exe script.cf          # 파일 모드
+.\x64\Release\Project17.exe --debug script.cf  # 디버그 모드
 ```
 
 테스트 프레임워크: Google Test / GoogleMock 1.11.0 (NuGet)
+
+---
+
+## 공장 제어 쉘 (Factory Control Shell)
+
+Interpreter Factory를 운용·점검하는 인터페이스. 명령행 인자로 실행 모드를 선택한다 (`src/shell/ShellLauncher`).
+
+### 1) 프롬프트 모드 (REPL)
+
+사용자가 소스를 한 줄씩 직접 입력하는 대화형 실행 모드.
+
+- `> ` 프롬프트가 표시되면 코드 한 줄 입력 후 Enter
+- 전역 변수 저장소는 세션 종료 전까지 유지 (함수·배열도 줄 간 유지)
+- `exit` 또는 `quit` 입력 시 종료
+
+```
+> var x = 10;
+> print x + 5;
+15
+> exit
+```
+
+### 2) 파일 모드
+
+소스코드 파일 전체를 읽어 한 번에 실행하는 모드.
+
+- 파일이 존재하지 않으면 명확한 오류 메시지 출력: `Error: cannot open file 'xxx.cf'.`
+- 실행 중 런타임 오류 발생 시 **오류 발생 줄 번호와 함께** 출력: `[line 3] Division by zero.`
+- 오류 발생 시 오류 메시지 출력 후 **즉시 종료** (종료 코드 1)
+- 실행 전 최적화 체인(상수 폴딩 → 정적 바인딩) 적용
+
+```
+.\Project17.exe sample.cf
+```
+
+### 3) 디버그 모드
+
+소스 코드를 **한 Stmt 단위로 멈추며** 실행 상태를 점검하는 모드.
+시작 직후 첫 Stmt에서 정지하며 `(debug) ` 프롬프트로 명령을 받는다.
+(디버그 모드는 소스를 그대로 보기 위해 최적화를 적용하지 않는다)
+
+```
+.\Project17.exe --debug sample.cf
+```
+
+#### Stepping 명령어 (stepping 단위는 Stmt 기준)
+
+| 명령어 | 설명 |
+|--------|------|
+| `step` | 현재 Stmt 실행 후 다음 Stmt에서 정지 (블록·함수 내부 진입) |
+| `next` | 현재 Stmt 실행 (블록 내부로 진입 X) |
+| `break <줄번호>` | 해당 줄에 breakpoint 설정 |
+| `breakpoints` | 현재 설정된 breakpoint 목록 출력 |
+| `remove <줄번호>` | breakpoint 해제 |
+| `continue` | 다음 breakpoint까지 실행 |
+
+#### Watch 명령어 (변수 저장소에서 직접 조회)
+
+| 명령어 | 설명 |
+|--------|------|
+| `watch <변수명>` | 해당 변수를 감시 목록에 추가 — 정지 시점마다 현재 값 자동 출력 |
+| `unwatch <변수명>` | 감시 목록에서 제거 |
+| `watches` | 현재 감시 중인 변수 목록과 값 출력 (가장 인접한 스코프의 변수) |
+| `inspect` | 현재 스코프의 모든 변수와 값 출력 |
+| `quit` / `exit` | 디버깅 종료 (잔여 Stmt 실행 안 함) |
+
+#### 디버그 세션 예시
+
+```
+[debug] stopped at line 1: var total = 0;
+(debug) watch total
+watching 'total'
+(debug) break 9
+breakpoint set at line 9
+(debug) continue
+[debug] stopped at line 9: print total;
+  watch total = 42
+(debug) inspect
+  total = 42
+(debug) continue
+42
+[debug] program finished.
+```
 
 ---
 
@@ -136,16 +239,22 @@ src/
 ├── common/       Token, Expr, Stmt 공유 타입
 ├── assembler/    Tokenizer, Parser
 ├── checker/      Checker
-├── executor/     Executor, Environment
-└── shell/        Shell (REPL)
+├── executor/     Executor, Environment, IStmtHook (디버거 훅)
+├── optimizer/    ConstantFolding·StaticBinding Optimizer 체인
+└── shell/        Shell (REPL·파일 모드), Debugger (디버그 모드), ShellLauncher (모드 선택)
 
 test/
 ├── Tokenizer_test.cpp
 ├── Parser_test.cpp
 ├── Checker_test.cpp
 ├── Executor_test.cpp
-├── Shell_test.cpp    — Shell 고유 동작 테스트 (실제 구현 사용)
-└── Script_test.cpp   — 전체 파이프라인 End-to-End 통합 테스트
+├── Shell_test.cpp          — Shell 고유 동작 테스트 (실제 구현 사용)
+├── Script_test.cpp         — 전체 파이프라인 End-to-End 통합 테스트
+├── Function_test.cpp       — 함수 선언·호출·재귀·오류
+├── Array_test.cpp          — 정적 배열 생성·인덱스·오류
+├── StaticBinding_test.cpp  — 정적 바인딩 최적화 (Test Double 검증)
+├── ConstantFoldingOptimizer_test.cpp — 상수 폴딩 최적화
+└── FactoryShell_test.cpp   — 공장 제어 쉘 (REPL exit/quit, 파일 모드, 디버그 모드, 모드 디스패치)
 ```
 
 ---
@@ -314,29 +423,56 @@ assign(name, val)   현재 → 상위 재귀 탐색 후 덮어쓰기; 없으면 
 | `+` 타입 불일치 | `"Operands must be two numbers or two strings."` |
 | 숫자 연산에 비숫자 | `"Operands must be numbers."` |
 
-### 5. Shell (REPL)
+### 5. Shell (REPL · 파일 모드)
 
 **담당 파일**: `src/shell/Shell.h/.cpp`
 
-4단계 파이프라인 전체를 묶어 한 줄씩 실행하는 REPL(Read-Eval-Print Loop)이다.
+파이프라인 전체를 묶어 실행하는 진입 컴포넌트. REPL과 파일 모드를 담당한다.
 
 #### 공개 인터페이스
 
 | 메서드 | 설명 |
 |--------|------|
-| `run(istream&, ostream&)` | `"> "` 프롬프트를 출력하며 입력 스트림에서 줄 단위로 읽어 실행 |
+| `run(istream&, ostream&)` | `"> "` 프롬프트를 출력하며 줄 단위로 읽어 실행. `exit`/`quit` 입력 시 종료 |
+| `runFile(path, ostream&) → int` | 파일 모드. 파일 없음/오류 시 메시지 출력 후 1 반환, 정상 0 |
+| `runSource(source, ostream&) → int` | 소스 전체를 한 번에 실행 (파일 모드 핵심 로직) |
 | `runLine(string) → string` | 한 줄을 실행하고 출력 결과를 문자열로 반환 (테스트 전용) |
+| `addOptimizer(unique_ptr<IOptimizer>)` | 최적화 패스를 체인에 추가 (Chain of Responsibility) |
 
 #### 동작 방식
 
 - 빈 줄은 파이프라인을 거치지 않고 즉시 반환
-- 오류(`std::exception`) 발생 시 예외를 캡처하여 오류 메시지를 `ostream`에 출력 후 다음 줄 계속 처리 — Shell이 크래시되지 않고 다음 입력을 정상 처리함
+- REPL: 오류(`std::exception`) 발생 시 예외를 캡처하여 오류 메시지를 `ostream`에 출력 후 다음 줄 계속 처리 — Shell이 크래시되지 않고 다음 입력을 정상 처리함
+- 파일 모드: 오류 발생 시 줄 번호 포함 메시지 출력 후 **즉시 종료** (종료 코드 1)
 - **실행 상태(변수 등)는 줄 간에 유지됨** — `Executor` 인스턴스가 Shell과 동일한 생명주기를 가지므로 `global_` 환경이 `runLine`/`run` 호출 사이에 유지됨
 
 #### 테스트 구조
 
 `Shell_test.cpp`는 Mock 없이 실제 구현체를 사용하여 Shell 고유 동작을 검증한다.  
 전체 파이프라인 End-to-End 검증은 `Script_test.cpp`에서 수행한다.
+
+---
+
+### 6. Debugger (디버그 모드)
+
+**담당 파일**: `src/shell/Debugger.h/.cpp`, `src/executor/IStmtHook.h`
+
+소스 코드를 Stmt 단위로 정지시키며 실행 상태를 점검한다.
+
+#### 설계 (디자인 패턴)
+
+- **Observer Pattern**: `Executor::setStmtHook(IStmtHook*)` — Executor가 각 Stmt 실행 직전에 `onBeforeStmt(stmt, depth, env)` 훅을 호출하고, Debugger가 이를 구현해 정지 여부를 판단한다. Executor는 디버거의 존재를 모른다 (훅 미등록 시 오버헤드 없음)
+- **Command Pattern**: `(debug)` 프롬프트의 명령 문자열을 디버거 동작으로 매핑
+- `depth`(중첩 깊이)로 `step`(모든 Stmt 정지)과 `next`(`depth <= 정지 시점 깊이`만 정지, 블록·함수 내부 스킵)를 구분
+- `watch`는 Executor의 `Environment` 체인을 가장 인접한 스코프부터 직접 조회
+- Test Double(`RecordingHook` Spy)로 훅 호출 순서·깊이를 검증 (`FactoryShell_test.cpp` Wave 7)
+
+#### 동작 방식
+
+- 시작 직후 첫 Stmt에서 정지 → `[debug] stopped at line N: <소스>` 출력
+- 정지 시점마다 감시 중인 변수 값을 자동 출력
+- `quit`/`exit` 또는 명령 입력 EOF 시 잔여 Stmt를 실행하지 않고 종료
+- 런타임 오류 시 줄 번호 포함 메시지 출력 후 종료 코드 1
 
 ---
 

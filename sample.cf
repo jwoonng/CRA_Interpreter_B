@@ -1,0 +1,26 @@
+// 공장 제어 쉘 - 파일 모드 데모 스크립트
+Func fact(n) {
+    if (n <= 1) return 1;
+    return n * fact(n - 1);
+}
+
+var arr = Array(5);
+for (var i = 0; i < 5; i = i + 1) {
+    arr[i] = fact(i + 1);
+}
+
+print "factorials:";
+for (var i = 0; i < 5; i = i + 1) {
+    print arr[i];
+}
+
+// 중첩 스코프 (정적 바인딩 대상) + 상수 식 (폴딩 대상)
+var total = 0;
+{
+    {
+        var bonus = 1 - 2 * 3 * 4 * 5 / 6 + 7 + 8 + 9;
+        total = total + bonus;
+    }
+}
+print "total:";
+print total;

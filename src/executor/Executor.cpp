@@ -8,13 +8,26 @@
 // ── 진입점 ───────────────────────────────────────────────────────
 void Executor::execute(std::vector<std::unique_ptr<Stmt>> stmts,
                        std::ostream& out) {
-    out_ = &out;
+    out_   = &out;
+    depth_ = 0;
     ownedStmts_.push_back(std::move(stmts));
     for (auto& s : ownedStmts_.back()) run(*s);
 }
 
 LiteralValue Executor::evaluate(Expr& e) { return e.accept(*this); }
-void         Executor::run(Stmt& s)      { s.accept(*this); }
+
+// 깊이 카운터 RAII — 예외(ReturnException 등)가 지나가도 복원 보장
+struct DepthGuard {
+    int& depth;
+    explicit DepthGuard(int& d) : depth(d) { ++depth; }
+    ~DepthGuard() { --depth; }
+};
+
+void Executor::run(Stmt& s) {
+    if (hook_) hook_->onBeforeStmt(s, depth_, *env_);
+    DepthGuard g(depth_);
+    s.accept(*this);
+}
 
 // ── 내부 헬퍼 ───────────────────────────────────────────────────
 static std::pair<double, double> numericOperands(const LiteralValue& l,

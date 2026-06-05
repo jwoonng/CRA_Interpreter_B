@@ -80,7 +80,16 @@
     <ClInclude Include="src\executor\Executor.h">
       <Filter>Executor</Filter>
     </ClInclude>
+    <ClInclude Include="src\executor\IStmtHook.h">
+      <Filter>Executor\Interface</Filter>
+    </ClInclude>
     <ClInclude Include="src\shell\Shell.h">
+      <Filter>Shell</Filter>
+    </ClInclude>
+    <ClInclude Include="src\shell\Debugger.h">
+      <Filter>Shell</Filter>
+    </ClInclude>
+    <ClInclude Include="src\shell\ShellLauncher.h">
       <Filter>Shell</Filter>
     </ClInclude>
     <ClInclude Include="src\optimizer\IOptimizer.h">
@@ -127,6 +136,15 @@
     </ClCompile>
     <ClCompile Include="src\shell\Shell.cpp">
       <Filter>Shell</Filter>
+    </ClCompile>
+    <ClCompile Include="src\shell\Debugger.cpp">
+      <Filter>Shell</Filter>
+    </ClCompile>
+    <ClCompile Include="src\shell\ShellLauncher.cpp">
+      <Filter>Shell</Filter>
+    </ClCompile>
+    <ClCompile Include="test\FactoryShell_test.cpp">
+      <Filter>Test</Filter>
     </ClCompile>
     <ClCompile Include="test\Shell_test.cpp">
       <Filter>Test</Filter>

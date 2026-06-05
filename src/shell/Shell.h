@@ -30,7 +30,17 @@ public:
     void addOptimizer(std::unique_ptr<IOptimizer> optimizer);
 
     // 대화형 REPL: in 에서 한 줄씩 읽어 out 에 결과 출력
+    // 'exit' 또는 'quit' 입력 시 종료
     void run(std::istream& in, std::ostream& out);
+
+    // 파일 모드: 소스 파일 전체를 한 번에 실행
+    // - 파일이 없으면 오류 메시지 출력 후 1 반환
+    // - 실행 중 오류 발생 시 줄 번호 포함 메시지 출력 후 즉시 종료 (1 반환)
+    // - 정상 종료 시 0 반환
+    int runFile(const std::string& path, std::ostream& out);
+
+    // 소스 문자열 전체를 한 번에 실행 (파일 모드의 핵심 로직, 테스트 용이)
+    int runSource(const std::string& source, std::ostream& out);
 
     // 테스트용: 한 줄을 실행하고 출력 결과를 문자열로 반환
     std::string runLine(const std::string& line);

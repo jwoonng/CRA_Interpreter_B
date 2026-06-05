@@ -58,6 +58,7 @@ StmtPtr Parser::returnStatement() {
 }
 
 StmtPtr Parser::forStatement() {
+    int forLine = previous().line;   // 'for' 토큰 줄 번호 (디버거 breakpoint 용)
     consume(TokenType::LEFT_PAREN, "Expected '(' after 'for'.");
 
     StmtPtr initializer;
@@ -81,12 +82,14 @@ StmtPtr Parser::forStatement() {
 
     StmtPtr body = statement();
 
-    return std::make_unique<ForStmt>(
+    auto stmt = std::make_unique<ForStmt>(
         std::move(initializer),
         std::move(condition),
         std::move(increment),
         std::move(body)
     );
+    stmt->line = forLine;
+    return stmt;
 }
 
 StmtPtr Parser::ifStatement() {
@@ -125,11 +128,14 @@ StmtPtr Parser::varDeclaration() {
 }
 
 StmtPtr Parser::block() {
+    int braceLine = previous().line;   // '{' 토큰 줄 번호 (디버거 breakpoint 용)
     std::vector<StmtPtr> stmts;
     while (!check(TokenType::RIGHT_BRACE) && !isAtEnd())
         stmts.push_back(statement());
     consume(TokenType::RIGHT_BRACE, "Expected '}' after block.");
-    return std::make_unique<BlockStmt>(std::move(stmts));
+    auto stmt = std::make_unique<BlockStmt>(std::move(stmts));
+    stmt->line = braceLine;
+    return stmt;
 }
 
 StmtPtr Parser::expressionStatement() {
