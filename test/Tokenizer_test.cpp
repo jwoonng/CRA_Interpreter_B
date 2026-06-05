@@ -168,6 +168,24 @@ TEST_F(TokenizerTest, OperatorTokens) {
     }
 }
 
+TEST_F(TokenizerTest, PercentToken) {
+    auto tokens = tokenizer.tokenize("%");
+    ASSERT_EQ(tokens.size(), 2u);
+    EXPECT_EQ(tokens[0].type,   TokenType::PERCENT);
+    EXPECT_EQ(tokens[0].lexeme, "%");
+}
+
+// 10 % 3;  →  NUMBER PERCENT NUMBER SEMICOLON EOF
+TEST_F(TokenizerTest, ModuloExpression) {
+    auto tokens = tokenizer.tokenize("10 % 3;");
+    ASSERT_EQ(tokens.size(), 5u);
+    EXPECT_EQ(tokens[0].type,   TokenType::NUMBER);
+    EXPECT_EQ(tokens[1].type,   TokenType::PERCENT);
+    EXPECT_EQ(tokens[1].lexeme, "%");
+    EXPECT_EQ(tokens[2].type,   TokenType::NUMBER);
+    EXPECT_EQ(tokens[3].type,   TokenType::SEMICOLON);
+}
+
 TEST_F(TokenizerTest, EmptySource) {
     auto tokens = tokenizer.tokenize("");
     ASSERT_EQ(tokens.size(), 1u);
