@@ -174,7 +174,7 @@ LiteralValue Executor::visitCallExpr(CallExpr& e) {
     auto fit = functions_.find(name);
     if (fit == functions_.end()) {
         bool inEnv = false;
-        try { env_->get(name); inEnv = true; } catch (...) {}
+        try { env_->get(name); inEnv = true; } catch (const std::runtime_error&) {}
         if (inEnv)
             throw std::runtime_error(
                 "[line " + std::to_string(e.line) + "] '" + name + "' is not a function.");
@@ -200,8 +200,7 @@ LiteralValue Executor::visitCallExpr(CallExpr& e) {
     for (size_t i = 0; i < params.size(); ++i)
         callEnv.define(params[i].lexeme, argVals[i]);
 
-    Environment* prev = env_;
-    env_ = &callEnv;
+    ScopeGuard g{env_, std::exchange(env_, &callEnv)};
     LiteralValue result;
     try {
         for (const auto& stmt : fn.decl->body)
@@ -209,7 +208,6 @@ LiteralValue Executor::visitCallExpr(CallExpr& e) {
     } catch (ReturnException& ret) {
         result = std::move(ret.value);
     }
-    env_ = prev;
     return result;
 }
 

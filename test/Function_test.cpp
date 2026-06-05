@@ -455,6 +455,35 @@ TEST_F(FunctionExecutorTest, FuncCall_UndefinedFunction_Throws) {
     EXPECT_THROW(runStmts(), std::runtime_error);
 }
 
+// Func add(a) { return a+1; }  Func add(a) { return a+10; }  print add(5);  -> "15\n"
+TEST_F(FunctionExecutorTest, FuncDecl_DuplicateName_LastDefinitionWins) {
+    {
+        std::vector<StmtPtr> body;
+        body.push_back(std::make_unique<ReturnStmt>(
+            tok(TokenType::RETURN, "return"),
+            std::make_unique<BinaryExpr>(
+                std::make_unique<VariableExpr>(tok(TokenType::IDENTIFIER, "a")),
+                tok(TokenType::PLUS, "+"),
+                std::make_unique<LiteralExpr>(1.0, 1))));
+        stmts.push_back(makeFuncDecl("add", {"a"}, std::move(body)));
+    }
+    {
+        std::vector<StmtPtr> body;
+        body.push_back(std::make_unique<ReturnStmt>(
+            tok(TokenType::RETURN, "return"),
+            std::make_unique<BinaryExpr>(
+                std::make_unique<VariableExpr>(tok(TokenType::IDENTIFIER, "a")),
+                tok(TokenType::PLUS, "+"),
+                std::make_unique<LiteralExpr>(10.0, 1))));
+        stmts.push_back(makeFuncDecl("add", {"a"}, std::move(body)));
+    }
+    std::vector<ExprPtr> args;
+    args.push_back(std::make_unique<LiteralExpr>(5.0, 1));
+    stmts.push_back(std::make_unique<PrintStmt>(
+        makeCallExpr("add", std::move(args)), 1));
+    EXPECT_EQ(runStmts(), "15\n");
+}
+
 // ════════════════════════════════════════════════════
 // Wave 8 — Checker: Valid Cases
 // ════════════════════════════════════════════════════
