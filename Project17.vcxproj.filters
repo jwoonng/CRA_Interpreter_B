@@ -92,6 +92,9 @@
     <ClInclude Include="src\optimizer\ConstantFoldingOptimizer.h">
       <Filter>Optimizer</Filter>
     </ClInclude>
+    <ClInclude Include="src\optimizer\StaticBindingOptimizer.h">
+      <Filter>Optimizer</Filter>
+    </ClInclude>
   </ItemGroup>
   <!-- ── 소스 파일 ── -->
   <ItemGroup>
@@ -132,7 +135,6 @@
       <Filter>Test</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="test\Function_test.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\lib\native\src\gtest\gtest-all.cc" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\lib\native\src\gmock\gmock-all.cc" />
     <ClCompile Include="test\ShellConstantFoldingOptimizer_test.cpp">
@@ -143,6 +145,15 @@
     </ClCompile>
     <ClCompile Include="src\optimizer\ConstantFoldingOptimizer.cpp">
       <Filter>Optimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="test\Array_test.cpp">
+      <Filter>Test</Filter>
+    </ClCompile>
+    <ClCompile Include="test\Function_test.cpp">
+      <Filter>Test</Filter>
+    </ClCompile>
+    <ClCompile Include="test\StaticBinding_test.cpp">
+      <Filter>Test</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

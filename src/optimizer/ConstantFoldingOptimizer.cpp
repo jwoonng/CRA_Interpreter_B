@@ -1,4 +1,5 @@
 ﻿#include "ConstantFoldingOptimizer.h"
+#include <cmath>
 #include <stdexcept>
 
 std::vector<StmtPtr> ConstantFoldingOptimizer::optimize(std::vector<StmtPtr> stmts) {
@@ -60,6 +61,12 @@ LiteralValue ConstantFoldingOptimizer::eval(Expr* e) {
             if (ld && rd) {
                 if (*rd == 0.0) throw std::runtime_error("Division by zero.");
                 return *ld / *rd;
+            }
+            throw std::runtime_error("Operands must be numbers.");
+        case TokenType::PERCENT:
+            if (ld && rd) {
+                if (*rd == 0.0) throw std::runtime_error("Division by zero.");
+                return std::fmod(*ld, *rd);
             }
             throw std::runtime_error("Operands must be numbers.");
         case TokenType::GREATER:       if (ld && rd) return *ld > *rd;  throw std::runtime_error("Operands must be numbers.");

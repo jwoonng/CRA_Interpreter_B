@@ -149,16 +149,31 @@ TEST(ShellConstantFoldingOptimizerTest, LoopBody_ConstantExprFolded) {
     EXPECT_EQ(evalCountFor("for(var i=0; i<3; i=i+1) { print 2+3; }", true),   7);
 }
 
-// optimizer2.md 예제 — 100회 루프, 상수식 8개
-//   최적화 전: 조건(101) + 증감(100) + 본문(100) + 상수 8개×100(800) = 1101회
-//   최적화 후: 조건(101) + 증감(100) + 본문(100)                      =  301회
-//   절감: 800회 (8개 × 100회)
+// print 10 % 3;  →  1회 → 0회 (LiteralExpr(1)로 접힘)
+TEST(ShellConstantFoldingOptimizerTest, Modulo_ConstantFolded) {
+    EXPECT_EQ(evalCountFor("print 10 % 3;", false), 1);
+    EXPECT_EQ(evalCountFor("print 10 % 3;", true),  0);
+}
+
+// optimizer2.md 원본 예제 — 100회 루프, % 연산 포함 상수식 10개
+//
+//   본문: total = total + (1 - 2*3*4*5/6+7+8+9) % 1000 % 30
+//   BinaryExpr 구성:
+//     total + (...)            : 1개 (변수 포함, 유지)
+//     GroupingExpr 내부 8개    : *, *, *, /, -, +, +, +
+//     (GroupingExpr) % 1000    : 1개 (상수)
+//     _ % 30                   : 1개 (상수)
+//     → 상수 부분 10개가 LiteralExpr(5) 하나로 접힘
+//
+//   최적화 전: 조건(101) + 증감(100) + 본문 11개×100(1100) = 1301회
+//   최적화 후: 조건(101) + 증감(100) + 본문   1개×100(100) =  301회
+//   절감: 1000회 (10개 × 100회)
 TEST(ShellConstantFoldingOptimizerTest, LargeLoop_RuntimeEvaluationCount_Verified) {
     const std::string src =
         "var total = 0; "
         "for (var i = 0; i < 100; i = i + 1) { "
-        "  total = total + (1 - 2 * 3 * 4 * 5 / 6 + 7 + 8 + 9); "
+        "  total = total + (1 - 2 * 3 * 4 * 5 / 6 + 7 + 8 + 9) % 1000 % 30; "
         "}";
-    EXPECT_EQ(evalCountFor(src, false), 1101);
+    EXPECT_EQ(evalCountFor(src, false), 1301);
     EXPECT_EQ(evalCountFor(src, true),   301);
 }

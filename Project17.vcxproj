@@ -150,6 +150,7 @@
     <ClInclude Include="src\checker\Checker.h" />
     <ClInclude Include="src\executor\IExecutor.h" />
     <ClInclude Include="src\executor\Executor.h" />
+    <ClInclude Include="src\optimizer\StaticBindingOptimizer.h" />
     <ClInclude Include="src\shell\Shell.h" />
     <ClInclude Include="src\optimizer\IOptimizer.h" />
     <ClInclude Include="src\optimizer\NoOpOptimizer.h" />
@@ -157,6 +158,7 @@
   </ItemGroup>
   <!-- ── 소스 파일 ── -->
   <ItemGroup>
+    <ClCompile Include="test\StaticBinding_test.cpp" />
     <ClCompile Include="test_main.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -181,7 +183,7 @@
     <ClCompile Include="test\Array_test.cpp" />
     <ClCompile Include="test\ConstantFoldingOptimizer_test.cpp" />
     <ClCompile Include="test\ShellConstantFoldingOptimizer_test.cpp" />
-   </ItemGroup>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="packages\gmock.1.11.0\build\native\gmock.targets" Condition="Exists('packages\gmock.1.11.0\build\native\gmock.targets')" />

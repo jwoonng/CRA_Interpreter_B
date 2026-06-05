@@ -150,3 +150,28 @@ TEST(ConstantFoldingOptimizerTest, LoopWithOptimization_FoldedToZeroEvaluations)
     EXPECT_EQ(*count, 0);         // 루프 반복 횟수와 무관하게 0
     EXPECT_EQ(oss.str(), "10\n10\n10\n");
 }
+
+// print 10 % 3;  →  SpyBinaryExpr(%) 최적화 전 1회, 최적화 후 0회 (LiteralExpr(1))
+TEST(ConstantFoldingOptimizerTest, Modulo_FoldedToZeroEvaluations) {
+    auto count = std::make_shared<int>(0);
+
+    std::vector<StmtPtr> stmts;
+    stmts.push_back(std::make_unique<PrintStmt>(
+        std::make_unique<SpyBinaryExpr>(
+            std::make_unique<LiteralExpr>(10.0, 1),
+            tok(TokenType::PERCENT, "%"),
+            std::make_unique<LiteralExpr>(3.0, 1),
+            count
+        ), 1
+    ));
+
+    ConstantFoldingOptimizer opt;
+    auto optimized = opt.optimize(std::move(stmts));
+
+    Executor ex;
+    std::ostringstream oss;
+    ex.execute(optimized, oss);
+
+    EXPECT_EQ(*count, 0);          // SpyBinaryExpr가 LiteralExpr(1)로 교체됨
+    EXPECT_EQ(oss.str(), "1\n");
+}
