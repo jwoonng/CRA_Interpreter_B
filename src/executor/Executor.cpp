@@ -91,6 +91,11 @@ LiteralValue Executor::visitBinaryExpr(BinaryExpr& e) {
             if (r == 0.0) throw std::runtime_error("[line " + std::to_string(e.op.line) + "] Division by zero.");
             return l / r;
         }
+        case TokenType::PERCENT: {
+            auto [l, r] = numericOperands(left, right, e.op.line);
+            if (r == 0.0) throw std::runtime_error("[line " + std::to_string(e.op.line) + "] Division by zero.");
+            return std::fmod(l, r);
+        }
         case TokenType::EQUAL_EQUAL:   return left == right;
         case TokenType::BANG_EQUAL:    return left != right;
         case TokenType::GREATER:       { auto [l, r] = numericOperands(left, right, e.op.line); return l > r; }
