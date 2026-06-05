@@ -12,33 +12,13 @@ struct Environment {
     std::map<std::string, LiteralValue> values;
     Environment* enclosing = nullptr;
 
-    // ── Test Double: Spy ──────────────────────────────────────────
-    // get() / getAt() 호출 횟수를 기록한다.
-    // 프로덕션에서는 activeSpy_ == nullptr 이므로 오버헤드 없음.
-    struct LookupSpy {
-        int getCount   = 0;   // 스코프 체인 동적 탐색 횟수
-        int getAtCount = 0;   // distance 기반 직접 접근 횟수
-        void reset() { getCount = 0; getAtCount = 0; }
-    };
-    // RAII 가드: 생성 시 Spy 활성화, 소멸 시 자동 비활성화
-    struct LookupSpyGuard {
-        LookupSpy spy;
-        LookupSpyGuard()  { Environment::activeSpy_ = &spy; }
-        ~LookupSpyGuard() { Environment::activeSpy_ = nullptr; }
-        LookupSpyGuard(const LookupSpyGuard&)            = delete;
-        LookupSpyGuard& operator=(const LookupSpyGuard&) = delete;
-    };
-    inline static LookupSpy* activeSpy_ = nullptr;
-
     explicit Environment(Environment* enc = nullptr) : enclosing(enc) {}
 
     void define(const std::string& name, LiteralValue val) {
         values[name] = std::move(val);
     }
 
-    // 동적 탐색: 현재 스코프에서 시작해 선언 스코프까지 enclosing 체인을 순회 — O(depth)
     LiteralValue get(const std::string& name, int line = 0) {
-        if (activeSpy_) ++activeSpy_->getCount;
         auto it = values.find(name);
         if (it != values.end()) return it->second;
         if (enclosing) return enclosing->get(name, line);
@@ -58,9 +38,8 @@ struct Environment {
         return false;
     }
 
-    // distance 기반 직접 접근: Resolver가 계산한 거리로 즉시 접근 — O(1)
+    // StaticBindingOptimizer가 계산한 distance 기반 O(1) 직접 접근
     LiteralValue getAt(int distance, const std::string& name) {
-        if (activeSpy_) ++activeSpy_->getAtCount;
         auto* env = ancestor(distance);
         auto  it  = env->values.find(name);
         if (it != env->values.end()) return it->second;
