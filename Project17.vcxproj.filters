@@ -134,7 +134,6 @@
     <ClCompile Include="test\Script_test.cpp">
       <Filter>Test</Filter>
     </ClCompile>
-    <ClCompile Include="main.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\lib\native\src\gtest\gtest-all.cc" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\lib\native\src\gmock\gmock-all.cc" />
     <ClCompile Include="test\ShellConstantFoldingOptimizer_test.cpp">

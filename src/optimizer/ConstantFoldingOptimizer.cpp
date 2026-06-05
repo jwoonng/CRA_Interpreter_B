@@ -91,7 +91,7 @@ ExprPtr ConstantFoldingOptimizer::foldExpr(ExprPtr expr) {
     if (isConst(expr.get())) {
         try {
             return std::make_unique<LiteralExpr>(eval(expr.get()), expr->line);
-        } catch (...) {
+        } catch (const std::runtime_error&) {
             // 0 나누기 등 평가 불가 — 원본 유지
         }
     }
@@ -133,5 +133,9 @@ void ConstantFoldingOptimizer::foldStmt(StmtPtr& stmt) {
         s->condition  = foldExpr(std::move(s->condition));
         s->increment  = foldExpr(std::move(s->increment));
         foldStmt(s->body);
+    } else if (auto* s = dynamic_cast<FunctionStmt*>(stmt.get())) {
+        for (auto& inner : s->body) foldStmt(inner);
+    } else if (auto* s = dynamic_cast<ReturnStmt*>(stmt.get())) {
+        s->value = foldExpr(std::move(s->value));
     }
 }
