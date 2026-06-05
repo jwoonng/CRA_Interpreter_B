@@ -71,6 +71,7 @@ print 10 + 3;    // 13
 print 10 / 3;    // 3.33333...
 print 10 * 2;    // 20
 print 10 - 4;    // 6
+print 10 % 3;    // 1  (나머지, 실수 가능: 2.5 % 1.2 → 0.1)
 
 // 문자열 이어붙이기
 print "Hello" + ", " + "World";  // Hello, World
@@ -171,6 +172,51 @@ print fact(5);   // 120
 
 ---
 
+### 배열
+
+`Array(n)` 으로 n개짜리 배열을 만듭니다. 초기값은 모두 `nil` 입니다.
+
+```js
+var arr = Array(3);   // [nil, nil, nil]
+```
+
+**읽기 / 쓰기**
+
+```js
+arr[0] = 10;
+arr[1] = 20;
+arr[2] = 30;
+
+print arr[0];             // 10
+print arr[1] + arr[2];    // 50
+```
+
+인덱스에 변수나 식을 쓸 수 있습니다.
+
+```js
+var i = 1;
+arr[i] = 99;
+print arr[i - 1];   // 10
+```
+
+**배열을 함수에 넘기기**
+
+배열은 참조로 전달되므로 함수 안에서 수정하면 밖에서도 반영됩니다.
+
+```js
+Func fill(a, val) {
+    a[0] = val;
+    a[1] = val;
+    a[2] = val;
+}
+
+var arr = Array(3);
+fill(arr, 7);
+print arr[0];   // 7
+```
+
+---
+
 ### 블록과 스코프
 
 중괄호 `{}` 안에서 선언한 변수는 블록 밖에서 보이지 않습니다.
@@ -246,6 +292,21 @@ Func max(a, b) {
 print max(7, 13);   // 13
 ```
 
+### 배열 합산
+
+```js
+var arr = Array(5);
+for (var i = 0; i < 5; i = i + 1) {
+    arr[i] = i + 1;
+}
+
+var sum = 0;
+for (var i = 0; i < 5; i = i + 1) {
+    sum = sum + arr[i];
+}
+print sum;   // 15
+```
+
 ---
 
 ## ✅ 되는 것 · ❌ 안 되는 것
@@ -255,7 +316,7 @@ flowchart LR
     subgraph YES ["✅ 되는 것"]
         direction TB
         y1["var 변수 선언·재대입"]
-        y2["산술 · 문자열 · 논리 연산"]
+        y2["산술 · 문자열 · 논리 연산 (+ % 포함)"]
         y3["if / else if / else"]
         y4["for 반복문"]
         y5["중첩 블록 · 스코프"]
@@ -263,19 +324,19 @@ flowchart LR
         y7["재귀 함수"]
         y8["return 값 반환"]
         y9["// 줄 주석"]
+        y10["Array(n) 배열 생성·읽기·쓰기"]
     end
 
     subgraph NO ["❌ 안 되는 것"]
         direction TB
-        n1["배열 / 리스트"]
-        n2["함수를 변수에 저장"]
-        n3["while 문"]
-        n4["break / continue"]
-        n5["++ / -- 연산자"]
-        n6["+= 복합 대입"]
-        n7["/* */ 블록 주석"]
-        n8["파일 입출력"]
-        n9["클래스 / 구조체"]
+        n1["함수를 변수에 저장"]
+        n2["while 문"]
+        n3["break / continue"]
+        n4["++ / -- 연산자"]
+        n5["+= 복합 대입"]
+        n6["/* */ 블록 주석"]
+        n7["파일 입출력"]
+        n8["클래스 / 구조체"]
     end
 
     style YES fill:#f0fff4,stroke:#27ae60
@@ -326,5 +387,10 @@ flowchart LR
 | `'X' is not a function.` | 변수를 함수처럼 호출 |
 | `Undefined function 'X'.` | 선언하지 않은 함수 호출 |
 | `Expected N arguments but got M.` | 인자 개수 불일치 |
+| `Value is not an array.` | 배열이 아닌 변수에 `[ ]` 사용 |
+| `Array index must be an integer.` | 인덱스에 정수가 아닌 값 사용 |
+| `Array index out of range.` | 배열 크기를 벗어난 인덱스 |
+| `Array() expects exactly 1 argument.` | `Array()` 인자 개수 오류 |
+| `Array size must be a non-negative integer.` | `Array` 크기에 음수·소수·문자열 등 사용 |
 
 </details>
