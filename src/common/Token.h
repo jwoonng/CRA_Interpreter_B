@@ -1,6 +1,8 @@
 #pragma once
+#include <memory>
 #include <string>
 #include <variant>
+#include <vector>
 
 enum class TokenType {
     LEFT_PAREN, RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE, SEMICOLON,
@@ -19,7 +21,17 @@ enum class TokenType {
     EOF_TOKEN
 };
 
-using LiteralValue = std::variant<std::monostate, double, std::string, bool>;
+// ── 배열 값 타입 (LiteralValue 내 자기참조를 shared_ptr로 처리) ───
+struct LiteralArray;
+using ArrayPtr = std::shared_ptr<LiteralArray>;
+
+using LiteralValue = std::variant<std::monostate, double, std::string, bool, ArrayPtr>;
+
+// LiteralValue 완전 정의 이후에 구체화
+struct LiteralArray {
+    std::vector<LiteralValue> elements;
+    explicit LiteralArray(std::size_t n) : elements(n) {}
+};
 
 struct Token {
     TokenType    type;
