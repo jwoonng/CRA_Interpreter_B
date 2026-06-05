@@ -1,9 +1,12 @@
 #include "src/shell/Shell.h"
+#include "src/optimizer/StaticBindingOptimizer.h"
+#include "src/optimizer/ConstantFoldingOptimizer.h"
 #include <iostream>
 
-// Release 빌드 전용 진입점 — Shell을 직접 실행
 int main() {
     Shell shell;
+    shell.addOptimizer(std::make_unique<StaticBindingOptimizer>());
+    shell.addOptimizer(std::make_unique<ConstantFoldingOptimizer>());
     shell.run(std::cin, std::cout);
     return 0;
 }
