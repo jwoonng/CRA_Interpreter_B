@@ -192,6 +192,27 @@ TEST(ParserTest, Division) {
     EXPECT_EQ(bin->op.type, TokenType::SLASH);
 }
 
+TEST(ParserTest, Modulo) {
+    // 10 % 3;
+    Parser parser;
+    auto stmts = parser.parse({
+        num(10), tok(TokenType::PERCENT, "%"), num(3),
+        tok(TokenType::SEMICOLON, ";"), eof()
+    });
+
+    auto* es = as<ExpressionStmt>(stmts[0].get());
+    ASSERT_NE(es, nullptr);
+    auto* bin = as<BinaryExpr>(es->expression.get());
+    ASSERT_NE(bin, nullptr);
+    EXPECT_EQ(bin->op.type, TokenType::PERCENT);
+    auto* lhs = as<LiteralExpr>(bin->left.get());
+    ASSERT_NE(lhs, nullptr);
+    EXPECT_DOUBLE_EQ(std::get<double>(lhs->value), 10.0);
+    auto* rhs = as<LiteralExpr>(bin->right.get());
+    ASSERT_NE(rhs, nullptr);
+    EXPECT_DOUBLE_EQ(std::get<double>(rhs->value), 3.0);
+}
+
 // ════════════════════════════════════════════════════
 // Wave 4 — 연산자 우선순위
 // ════════════════════════════════════════════════════
@@ -233,6 +254,27 @@ TEST(ParserTest, GroupingOverridesPrecedence) {
     ASSERT_NE(mul, nullptr);
     EXPECT_EQ(mul->op.type, TokenType::STAR);
     ASSERT_NE(as<GroupingExpr>(mul->left.get()), nullptr);
+}
+
+TEST(ParserTest, ModuloBeforeAddition) {
+    // 1 + 10 % 3  →  BinaryExpr(1, +, BinaryExpr(10, %, 3))
+    // % 가 + 보다 먼저 묶여야 함
+    Parser parser;
+    auto stmts = parser.parse({
+        num(1), tok(TokenType::PLUS, "+"),
+        num(10), tok(TokenType::PERCENT, "%"), num(3),
+        tok(TokenType::SEMICOLON, ";"), eof()
+    });
+
+    auto* es = as<ExpressionStmt>(stmts[0].get());
+    ASSERT_NE(es, nullptr);
+    auto* add = as<BinaryExpr>(es->expression.get());
+    ASSERT_NE(add, nullptr);
+    EXPECT_EQ(add->op.type, TokenType::PLUS);
+
+    auto* mod = as<BinaryExpr>(add->right.get());
+    ASSERT_NE(mod, nullptr);
+    EXPECT_EQ(mod->op.type, TokenType::PERCENT);
 }
 
 // ════════════════════════════════════════════════════

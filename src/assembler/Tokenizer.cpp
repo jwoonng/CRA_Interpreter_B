@@ -49,6 +49,7 @@ void Tokenizer::Scanner::scanToken() {
         case '+': addToken(TokenType::PLUS);        break;
         case '-': addToken(TokenType::MINUS);       break;
         case '*': addToken(TokenType::STAR);        break;
+        case '%': addToken(TokenType::PERCENT);     break;
         case '/':
             if (match('/')) skipLineComment();
             else            addToken(TokenType::SLASH);

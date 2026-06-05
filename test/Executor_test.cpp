@@ -175,6 +175,30 @@ TEST_F(ExecutorTest, Division) {
     EXPECT_EQ(runStmts(), "2.5\n");
 }
 
+// print 10 % 3;  →  "1"
+TEST_F(ExecutorTest, Modulo) {
+    stmts.push_back(std::make_unique<PrintStmt>(
+        std::make_unique<BinaryExpr>(
+            std::make_unique<LiteralExpr>(10.0, 1),
+            tok(TokenType::PERCENT, "%"),
+            std::make_unique<LiteralExpr>(3.0, 1)
+        ), 1
+    ));
+    EXPECT_EQ(runStmts(), "1\n");
+}
+
+// 5 % 0  →  예외
+TEST_F(ExecutorTest, ModuloByZeroThrows) {
+    stmts.push_back(std::make_unique<PrintStmt>(
+        std::make_unique<BinaryExpr>(
+            std::make_unique<LiteralExpr>(5.0, 1),
+            tok(TokenType::PERCENT, "%"),
+            std::make_unique<LiteralExpr>(0.0, 1)
+        ), 1
+    ));
+    EXPECT_THROW(runStmts(), std::runtime_error);
+}
+
 // print 5 == 5;  →  "true"
 TEST_F(ExecutorTest, EqualEqual_True) {
     stmts.push_back(std::make_unique<PrintStmt>(

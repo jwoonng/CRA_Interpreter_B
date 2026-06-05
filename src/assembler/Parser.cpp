@@ -194,7 +194,7 @@ ExprPtr Parser::term() {
 
 ExprPtr Parser::factor() {
     return parseBinaryLeft<BinaryExpr>([this] { return unary(); },
-                                       {TokenType::STAR, TokenType::SLASH});
+                                       {TokenType::STAR, TokenType::SLASH, TokenType::PERCENT});
 }
 
 ExprPtr Parser::unary() {
