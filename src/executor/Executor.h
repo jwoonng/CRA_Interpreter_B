@@ -47,12 +47,24 @@ struct Environment {
     }
 
     void assignAt(int distance, const std::string& name, LiteralValue val) {
-        ancestor(distance)->values[name] = std::move(val);
+        auto* env = ancestor(distance);
+        auto  it  = env->values.find(name);
+        if (it == env->values.end())
+            throw std::runtime_error(
+                "Internal error: variable '" + name +
+                "' not found at distance " + std::to_string(distance) + ".");
+        it->second = std::move(val);
     }
 
     Environment* ancestor(int distance) {
         auto* env = this;
-        for (int i = 0; i < distance; ++i) env = env->enclosing;
+        for (int i = 0; i < distance; ++i) {
+            if (!env->enclosing)
+                throw std::runtime_error(
+                    "Internal error: scope chain shorter than expected (distance=" +
+                    std::to_string(distance) + ").");
+            env = env->enclosing;
+        }
         return env;
     }
 };

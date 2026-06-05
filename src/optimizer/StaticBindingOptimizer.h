@@ -31,24 +31,23 @@ private:
     }
 
     // ── distance 계산 ─────────────────────────────────────────────────────
-    // 현재 스코프(scopes_.back())에서 선언 스코프까지의 거리
+    // 현재 스코프(scopes_.back())에서 선언 스코프까지의 거리를 반환한다.
+    // 로컬 스코프에 없으면 -1 반환 (글로벌 → Executor 동적 탐색 fallback)
+    int computeDistance(const std::string& name) const {
+        for (int i = static_cast<int>(scopes_.size()) - 1; i >= 0; --i)
+            if (scopes_[i].count(name))
+                return static_cast<int>(scopes_.size()) - 1 - i;
+        return -1;
+    }
+
     void resolveLocal(VariableExpr& e) {
-        for (int i = static_cast<int>(scopes_.size()) - 1; i >= 0; --i) {
-            if (scopes_[i].count(e.name.lexeme)) {
-                e.distance = static_cast<int>(scopes_.size()) - 1 - i;
-                return;
-            }
-        }
-        // 글로벌 → distance 기본값(-1) 유지
+        int d = computeDistance(e.name.lexeme);
+        if (d >= 0) e.distance = d;
     }
 
     void resolveLocalAssign(AssignExpr& e) {
-        for (int i = static_cast<int>(scopes_.size()) - 1; i >= 0; --i) {
-            if (scopes_[i].count(e.name.lexeme)) {
-                e.distance = static_cast<int>(scopes_.size()) - 1 - i;
-                return;
-            }
-        }
+        int d = computeDistance(e.name.lexeme);
+        if (d >= 0) e.distance = d;
     }
 
     void resolveStmt(Stmt& s) { s.accept(*this); }
