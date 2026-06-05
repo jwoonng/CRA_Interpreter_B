@@ -61,18 +61,21 @@ ExprPtr makeArrayCall(double n, int line = 1) {
     return makeArrayCall(LiteralValue{n}, line);
 }
 
-// arr[idx] IndexExpr 생성
-ExprPtr makeIndex(ExprPtr obj, ExprPtr idx, int line = 1) {
+// unique_ptr<IndexExpr> 반환 — IndexAssignExpr 생성에 사용 (타입 안전)
+std::unique_ptr<IndexExpr> makeIndexExpr(ExprPtr obj, ExprPtr idx, int line = 1) {
     return std::make_unique<IndexExpr>(
         std::move(obj), std::move(idx),
         tok(TokenType::RIGHT_BRACKET, "]", {}, line));
 }
 
-// arr[idx] = val IndexAssignExpr 생성 (target은 항상 IndexExpr)
-ExprPtr makeIndexAssign(ExprPtr target, ExprPtr val, int line = 1) {
-    auto* raw = static_cast<IndexExpr*>(target.release());
-    return std::make_unique<IndexAssignExpr>(
-        std::unique_ptr<IndexExpr>(raw), std::move(val), line);
+// ExprPtr 반환 — 읽기 컨텍스트(printStmt 등)에 사용
+ExprPtr makeIndex(ExprPtr obj, ExprPtr idx, int line = 1) {
+    return makeIndexExpr(std::move(obj), std::move(idx), line);
+}
+
+// arr[idx] = val — unique_ptr<IndexExpr>로 타입 레벨에서 IndexExpr 강제
+ExprPtr makeIndexAssign(std::unique_ptr<IndexExpr> target, ExprPtr val, int line = 1) {
+    return std::make_unique<IndexAssignExpr>(std::move(target), std::move(val), line);
 }
 
 } // namespace
@@ -317,7 +320,7 @@ TEST_F(ArrayExecutorTest, ArrayCreate_InitialElementsAreNil) {
 // arr[0] = 10;  print arr[0];  →  "10\n"
 TEST_F(ArrayExecutorTest, IndexWrite_ThenRead) {
     stmts.push_back(varDecl("arr", makeArrayCall(3)));
-    stmts.push_back(exprStmt(makeIndexAssign(makeIndex(varExpr("arr"), litNum(0)), litNum(10))));
+    stmts.push_back(exprStmt(makeIndexAssign(makeIndexExpr(varExpr("arr"), litNum(0)), litNum(10))));
     stmts.push_back(printStmt(makeIndex(varExpr("arr"), litNum(0))));
     EXPECT_EQ(runStmts(), "10\n");
 }
@@ -325,9 +328,9 @@ TEST_F(ArrayExecutorTest, IndexWrite_ThenRead) {
 // 여러 요소 읽기/쓰기
 TEST_F(ArrayExecutorTest, IndexWrite_MultipleElements) {
     stmts.push_back(varDecl("arr", makeArrayCall(3)));
-    stmts.push_back(exprStmt(makeIndexAssign(makeIndex(varExpr("arr"), litNum(0)), litNum(10))));
-    stmts.push_back(exprStmt(makeIndexAssign(makeIndex(varExpr("arr"), litNum(1)), litNum(20))));
-    stmts.push_back(exprStmt(makeIndexAssign(makeIndex(varExpr("arr"), litNum(2)), litNum(30))));
+    stmts.push_back(exprStmt(makeIndexAssign(makeIndexExpr(varExpr("arr"), litNum(0)), litNum(10))));
+    stmts.push_back(exprStmt(makeIndexAssign(makeIndexExpr(varExpr("arr"), litNum(1)), litNum(20))));
+    stmts.push_back(exprStmt(makeIndexAssign(makeIndexExpr(varExpr("arr"), litNum(2)), litNum(30))));
     stmts.push_back(printStmt(makeIndex(varExpr("arr"), litNum(0))));
     stmts.push_back(printStmt(makeIndex(varExpr("arr"), litNum(1))));
     stmts.push_back(printStmt(makeIndex(varExpr("arr"), litNum(2))));
@@ -339,7 +342,7 @@ TEST_F(ArrayExecutorTest, IndexWrite_DynamicIndex) {
     stmts.push_back(varDecl("arr", makeArrayCall(3)));
     stmts.push_back(varDecl("i", litNum(2)));
     stmts.push_back(exprStmt(makeIndexAssign(
-        makeIndex(varExpr("arr"), binExpr(varExpr("i"), TokenType::MINUS, "-", litNum(1))),
+        makeIndexExpr(varExpr("arr"), binExpr(varExpr("i"), TokenType::MINUS, "-", litNum(1))),
         litNum(7))));
     stmts.push_back(printStmt(makeIndex(varExpr("arr"), litNum(1))));
     EXPECT_EQ(runStmts(), "7\n");
@@ -349,7 +352,7 @@ TEST_F(ArrayExecutorTest, IndexWrite_DynamicIndex) {
 TEST_F(ArrayExecutorTest, IndexAssign_ReturnsAssignedValue) {
     stmts.push_back(varDecl("arr", makeArrayCall(3)));
     stmts.push_back(varDecl("v",
-        makeIndexAssign(makeIndex(varExpr("arr"), litNum(0)), litNum(42))));
+        makeIndexAssign(makeIndexExpr(varExpr("arr"), litNum(0)), litNum(42))));
     stmts.push_back(printStmt(varExpr("v")));
     EXPECT_EQ(runStmts(), "42\n");
 }
@@ -357,7 +360,7 @@ TEST_F(ArrayExecutorTest, IndexAssign_ReturnsAssignedValue) {
 // 문자열 값 저장/읽기
 TEST_F(ArrayExecutorTest, IndexWrite_StringValue) {
     stmts.push_back(varDecl("arr", makeArrayCall(2)));
-    stmts.push_back(exprStmt(makeIndexAssign(makeIndex(varExpr("arr"), litNum(0)), litStr("hello"))));
+    stmts.push_back(exprStmt(makeIndexAssign(makeIndexExpr(varExpr("arr"), litNum(0)), litStr("hello"))));
     stmts.push_back(printStmt(makeIndex(varExpr("arr"), litNum(0))));
     EXPECT_EQ(runStmts(), "hello\n");
 }
@@ -366,7 +369,7 @@ TEST_F(ArrayExecutorTest, IndexWrite_StringValue) {
 TEST_F(ArrayExecutorTest, Array_ReferenceSemantics) {
     stmts.push_back(varDecl("arr", makeArrayCall(3)));
     stmts.push_back(varDecl("brr", varExpr("arr")));
-    stmts.push_back(exprStmt(makeIndexAssign(makeIndex(varExpr("arr"), litNum(0)), litNum(99))));
+    stmts.push_back(exprStmt(makeIndexAssign(makeIndexExpr(varExpr("arr"), litNum(0)), litNum(99))));
     stmts.push_back(printStmt(makeIndex(varExpr("brr"), litNum(0))));
     EXPECT_EQ(runStmts(), "99\n");
 }
@@ -432,7 +435,7 @@ TEST_F(ArrayExecutorTest, ArrayCreate_NoArgs_Throws) {
 // 정상 배열 사용 → no throw
 TEST_F(ArrayCheckerTest, ValidArrayUsage_NoThrow) {
     stmts.push_back(varDecl("arr", makeArrayCall(3)));
-    stmts.push_back(exprStmt(makeIndexAssign(makeIndex(varExpr("arr"), litNum(0)), litNum(10))));
+    stmts.push_back(exprStmt(makeIndexAssign(makeIndexExpr(varExpr("arr"), litNum(0)), litNum(10))));
     stmts.push_back(printStmt(makeIndex(varExpr("arr"), litNum(0))));
     EXPECT_NO_THROW(checker.check(stmts));
 }

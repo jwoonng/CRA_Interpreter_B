@@ -214,17 +214,8 @@ LiteralValue Executor::visitCallExpr(CallExpr& e) {
     }
 
     // ── 배열 생성 내장 함수 ──────────────────────────────────────
-    if (name == "Array") {
-        if (e.arguments.size() != 1)
-            throw std::runtime_error(
-                "[line " + std::to_string(e.paren.line) + "] Array() expects exactly 1 argument.");
-        LiteralValue sizeVal = evaluate(*e.arguments[0]);
-        auto* d = std::get_if<double>(&sizeVal);
-        if (!d || *d < 0.0 || *d != std::floor(*d))
-            throw std::runtime_error(
-                "[line " + std::to_string(e.paren.line) + "] Array size must be a non-negative integer.");
-        return std::make_shared<LiteralArray>(static_cast<std::size_t>(*d));
-    }
+    if (name == "Array")
+        return callBuiltinArray(e);
 
     // ── 미정의 ───────────────────────────────────────────────────
     if (env_->contains(name))
@@ -261,6 +252,18 @@ static std::size_t requireIndex(const LiteralValue& v, std::size_t size, int lin
     if (i < 0 || static_cast<std::size_t>(i) >= size)
         throw std::runtime_error("[line " + std::to_string(line) + "] Array index out of range.");
     return static_cast<std::size_t>(i);
+}
+
+LiteralValue Executor::callBuiltinArray(CallExpr& e) {
+    if (e.arguments.size() != 1)
+        throw std::runtime_error(
+            "[line " + std::to_string(e.paren.line) + "] Array() expects exactly 1 argument.");
+    LiteralValue sizeVal = evaluate(*e.arguments[0]);
+    auto* d = std::get_if<double>(&sizeVal);
+    if (!d || *d < 0.0 || *d != std::floor(*d))
+        throw std::runtime_error(
+            "[line " + std::to_string(e.paren.line) + "] Array size must be a non-negative integer.");
+    return std::make_shared<LiteralArray>(static_cast<std::size_t>(*d));
 }
 
 LiteralValue Executor::visitIndexExpr(IndexExpr& e) {
