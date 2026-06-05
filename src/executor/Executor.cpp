@@ -17,10 +17,12 @@ void         Executor::run(Stmt& s)      { s.accept(*this); }
 
 // ── 내부 헬퍼 ───────────────────────────────────────────────────
 static std::pair<double, double> numericOperands(const LiteralValue& l,
-                                                 const LiteralValue& r) {
+                                                 const LiteralValue& r,
+                                                 int line) {
     auto* ld = std::get_if<double>(&l);
     auto* rd = std::get_if<double>(&r);
-    if (!ld || !rd) throw std::runtime_error("Operands must be numbers.");
+    if (!ld || !rd)
+        throw std::runtime_error("[line " + std::to_string(line) + "] Operands must be numbers.");
     return {*ld, *rd};
 }
 
@@ -64,7 +66,7 @@ LiteralValue Executor::visitLiteralExpr(LiteralExpr& e) {
 }
 
 LiteralValue Executor::visitVariableExpr(VariableExpr& e) {
-    return env_->get(e.name.lexeme);
+    return env_->get(e.name.lexeme, e.name.line);
 }
 
 LiteralValue Executor::visitBinaryExpr(BinaryExpr& e) {
@@ -76,29 +78,29 @@ LiteralValue Executor::visitBinaryExpr(BinaryExpr& e) {
             auto* ls = std::get_if<std::string>(&left);
             auto* rs = std::get_if<std::string>(&right);
             if (ls && rs) return *ls + *rs;
-            auto [l, r] = numericOperands(left, right);
+            auto [l, r] = numericOperands(left, right, e.op.line);
             return l + r;
         }
-        case TokenType::MINUS: { auto [l, r] = numericOperands(left, right); return l - r; }
-        case TokenType::STAR:  { auto [l, r] = numericOperands(left, right); return l * r; }
+        case TokenType::MINUS: { auto [l, r] = numericOperands(left, right, e.op.line); return l - r; }
+        case TokenType::STAR:  { auto [l, r] = numericOperands(left, right, e.op.line); return l * r; }
         case TokenType::SLASH: {
-            auto [l, r] = numericOperands(left, right);
-            if (r == 0.0) throw std::runtime_error("Division by zero.");
+            auto [l, r] = numericOperands(left, right, e.op.line);
+            if (r == 0.0) throw std::runtime_error("[line " + std::to_string(e.op.line) + "] Division by zero.");
             return l / r;
         }
         case TokenType::EQUAL_EQUAL:   return left == right;
         case TokenType::BANG_EQUAL:    return left != right;
-        case TokenType::GREATER:       { auto [l, r] = numericOperands(left, right); return l > r; }
-        case TokenType::GREATER_EQUAL: { auto [l, r] = numericOperands(left, right); return l >= r; }
-        case TokenType::LESS:          { auto [l, r] = numericOperands(left, right); return l < r; }
-        case TokenType::LESS_EQUAL:    { auto [l, r] = numericOperands(left, right); return l <= r; }
-        default: throw std::runtime_error("Unimplemented operator: " + e.op.lexeme);
+        case TokenType::GREATER:       { auto [l, r] = numericOperands(left, right, e.op.line); return l > r; }
+        case TokenType::GREATER_EQUAL: { auto [l, r] = numericOperands(left, right, e.op.line); return l >= r; }
+        case TokenType::LESS:          { auto [l, r] = numericOperands(left, right, e.op.line); return l < r; }
+        case TokenType::LESS_EQUAL:    { auto [l, r] = numericOperands(left, right, e.op.line); return l <= r; }
+        default: throw std::runtime_error("[line " + std::to_string(e.op.line) + "] Unimplemented operator: " + e.op.lexeme);
     }
 }
 
 LiteralValue Executor::visitAssignExpr(AssignExpr& e) {
     LiteralValue val = evaluate(*e.value);
-    env_->assign(e.name.lexeme, val);
+    env_->assign(e.name.lexeme, val, e.name.line);
     return val;
 }
 
@@ -108,10 +110,10 @@ LiteralValue Executor::visitUnaryExpr(UnaryExpr& e) {
         case TokenType::BANG:  return !isTruthy(right);
         case TokenType::MINUS: {
             auto* d = std::get_if<double>(&right);
-            if (!d) throw std::runtime_error("Operand must be a number.");
+            if (!d) throw std::runtime_error("[line " + std::to_string(e.op.line) + "] Operand must be a number.");
             return -*d;
         }
-        default: throw std::runtime_error("Unimplemented operator: " + e.op.lexeme);
+        default: throw std::runtime_error("[line " + std::to_string(e.op.line) + "] Unimplemented operator: " + e.op.lexeme);
     }
 }
 
@@ -125,7 +127,7 @@ LiteralValue Executor::visitLogicalExpr(LogicalExpr& e) {
         return isTruthy(left) ? left : evaluate(*e.right);
     if (e.op.type == TokenType::AND)
         return !isTruthy(left) ? left : evaluate(*e.right);
-    throw std::runtime_error("Unimplemented operator: " + e.op.lexeme);
+    throw std::runtime_error("[line " + std::to_string(e.op.line) + "] Unimplemented operator: " + e.op.lexeme);
 }
 
 // ── StmtVisitor ──────────────────────────────────────────────────
