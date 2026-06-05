@@ -100,3 +100,86 @@ TEST(ShellTest, ErrorDoesNotCrashShell) {
     shell.runLine("print notDefined;");
     EXPECT_EQ(shell.runLine("print 42;"), "42\n");
 }
+
+// ════════════════════════════════════════════════════
+// Wave 6 — 함수 멀티라인 (REPL 줄 간 상태 유지)
+// ════════════════════════════════════════════════════
+
+TEST(ShellTest, Func_DefinedAndCalledOnSeparateLines) {
+    Shell shell;
+    shell.runLine("Func add(a, b) { return a + b; }");
+    EXPECT_EQ(shell.runLine("print add(3, 7);"), "10\n");
+}
+
+TEST(ShellTest, Func_ReturnValueStoredInVar_AcrossLines) {
+    Shell shell;
+    shell.runLine("Func add(a, b) { return a + b; }");
+    shell.runLine("var ret = add(3, 7);");
+    EXPECT_EQ(shell.runLine("print ret;"), "10\n");
+}
+
+TEST(ShellTest, Func_RecursiveFactorial_AcrossLines) {
+    Shell shell;
+    shell.runLine("Func fact(n) { if (n <= 1) return 1; return n * fact(n - 1); }");
+    EXPECT_EQ(shell.runLine("print fact(5);"), "120\n");
+}
+
+TEST(ShellTest, Func_CallingAnotherFunc_AcrossLines) {
+    Shell shell;
+    shell.runLine("Func dbl(x) { return x * 2; }");
+    shell.runLine("Func quad(x) { return dbl(dbl(x)); }");
+    EXPECT_EQ(shell.runLine("print quad(3);"), "12\n");
+}
+
+TEST(ShellTest, Func_AccessesGlobalVar) {
+    Shell shell;
+    shell.runLine("var x = 10;");
+    shell.runLine("Func getX() { return x; }");
+    EXPECT_EQ(shell.runLine("print getX();"), "10\n");
+}
+
+TEST(ShellTest, Func_ModifiesGlobalVar) {
+    Shell shell;
+    shell.runLine("var counter = 0;");
+    shell.runLine("Func inc() { counter = counter + 1; }");
+    shell.runLine("inc();");
+    EXPECT_EQ(shell.runLine("print counter;"), "1\n");
+}
+
+// ════════════════════════════════════════════════════
+// Wave 7 — Checker 상태 복원
+// ════════════════════════════════════════════════════
+
+TEST(ShellTest, CheckerState_GhostScopeCleared_AfterBlockError) {
+    Shell shell;
+    shell.runLine("{ var a = a; }");
+    EXPECT_EQ(shell.runLine("var a = 10;"), "");
+    EXPECT_EQ(shell.runLine("print a;"), "10\n");
+}
+
+TEST(ShellTest, CheckerState_FunctionDepthResetAfterBodyError) {
+    Shell shell;
+    shell.runLine("Func foo() { var x = x; }");
+    std::string out = shell.runLine("return 5;");
+    EXPECT_NE(out.find("function"), std::string::npos);
+}
+
+// ════════════════════════════════════════════════════
+// Wave 8 — 배열 멀티라인 (REPL 줄 간 상태 유지)
+// ════════════════════════════════════════════════════
+
+TEST(ShellTest, Array_PersistsAndWritable_AcrossLines) {
+    Shell shell;
+    shell.runLine("var arr = Array(3);");
+    shell.runLine("arr[0] = 42;");
+    EXPECT_EQ(shell.runLine("print arr[0];"), "42\n");
+}
+
+TEST(ShellTest, Array_MultipleElements_AcrossLines) {
+    Shell shell;
+    shell.runLine("var arr = Array(3);");
+    shell.runLine("arr[0] = 10;");
+    shell.runLine("arr[1] = 20;");
+    shell.runLine("arr[2] = 30;");
+    EXPECT_EQ(shell.runLine("print arr[0] + arr[1] + arr[2];"), "60\n");
+}

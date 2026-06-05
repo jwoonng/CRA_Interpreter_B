@@ -83,7 +83,7 @@ struct ReturnException {
 // ── Executor ─────────────────────────────────────────────────────────
 class Executor : public IExecutor, private ExprVisitor, private StmtVisitor {
 public:
-    void execute(const std::vector<std::unique_ptr<Stmt>>& stmts,
+    void execute(std::vector<std::unique_ptr<Stmt>> stmts,
                  std::ostream& out) override;
 
 private:
@@ -91,6 +91,7 @@ private:
     Environment* env_ = &global_;
     std::ostream* out_ = nullptr;
     std::unordered_map<std::string, FunctionEntry> functions_;
+    std::vector<std::vector<std::unique_ptr<Stmt>>> ownedStmts_;
 
     LiteralValue evaluate(Expr& e);
     void         run(Stmt& s);

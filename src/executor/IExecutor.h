@@ -11,5 +11,5 @@ struct IExecutor {
 
     // 문법 Tree 실행, 출력은 out 스트림으로
     // 런타임 오류 시 std::runtime_error 계열 예외를 던진다
-    virtual void execute(const std::vector<std::unique_ptr<Stmt>>& stmts, std::ostream& output) = 0;
+    virtual void execute(std::vector<std::unique_ptr<Stmt>> stmts, std::ostream& output) = 0;
 };

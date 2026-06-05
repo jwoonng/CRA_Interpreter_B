@@ -54,7 +54,9 @@ void Checker::visitVarDeclareStmt(VarDeclareStmt& s) {
 
 void Checker::visitBlockStmt(BlockStmt& s) {
     beginScope();
-    for (auto& stmt : s.statements) checkStmt(*stmt);
+    try {
+        for (auto& stmt : s.statements) checkStmt(*stmt);
+    } catch (...) { endScope(); throw; }
     endScope();
 }
 
@@ -66,10 +68,12 @@ void Checker::visitIfStmt(IfStmt& s) {
 
 void Checker::visitForStmt(ForStmt& s) {
     beginScope();
-    if (s.initializer) checkStmt(*s.initializer);
-    if (s.condition)   checkExpr(*s.condition);
-    if (s.increment)   checkExpr(*s.increment);
-    checkStmt(*s.body);
+    try {
+        if (s.initializer) checkStmt(*s.initializer);
+        if (s.condition)   checkExpr(*s.condition);
+        if (s.increment)   checkExpr(*s.increment);
+        checkStmt(*s.body);
+    } catch (...) { endScope(); throw; }
     endScope();
 }
 
@@ -124,8 +128,10 @@ void Checker::visitFunctionStmt(FunctionStmt& s) {
         define(param);
 
     ++functionDepth_;
-    for (auto& stmt : s.body)
-        checkStmt(*stmt);
+    try {
+        for (auto& stmt : s.body)
+            checkStmt(*stmt);
+    } catch (...) { --functionDepth_; endScope(); throw; }
     --functionDepth_;
 
     endScope();

@@ -100,7 +100,7 @@ TEST(ConstantFoldingOptimizerTest, NoOptimization_EvaluatesNTimes) {
 
     Executor ex;
     std::ostringstream oss;
-    ex.execute(stmts, oss);
+    ex.execute(std::move(stmts), oss);
 
     EXPECT_EQ(*count, 2);         // 곱셈 1회 + 덧셈 1회
     EXPECT_EQ(oss.str(), "10\n");
@@ -116,7 +116,7 @@ TEST(ConstantFoldingOptimizerTest, WithOptimization_NotEvaluatedAtRuntime) {
 
     Executor ex;
     std::ostringstream oss;
-    ex.execute(optimized, oss);
+    ex.execute(std::move(optimized), oss);
 
     EXPECT_EQ(*count, 0);         // Spy 노드가 LiteralExpr(10)으로 교체됨
     EXPECT_EQ(oss.str(), "10\n");
@@ -129,7 +129,7 @@ TEST(ConstantFoldingOptimizerTest, LoopNoOptimization_EvaluatesNTimesPerIteratio
 
     Executor ex;
     std::ostringstream oss;
-    ex.execute(stmts, oss);
+    ex.execute(std::move(stmts), oss);
 
     EXPECT_EQ(*count, 6);         // 루프 3회 × BinaryExpr 2개
     EXPECT_EQ(oss.str(), "10\n10\n10\n");
@@ -145,7 +145,7 @@ TEST(ConstantFoldingOptimizerTest, LoopWithOptimization_FoldedToZeroEvaluations)
 
     Executor ex;
     std::ostringstream oss;
-    ex.execute(optimized, oss);
+    ex.execute(std::move(optimized), oss);
 
     EXPECT_EQ(*count, 0);         // 루프 반복 횟수와 무관하게 0
     EXPECT_EQ(oss.str(), "10\n10\n10\n");
@@ -170,8 +170,56 @@ TEST(ConstantFoldingOptimizerTest, Modulo_FoldedToZeroEvaluations) {
 
     Executor ex;
     std::ostringstream oss;
-    ex.execute(optimized, oss);
+    ex.execute(std::move(optimized), oss);
 
     EXPECT_EQ(*count, 0);          // SpyBinaryExpr가 LiteralExpr(1)로 교체됨
     EXPECT_EQ(oss.str(), "1\n");
+}
+
+// print -(2 + 3);  →  SpyBinaryExpr 최적화 전 1회, 최적화 후 0회, 출력 "-5"
+TEST(ConstantFoldingOptimizerTest, UnaryMinus_FoldedToLiteral) {
+    auto count = std::make_shared<int>(0);
+
+    auto unary = std::make_unique<UnaryExpr>(
+        tok(TokenType::MINUS, "-"),
+        std::make_unique<SpyBinaryExpr>(
+            std::make_unique<LiteralExpr>(2.0, 1),
+            tok(TokenType::PLUS, "+"),
+            std::make_unique<LiteralExpr>(3.0, 1),
+            count
+        )
+    );
+
+    std::vector<StmtPtr> stmts;
+    stmts.push_back(std::make_unique<PrintStmt>(std::move(unary), 1));
+
+    ConstantFoldingOptimizer opt;
+    auto optimized = opt.optimize(std::move(stmts));
+
+    Executor ex;
+    std::ostringstream oss;
+    ex.execute(std::move(optimized), oss);
+
+    EXPECT_EQ(*count, 0);          // SpyBinaryExpr가 LiteralExpr(-5)로 교체됨
+    EXPECT_EQ(oss.str(), "-5\n");
+}
+
+// 1 / 0  →  폴딩 거부(catch에서 원본 유지), Executor가 런타임 예외 발생
+TEST(ConstantFoldingOptimizerTest, DivisionByZero_KeepsOriginalAndThrowsAtRuntime) {
+    std::vector<StmtPtr> stmts;
+    stmts.push_back(std::make_unique<PrintStmt>(
+        std::make_unique<BinaryExpr>(
+            std::make_unique<LiteralExpr>(1.0, 1),
+            tok(TokenType::SLASH, "/"),
+            std::make_unique<LiteralExpr>(0.0, 1)
+        ), 1
+    ));
+
+    ConstantFoldingOptimizer opt;
+    auto optimized = opt.optimize(std::move(stmts));
+
+    // 폴딩 실패 → BinaryExpr 원본 유지 → Executor 런타임 예외
+    Executor ex;
+    std::ostringstream oss;
+    EXPECT_THROW(ex.execute(std::move(optimized), oss), std::runtime_error);
 }
