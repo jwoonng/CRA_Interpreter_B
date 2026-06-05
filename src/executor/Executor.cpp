@@ -171,9 +171,42 @@ void Executor::visitReturnStmt(ReturnStmt& s) {
 LiteralValue Executor::visitCallExpr(CallExpr& e) {
     auto* varExpr = dynamic_cast<VariableExpr*>(e.callee.get());
     if (!varExpr)
-        throw std::runtime_error("Call target must be a named function.");
+        throw std::runtime_error(
+            "[line " + std::to_string(e.paren.line) + "] Call target must be a named function.");
 
     const std::string& name = varExpr->name.lexeme;
+
+    // ── 사용자 정의 함수 (built-in보다 우선 — 이름 충돌 허용) ──────
+    auto fit = functions_.find(name);
+    if (fit != functions_.end()) {
+        const FunctionEntry& fn     = fit->second;
+        const auto&          params = fn.decl->params;
+
+        if (e.arguments.size() != params.size())
+            throw std::runtime_error(
+                "[line " + std::to_string(e.line) + "] Expected " +
+                std::to_string(params.size()) + " arguments but got " +
+                std::to_string(e.arguments.size()) + ".");
+
+        std::vector<LiteralValue> argVals;
+        argVals.reserve(e.arguments.size());
+        for (auto& arg : e.arguments)
+            argVals.push_back(evaluate(*arg));
+
+        Environment callEnv(fn.closure);
+        for (size_t i = 0; i < params.size(); ++i)
+            callEnv.define(params[i].lexeme, argVals[i]);
+
+        ScopeGuard g{env_, std::exchange(env_, &callEnv)};
+        LiteralValue result;
+        try {
+            for (const auto& stmt : fn.decl->body)
+                run(*stmt);
+        } catch (ReturnException& ret) {
+            result = std::move(ret.value);
+        }
+        return result;
+    }
 
     // ── 배열 생성 내장 함수 ──────────────────────────────────────
     if (name == "Array") {
@@ -188,42 +221,12 @@ LiteralValue Executor::visitCallExpr(CallExpr& e) {
         return std::make_shared<LiteralArray>(static_cast<std::size_t>(*d));
     }
 
-    auto fit = functions_.find(name);
-    if (fit == functions_.end()) {
-        if (env_->contains(name))
-            throw std::runtime_error(
-                "[line " + std::to_string(e.line) + "] '" + name + "' is not a function.");
+    // ── 미정의 ───────────────────────────────────────────────────
+    if (env_->contains(name))
         throw std::runtime_error(
-            "[line " + std::to_string(e.line) + "] Undefined function '" + name + "'.");
-    }
-
-    const FunctionEntry& fn = fit->second;
-    const auto& params = fn.decl->params;
-
-    if (e.arguments.size() != params.size())
-        throw std::runtime_error(
-            "[line " + std::to_string(e.line) + "] Expected " +
-            std::to_string(params.size()) + " arguments but got " +
-            std::to_string(e.arguments.size()) + ".");
-
-    std::vector<LiteralValue> argVals;
-    argVals.reserve(e.arguments.size());
-    for (auto& arg : e.arguments)
-        argVals.push_back(evaluate(*arg));
-
-    Environment callEnv(fn.closure);
-    for (size_t i = 0; i < params.size(); ++i)
-        callEnv.define(params[i].lexeme, argVals[i]);
-
-    ScopeGuard g{env_, std::exchange(env_, &callEnv)};
-    LiteralValue result;
-    try {
-        for (const auto& stmt : fn.decl->body)
-            run(*stmt);
-    } catch (ReturnException& ret) {
-        result = std::move(ret.value);
-    }
-    return result;
+            "[line " + std::to_string(e.line) + "] '" + name + "' is not a function.");
+    throw std::runtime_error(
+        "[line " + std::to_string(e.line) + "] Undefined function '" + name + "'.");
 }
 
 void Executor::visitForStmt(ForStmt& s) {
@@ -262,7 +265,7 @@ LiteralValue Executor::visitIndexExpr(IndexExpr& e) {
 }
 
 LiteralValue Executor::visitIndexAssignExpr(IndexAssignExpr& e) {
-    auto& idx       = static_cast<IndexExpr&>(*e.target);
+    IndexExpr&  idx = *e.target;
     ArrayPtr    arr = requireArray(evaluate(*idx.object), idx.bracket.line);
     std::size_t i   = requireIndex(evaluate(*idx.index), arr->elements.size(), idx.bracket.line);
     LiteralValue val = evaluate(*e.value);

@@ -127,9 +127,9 @@ struct IndexExpr : Expr {
 
 // 인덱스 대입: object[index] = value
 struct IndexAssignExpr : Expr {
-    ExprPtr target;   // must be IndexExpr at runtime
-    ExprPtr value;
-    IndexAssignExpr(ExprPtr target, ExprPtr value, int opLine)
+    std::unique_ptr<IndexExpr> target;  // 타입 레벨에서 IndexExpr 강제
+    ExprPtr                    value;
+    IndexAssignExpr(std::unique_ptr<IndexExpr> target, ExprPtr value, int opLine)
         : target(std::move(target)), value(std::move(value)) {
         line = opLine;
     }

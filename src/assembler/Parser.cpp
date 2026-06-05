@@ -156,8 +156,11 @@ ExprPtr Parser::assignment() {
         if (auto* var = dynamic_cast<VariableExpr*>(expr.get()))
             return std::make_unique<AssignExpr>(var->name, std::move(rhs));
 
-        if (dynamic_cast<IndexExpr*>(expr.get()))
-            return std::make_unique<IndexAssignExpr>(std::move(expr), std::move(rhs), eq.line);
+        if (dynamic_cast<IndexExpr*>(expr.get())) {
+            auto* raw = static_cast<IndexExpr*>(expr.release());
+            return std::make_unique<IndexAssignExpr>(
+                std::unique_ptr<IndexExpr>(raw), std::move(rhs), eq.line);
+        }
 
         throw error(eq, "Invalid assignment target.");
     }

@@ -68,9 +68,11 @@ ExprPtr makeIndex(ExprPtr obj, ExprPtr idx, int line = 1) {
         tok(TokenType::RIGHT_BRACKET, "]", {}, line));
 }
 
-// arr[idx] = val IndexAssignExpr 생성
+// arr[idx] = val IndexAssignExpr 생성 (target은 항상 IndexExpr)
 ExprPtr makeIndexAssign(ExprPtr target, ExprPtr val, int line = 1) {
-    return std::make_unique<IndexAssignExpr>(std::move(target), std::move(val), line);
+    auto* raw = static_cast<IndexExpr*>(target.release());
+    return std::make_unique<IndexAssignExpr>(
+        std::unique_ptr<IndexExpr>(raw), std::move(val), line);
 }
 
 } // namespace
