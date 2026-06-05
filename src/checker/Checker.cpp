@@ -145,3 +145,15 @@ LiteralValue Checker::visitCallExpr(CallExpr& e) {
         checkExpr(*arg);
     return {};
 }
+
+LiteralValue Checker::visitIndexExpr(IndexExpr& e) {
+    checkExpr(*e.object);
+    checkExpr(*e.index);
+    return {};
+}
+
+LiteralValue Checker::visitIndexAssignExpr(IndexAssignExpr& e) {
+    checkExpr(*e.target);
+    checkExpr(*e.value);
+    return {};
+}

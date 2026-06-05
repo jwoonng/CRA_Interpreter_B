@@ -179,6 +179,7 @@
     <ClCompile Include="test\Shell_test.cpp" />
     <ClCompile Include="test\Script_test.cpp" />
     <ClCompile Include="test\Function_test.cpp" />
+    <ClCompile Include="test\Array_test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

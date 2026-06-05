@@ -57,6 +57,7 @@ std::string Executor::stringify(const LiteralValue& v) {
         if constexpr (std::is_same_v<T, bool>)           return val ? "true" : "false";
         if constexpr (std::is_same_v<T, std::string>)    return val;
         if constexpr (std::is_same_v<T, double>)         return formatDouble(val);
+        if constexpr (std::is_same_v<T, ArrayPtr>)       return "<array>";
     }, v);
 }
 
@@ -173,6 +174,20 @@ LiteralValue Executor::visitCallExpr(CallExpr& e) {
         throw std::runtime_error("Call target must be a named function.");
 
     const std::string& name = varExpr->name.lexeme;
+
+    // ── 배열 생성 내장 함수 ──────────────────────────────────────
+    if (name == "Array") {
+        if (e.arguments.size() != 1)
+            throw std::runtime_error(
+                "[line " + std::to_string(e.paren.line) + "] Array() expects exactly 1 argument.");
+        LiteralValue sizeVal = evaluate(*e.arguments[0]);
+        auto* d = std::get_if<double>(&sizeVal);
+        if (!d || *d < 0.0 || *d != std::floor(*d))
+            throw std::runtime_error(
+                "[line " + std::to_string(e.paren.line) + "] Array size must be a non-negative integer.");
+        return std::make_shared<LiteralArray>(static_cast<std::size_t>(*d));
+    }
+
     auto fit = functions_.find(name);
     if (fit == functions_.end()) {
         if (env_->contains(name))
@@ -220,4 +235,37 @@ void Executor::visitForStmt(ForStmt& s) {
         run(*s.body);
         if (s.increment) evaluate(*s.increment);
     }
+}
+
+// ── 배열 인덱스 ─────────────────────────────────────────────────────
+static ArrayPtr requireArray(const LiteralValue& v, int line) {
+    auto* p = std::get_if<ArrayPtr>(&v);
+    if (!p || !*p)
+        throw std::runtime_error("[line " + std::to_string(line) + "] Value is not an array.");
+    return *p;
+}
+
+static std::size_t requireIndex(const LiteralValue& v, std::size_t size, int line) {
+    auto* d = std::get_if<double>(&v);
+    if (!d || *d != std::floor(*d))
+        throw std::runtime_error("[line " + std::to_string(line) + "] Array index must be an integer.");
+    auto i = static_cast<std::ptrdiff_t>(*d);
+    if (i < 0 || static_cast<std::size_t>(i) >= size)
+        throw std::runtime_error("[line " + std::to_string(line) + "] Array index out of range.");
+    return static_cast<std::size_t>(i);
+}
+
+LiteralValue Executor::visitIndexExpr(IndexExpr& e) {
+    ArrayPtr    arr = requireArray(evaluate(*e.object), e.bracket.line);
+    std::size_t i   = requireIndex(evaluate(*e.index), arr->elements.size(), e.bracket.line);
+    return arr->elements[i];
+}
+
+LiteralValue Executor::visitIndexAssignExpr(IndexAssignExpr& e) {
+    auto& idx       = static_cast<IndexExpr&>(*e.target);
+    ArrayPtr    arr = requireArray(evaluate(*idx.object), idx.bracket.line);
+    std::size_t i   = requireIndex(evaluate(*idx.index), arr->elements.size(), idx.bracket.line);
+    LiteralValue val = evaluate(*e.value);
+    arr->elements[i] = val;
+    return val;
 }

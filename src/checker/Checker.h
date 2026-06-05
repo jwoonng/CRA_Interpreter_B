@@ -51,4 +51,6 @@ private:
     LiteralValue visitGroupingExpr(GroupingExpr& e) override;
     LiteralValue visitLogicalExpr(LogicalExpr& e) override;
     LiteralValue visitCallExpr(CallExpr& e) override;
+    LiteralValue visitIndexExpr(IndexExpr& e) override;
+    LiteralValue visitIndexAssignExpr(IndexAssignExpr& e) override;
 };

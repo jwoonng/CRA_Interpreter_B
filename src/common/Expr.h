@@ -125,6 +125,17 @@ struct IndexExpr : Expr {
     LiteralValue accept(ExprVisitor& v) override;
 };
 
+// 인덱스 대입: object[index] = value
+struct IndexAssignExpr : Expr {
+    ExprPtr target;   // must be IndexExpr at runtime
+    ExprPtr value;
+    IndexAssignExpr(ExprPtr target, ExprPtr value, int opLine)
+        : target(std::move(target)), value(std::move(value)) {
+        line = opLine;
+    }
+    LiteralValue accept(ExprVisitor& v) override;
+};
+
 // ── ExprVisitor 인터페이스 ────────────────────────────────────
 class ExprVisitor {
 public:
@@ -149,6 +160,9 @@ public:
     virtual LiteralValue visitIndexExpr(IndexExpr& e) {
         throw std::runtime_error("[line " + std::to_string(e.line) + "] Not implemented: index expression");
     }
+    virtual LiteralValue visitIndexAssignExpr(IndexAssignExpr& e) {
+        throw std::runtime_error("[line " + std::to_string(e.line) + "] Not implemented: index assignment");
+    }
 };
 
 // ── accept 메서드 정의 ────────────────────────────────────────
@@ -162,3 +176,4 @@ inline LiteralValue LogicalExpr::accept(ExprVisitor& v)      { return v.visitLog
 inline LiteralValue CallExpr::accept(ExprVisitor& v)         { return v.visitCallExpr(*this); }
 inline LiteralValue ArrayLiteralExpr::accept(ExprVisitor& v) { return v.visitArrayLiteralExpr(*this); }
 inline LiteralValue IndexExpr::accept(ExprVisitor& v)        { return v.visitIndexExpr(*this); }
+inline LiteralValue IndexAssignExpr::accept(ExprVisitor& v)  { return v.visitIndexAssignExpr(*this); }

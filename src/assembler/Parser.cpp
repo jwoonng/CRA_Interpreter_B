@@ -156,6 +156,9 @@ ExprPtr Parser::assignment() {
         if (auto* var = dynamic_cast<VariableExpr*>(expr.get()))
             return std::make_unique<AssignExpr>(var->name, std::move(rhs));
 
+        if (dynamic_cast<IndexExpr*>(expr.get()))
+            return std::make_unique<IndexAssignExpr>(std::move(expr), std::move(rhs), eq.line);
+
         throw error(eq, "Invalid assignment target.");
     }
 
@@ -202,8 +205,16 @@ ExprPtr Parser::unary() {
 
 ExprPtr Parser::call() {
     ExprPtr expr = primary();
-    while (match({TokenType::LEFT_PAREN}))
-        expr = finishCall(std::move(expr));
+    while (true) {
+        if (match({TokenType::LEFT_PAREN}))
+            expr = finishCall(std::move(expr));
+        else if (match({TokenType::LEFT_BRACKET})) {
+            ExprPtr index  = expression();
+            Token   bracket = consume(TokenType::RIGHT_BRACKET, "Expected ']' after index.");
+            expr = std::make_unique<IndexExpr>(std::move(expr), std::move(index), std::move(bracket));
+        } else
+            break;
+    }
     return expr;
 }
 
