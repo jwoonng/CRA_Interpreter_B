@@ -9,6 +9,7 @@
 // ── helpers ──────────────────────────────────────────────────────────
 namespace {
 
+// Token factories
 Token tok(TokenType type, std::string lexeme, LiteralValue lit = {}, int line = 1) {
     return Token{ type, std::move(lexeme), std::move(lit), line };
 }
@@ -23,10 +24,35 @@ Token eof(int line = 1) { return tok(TokenType::EOF_TOKEN, "", {}, line); }
 template<typename T> T* as(Stmt* s) { return dynamic_cast<T*>(s); }
 template<typename T> T* as(Expr* e) { return dynamic_cast<T*>(e); }
 
-} // namespace
+// Expr builders
+ExprPtr varExpr(const std::string& name, int line = 1) {
+    return std::make_unique<VariableExpr>(id(name, line));
+}
+ExprPtr litNum(double v, int line = 1) {
+    return std::make_unique<LiteralExpr>(v, line);
+}
+ExprPtr litStr(std::string s, int line = 1) {
+    return std::make_unique<LiteralExpr>(std::move(s), line);
+}
+ExprPtr binExpr(ExprPtr l, TokenType op, std::string opLex, ExprPtr r, int line = 1) {
+    return std::make_unique<BinaryExpr>(
+        std::move(l), tok(op, std::move(opLex), {}, line), std::move(r));
+}
 
-// ── AST builder helpers (used in Executor tests) ─────────────────────
-static StmtPtr makeFuncDecl(
+// Stmt builders
+StmtPtr retStmt(ExprPtr val = nullptr, int line = 1) {
+    return std::make_unique<ReturnStmt>(
+        tok(TokenType::RETURN, "return", {}, line), std::move(val));
+}
+StmtPtr printStmt(ExprPtr e, int line = 1) {
+    return std::make_unique<PrintStmt>(std::move(e), line);
+}
+StmtPtr varDecl(const std::string& name, ExprPtr init = nullptr, int line = 1) {
+    return std::make_unique<VarDeclareStmt>(id(name, line), std::move(init));
+}
+
+// Function / call builders
+StmtPtr makeFuncDecl(
     const std::string& name,
     std::vector<std::string> paramNames,
     std::vector<StmtPtr> body,
@@ -34,26 +60,23 @@ static StmtPtr makeFuncDecl(
 {
     std::vector<Token> params;
     for (auto& p : paramNames)
-        params.push_back(Token{ TokenType::IDENTIFIER, p, {}, line });
+        params.push_back(id(p, line));
     return std::make_unique<FunctionStmt>(
-        Token{ TokenType::IDENTIFIER, name, {}, line },
-        std::move(params),
-        std::move(body));
+        id(name, line), std::move(params), std::move(body));
 }
 
-static ExprPtr makeCallExpr(
+ExprPtr makeCallExpr(
     const std::string& funcName,
     std::vector<ExprPtr> args,
     int line = 1)
 {
-    auto callee = std::make_unique<VariableExpr>(
-        Token{ TokenType::IDENTIFIER, funcName, {}, line });
-    Token paren{ TokenType::RIGHT_PAREN, ")", {}, line };
     return std::make_unique<CallExpr>(
-        std::move(callee), paren, std::move(args));
+        varExpr(funcName, line),
+        tok(TokenType::RIGHT_PAREN, ")", {}, line),
+        std::move(args));
 }
 
-static StmtPtr makeCallStmt(
+StmtPtr makeCallStmt(
     const std::string& funcName,
     std::vector<ExprPtr> args,
     int line = 1)
@@ -61,6 +84,8 @@ static StmtPtr makeCallStmt(
     return std::make_unique<ExpressionStmt>(
         makeCallExpr(funcName, std::move(args), line));
 }
+
+} // namespace
 
 // ── Executor fixture ─────────────────────────────────────────────────
 class FunctionExecutorTest : public ::testing::Test {
@@ -73,6 +98,13 @@ protected:
         ex.execute(stmts, oss);
         return oss.str();
     }
+};
+
+// ── Checker fixture ───────────────────────────────────────────────────
+class FunctionCheckerTest : public ::testing::Test {
+protected:
+    Checker checker;
+    std::vector<StmtPtr> stmts;
 };
 
 // ════════════════════════════════════════════════════
@@ -282,8 +314,7 @@ TEST(FunctionParserTest, CallMissingRightParen_Throws) {
 // Func greet() { print "hello"; }   greet();   -> "hello\n"
 TEST_F(FunctionExecutorTest, FuncCall_PrintsFromBody) {
     std::vector<StmtPtr> body;
-    body.push_back(std::make_unique<PrintStmt>(
-        std::make_unique<LiteralExpr>(std::string("hello"), 1), 1));
+    body.push_back(printStmt(litStr("hello")));
     stmts.push_back(makeFuncDecl("greet", {}, std::move(body)));
     stmts.push_back(makeCallStmt("greet", {}));
     EXPECT_EQ(runStmts(), "hello\n");
@@ -292,87 +323,59 @@ TEST_F(FunctionExecutorTest, FuncCall_PrintsFromBody) {
 // Func add(a, b) { return a + b; }   var r = add(3, 7);   print r;   -> "10\n"
 TEST_F(FunctionExecutorTest, FuncCall_ReturnsValue) {
     std::vector<StmtPtr> body;
-    body.push_back(std::make_unique<ReturnStmt>(
-        tok(TokenType::RETURN, "return"),
-        std::make_unique<BinaryExpr>(
-            std::make_unique<VariableExpr>(tok(TokenType::IDENTIFIER, "a")),
-            tok(TokenType::PLUS, "+"),
-            std::make_unique<VariableExpr>(tok(TokenType::IDENTIFIER, "b")))));
+    body.push_back(retStmt(binExpr(varExpr("a"), TokenType::PLUS, "+", varExpr("b"))));
     stmts.push_back(makeFuncDecl("add", {"a", "b"}, std::move(body)));
 
     std::vector<ExprPtr> args;
-    args.push_back(std::make_unique<LiteralExpr>(3.0, 1));
-    args.push_back(std::make_unique<LiteralExpr>(7.0, 1));
-    stmts.push_back(std::make_unique<VarDeclareStmt>(
-        tok(TokenType::IDENTIFIER, "r"),
-        makeCallExpr("add", std::move(args))));
-    stmts.push_back(std::make_unique<PrintStmt>(
-        std::make_unique<VariableExpr>(tok(TokenType::IDENTIFIER, "r")), 1));
+    args.push_back(litNum(3.0));
+    args.push_back(litNum(7.0));
+    stmts.push_back(varDecl("r", makeCallExpr("add", std::move(args))));
+    stmts.push_back(printStmt(varExpr("r")));
     EXPECT_EQ(runStmts(), "10\n");
 }
 
 // Func noop() {}   var r = noop();   print r;   -> "nil\n"
 TEST_F(FunctionExecutorTest, FuncCall_ReturnsNilWhenNoReturn) {
     stmts.push_back(makeFuncDecl("noop", {}, {}));
-    stmts.push_back(std::make_unique<VarDeclareStmt>(
-        tok(TokenType::IDENTIFIER, "r"),
-        makeCallExpr("noop", {})));
-    stmts.push_back(std::make_unique<PrintStmt>(
-        std::make_unique<VariableExpr>(tok(TokenType::IDENTIFIER, "r")), 1));
+    stmts.push_back(varDecl("r", makeCallExpr("noop", {})));
+    stmts.push_back(printStmt(varExpr("r")));
     EXPECT_EQ(runStmts(), "nil\n");
 }
 
 // Func ret_nil() { return; }   var r = ret_nil();   print r;   -> "nil\n"
 TEST_F(FunctionExecutorTest, FuncCall_ExplicitReturnNil) {
     std::vector<StmtPtr> body;
-    body.push_back(std::make_unique<ReturnStmt>(tok(TokenType::RETURN, "return")));
+    body.push_back(retStmt());
     stmts.push_back(makeFuncDecl("ret_nil", {}, std::move(body)));
-    stmts.push_back(std::make_unique<VarDeclareStmt>(
-        tok(TokenType::IDENTIFIER, "r"),
-        makeCallExpr("ret_nil", {})));
-    stmts.push_back(std::make_unique<PrintStmt>(
-        std::make_unique<VariableExpr>(tok(TokenType::IDENTIFIER, "r")), 1));
+    stmts.push_back(varDecl("r", makeCallExpr("ret_nil", {})));
+    stmts.push_back(printStmt(varExpr("r")));
     EXPECT_EQ(runStmts(), "nil\n");
 }
 
 // Func dbl(x) { return x * 2; }   print dbl(5);   -> "10\n"
 TEST_F(FunctionExecutorTest, FuncCall_WithParameters) {
     std::vector<StmtPtr> body;
-    body.push_back(std::make_unique<ReturnStmt>(
-        tok(TokenType::RETURN, "return"),
-        std::make_unique<BinaryExpr>(
-            std::make_unique<VariableExpr>(tok(TokenType::IDENTIFIER, "x")),
-            tok(TokenType::STAR, "*"),
-            std::make_unique<LiteralExpr>(2.0, 1))));
+    body.push_back(retStmt(binExpr(varExpr("x"), TokenType::STAR, "*", litNum(2.0))));
     stmts.push_back(makeFuncDecl("dbl", {"x"}, std::move(body)));
 
     std::vector<ExprPtr> args;
-    args.push_back(std::make_unique<LiteralExpr>(5.0, 1));
-    stmts.push_back(std::make_unique<PrintStmt>(
-        makeCallExpr("dbl", std::move(args)), 1));
+    args.push_back(litNum(5.0));
+    stmts.push_back(printStmt(makeCallExpr("dbl", std::move(args))));
     EXPECT_EQ(runStmts(), "10\n");
 }
 
 // Global var a=999 must not be modified by function param a
 TEST_F(FunctionExecutorTest, FuncCall_ParamsAreLocal) {
     std::vector<StmtPtr> body;
-    body.push_back(std::make_unique<ReturnStmt>(
-        tok(TokenType::RETURN, "return"),
-        std::make_unique<BinaryExpr>(
-            std::make_unique<VariableExpr>(tok(TokenType::IDENTIFIER, "a")),
-            tok(TokenType::PLUS, "+"),
-            std::make_unique<VariableExpr>(tok(TokenType::IDENTIFIER, "b")))));
+    body.push_back(retStmt(binExpr(varExpr("a"), TokenType::PLUS, "+", varExpr("b"))));
     stmts.push_back(makeFuncDecl("add", {"a", "b"}, std::move(body)));
-    stmts.push_back(std::make_unique<VarDeclareStmt>(
-        tok(TokenType::IDENTIFIER, "a"),
-        std::make_unique<LiteralExpr>(999.0, 1)));
+    stmts.push_back(varDecl("a", litNum(999.0)));
 
     std::vector<ExprPtr> args;
-    args.push_back(std::make_unique<LiteralExpr>(3.0, 1));
-    args.push_back(std::make_unique<LiteralExpr>(7.0, 1));
-    stmts.push_back(std::make_unique<ExpressionStmt>(makeCallExpr("add", std::move(args))));
-    stmts.push_back(std::make_unique<PrintStmt>(
-        std::make_unique<VariableExpr>(tok(TokenType::IDENTIFIER, "a")), 1));
+    args.push_back(litNum(3.0));
+    args.push_back(litNum(7.0));
+    stmts.push_back(makeCallStmt("add", std::move(args)));
+    stmts.push_back(printStmt(varExpr("a")));
     EXPECT_EQ(runStmts(), "999\n");
 }
 
@@ -383,37 +386,21 @@ TEST_F(FunctionExecutorTest, FuncCall_ParamsAreLocal) {
 // Func fact(n) { if (n <= 1) return 1; return n * fact(n-1); }
 // print fact(5);  -> "120\n"
 TEST_F(FunctionExecutorTest, FuncCall_Recursive_Factorial) {
-    // if (n <= 1) return 1;
-    auto ifCond = std::make_unique<BinaryExpr>(
-        std::make_unique<VariableExpr>(tok(TokenType::IDENTIFIER, "n")),
-        tok(TokenType::LESS_EQUAL, "<="),
-        std::make_unique<LiteralExpr>(1.0, 1));
-    auto ifThen = std::make_unique<ReturnStmt>(
-        tok(TokenType::RETURN, "return"),
-        std::make_unique<LiteralExpr>(1.0, 1));
-
-    // return n * fact(n - 1);
     std::vector<ExprPtr> recArgs;
-    recArgs.push_back(std::make_unique<BinaryExpr>(
-        std::make_unique<VariableExpr>(tok(TokenType::IDENTIFIER, "n")),
-        tok(TokenType::MINUS, "-"),
-        std::make_unique<LiteralExpr>(1.0, 1)));
-    auto retRec = std::make_unique<ReturnStmt>(
-        tok(TokenType::RETURN, "return"),
-        std::make_unique<BinaryExpr>(
-            std::make_unique<VariableExpr>(tok(TokenType::IDENTIFIER, "n")),
-            tok(TokenType::STAR, "*"),
-            makeCallExpr("fact", std::move(recArgs))));
+    recArgs.push_back(binExpr(varExpr("n"), TokenType::MINUS, "-", litNum(1.0)));
 
     std::vector<StmtPtr> body;
-    body.push_back(std::make_unique<IfStmt>(std::move(ifCond), std::move(ifThen)));
-    body.push_back(std::move(retRec));
+    body.push_back(std::make_unique<IfStmt>(
+        binExpr(varExpr("n"), TokenType::LESS_EQUAL, "<=", litNum(1.0)),
+        retStmt(litNum(1.0))));
+    body.push_back(retStmt(
+        binExpr(varExpr("n"), TokenType::STAR, "*",
+            makeCallExpr("fact", std::move(recArgs)))));
     stmts.push_back(makeFuncDecl("fact", {"n"}, std::move(body)));
 
     std::vector<ExprPtr> args;
-    args.push_back(std::make_unique<LiteralExpr>(5.0, 1));
-    stmts.push_back(std::make_unique<PrintStmt>(
-        makeCallExpr("fact", std::move(args)), 1));
+    args.push_back(litNum(5.0));
+    stmts.push_back(printStmt(makeCallExpr("fact", std::move(args))));
     EXPECT_EQ(runStmts(), "120\n");
 }
 
@@ -425,8 +412,8 @@ TEST_F(FunctionExecutorTest, FuncCall_Recursive_Factorial) {
 TEST_F(FunctionExecutorTest, FuncCall_TooManyArgs_Throws) {
     stmts.push_back(makeFuncDecl("foo", {"a"}, {}));
     std::vector<ExprPtr> args;
-    args.push_back(std::make_unique<LiteralExpr>(1.0, 1));
-    args.push_back(std::make_unique<LiteralExpr>(2.0, 1));
+    args.push_back(litNum(1.0));
+    args.push_back(litNum(2.0));
     stmts.push_back(makeCallStmt("foo", std::move(args)));
     EXPECT_THROW(runStmts(), std::runtime_error);
 }
@@ -435,16 +422,14 @@ TEST_F(FunctionExecutorTest, FuncCall_TooManyArgs_Throws) {
 TEST_F(FunctionExecutorTest, FuncCall_TooFewArgs_Throws) {
     stmts.push_back(makeFuncDecl("foo", {"a", "b"}, {}));
     std::vector<ExprPtr> args;
-    args.push_back(std::make_unique<LiteralExpr>(1.0, 1));
+    args.push_back(litNum(1.0));
     stmts.push_back(makeCallStmt("foo", std::move(args)));
     EXPECT_THROW(runStmts(), std::runtime_error);
 }
 
 // var x = "hello";   x();   -> throws (not a function)
 TEST_F(FunctionExecutorTest, FuncCall_NonCallableVariable_Throws) {
-    stmts.push_back(std::make_unique<VarDeclareStmt>(
-        tok(TokenType::IDENTIFIER, "x"),
-        std::make_unique<LiteralExpr>(std::string("hello"), 1)));
+    stmts.push_back(varDecl("x", litStr("hello")));
     stmts.push_back(makeCallStmt("x", {}));
     EXPECT_THROW(runStmts(), std::runtime_error);
 }
@@ -459,28 +444,17 @@ TEST_F(FunctionExecutorTest, FuncCall_UndefinedFunction_Throws) {
 TEST_F(FunctionExecutorTest, FuncDecl_DuplicateName_LastDefinitionWins) {
     {
         std::vector<StmtPtr> body;
-        body.push_back(std::make_unique<ReturnStmt>(
-            tok(TokenType::RETURN, "return"),
-            std::make_unique<BinaryExpr>(
-                std::make_unique<VariableExpr>(tok(TokenType::IDENTIFIER, "a")),
-                tok(TokenType::PLUS, "+"),
-                std::make_unique<LiteralExpr>(1.0, 1))));
+        body.push_back(retStmt(binExpr(varExpr("a"), TokenType::PLUS, "+", litNum(1.0))));
         stmts.push_back(makeFuncDecl("add", {"a"}, std::move(body)));
     }
     {
         std::vector<StmtPtr> body;
-        body.push_back(std::make_unique<ReturnStmt>(
-            tok(TokenType::RETURN, "return"),
-            std::make_unique<BinaryExpr>(
-                std::make_unique<VariableExpr>(tok(TokenType::IDENTIFIER, "a")),
-                tok(TokenType::PLUS, "+"),
-                std::make_unique<LiteralExpr>(10.0, 1))));
+        body.push_back(retStmt(binExpr(varExpr("a"), TokenType::PLUS, "+", litNum(10.0))));
         stmts.push_back(makeFuncDecl("add", {"a"}, std::move(body)));
     }
     std::vector<ExprPtr> args;
-    args.push_back(std::make_unique<LiteralExpr>(5.0, 1));
-    stmts.push_back(std::make_unique<PrintStmt>(
-        makeCallExpr("add", std::move(args)), 1));
+    args.push_back(litNum(5.0));
+    stmts.push_back(printStmt(makeCallExpr("add", std::move(args))));
     EXPECT_EQ(runStmts(), "15\n");
 }
 
@@ -489,45 +463,26 @@ TEST_F(FunctionExecutorTest, FuncDecl_DuplicateName_LastDefinitionWins) {
 // ════════════════════════════════════════════════════
 
 // Func foo() {}  -> no throw
-TEST(FunctionCheckerTest, FuncDecl_NoThrow) {
-    Checker checker;
-    std::vector<StmtPtr> stmts;
-    stmts.push_back(std::make_unique<FunctionStmt>(
-        tok(TokenType::IDENTIFIER, "foo"),
-        std::vector<Token>{},
-        std::vector<StmtPtr>{}));
+TEST_F(FunctionCheckerTest, FuncDecl_NoThrow) {
+    stmts.push_back(makeFuncDecl("foo", {}, {}));
     EXPECT_NO_THROW(checker.check(stmts));
 }
 
 // Func foo() { return 1; }  -> no throw
-TEST(FunctionCheckerTest, ReturnInsideFunction_NoThrow) {
-    Checker checker;
+TEST_F(FunctionCheckerTest, ReturnInsideFunction_NoThrow) {
     std::vector<StmtPtr> body;
-    body.push_back(std::make_unique<ReturnStmt>(
-        tok(TokenType::RETURN, "return"),
-        std::make_unique<LiteralExpr>(1.0, 1)));
-    std::vector<StmtPtr> stmts;
-    stmts.push_back(std::make_unique<FunctionStmt>(
-        tok(TokenType::IDENTIFIER, "foo"),
-        std::vector<Token>{},
-        std::move(body)));
+    body.push_back(retStmt(litNum(1.0)));
+    stmts.push_back(makeFuncDecl("foo", {}, std::move(body)));
     EXPECT_NO_THROW(checker.check(stmts));
 }
 
 // Func foo() { { return 1; } }  -> no throw (nested block inside function)
-TEST(FunctionCheckerTest, ReturnInsideNestedBlock_NoThrow) {
-    Checker checker;
+TEST_F(FunctionCheckerTest, ReturnInsideNestedBlock_NoThrow) {
     std::vector<StmtPtr> inner;
-    inner.push_back(std::make_unique<ReturnStmt>(
-        tok(TokenType::RETURN, "return"),
-        std::make_unique<LiteralExpr>(1.0, 1)));
+    inner.push_back(retStmt(litNum(1.0)));
     std::vector<StmtPtr> body;
     body.push_back(std::make_unique<BlockStmt>(std::move(inner)));
-    std::vector<StmtPtr> stmts;
-    stmts.push_back(std::make_unique<FunctionStmt>(
-        tok(TokenType::IDENTIFIER, "foo"),
-        std::vector<Token>{},
-        std::move(body)));
+    stmts.push_back(makeFuncDecl("foo", {}, std::move(body)));
     EXPECT_NO_THROW(checker.check(stmts));
 }
 
@@ -536,53 +491,38 @@ TEST(FunctionCheckerTest, ReturnInsideNestedBlock_NoThrow) {
 // ════════════════════════════════════════════════════
 
 // return 5;  (global scope)  -> throws CheckError
-TEST(FunctionCheckerTest, ReturnOutsideFunction_Throws) {
-    Checker checker;
-    std::vector<StmtPtr> stmts;
-    stmts.push_back(std::make_unique<ReturnStmt>(
-        tok(TokenType::RETURN, "return", {}, 1),
-        std::make_unique<LiteralExpr>(5.0, 1)));
+TEST_F(FunctionCheckerTest, ReturnOutsideFunction_Throws) {
+    stmts.push_back(retStmt(litNum(5.0)));
     EXPECT_THROW(checker.check(stmts), CheckError);
 }
 
 // return; inside block but outside function  -> throws CheckError
-TEST(FunctionCheckerTest, ReturnInsideBlock_OutsideFunction_Throws) {
-    Checker checker;
+TEST_F(FunctionCheckerTest, ReturnInsideBlock_OutsideFunction_Throws) {
     std::vector<StmtPtr> inner;
-    inner.push_back(std::make_unique<ReturnStmt>(
-        tok(TokenType::RETURN, "return", {}, 1)));
-    std::vector<StmtPtr> stmts;
+    inner.push_back(retStmt());
     stmts.push_back(std::make_unique<BlockStmt>(std::move(inner)));
     EXPECT_THROW(checker.check(stmts), CheckError);
 }
 
 // Func foo(a, a) {}  -> throws CheckError
-TEST(FunctionCheckerTest, DuplicateParams_Throws) {
-    Checker checker;
+TEST_F(FunctionCheckerTest, DuplicateParams_Throws) {
     std::vector<Token> params = {
         tok(TokenType::IDENTIFIER, "a", {}, 1),
         tok(TokenType::IDENTIFIER, "a", {}, 1)
     };
-    std::vector<StmtPtr> stmts;
     stmts.push_back(std::make_unique<FunctionStmt>(
-        tok(TokenType::IDENTIFIER, "foo"),
-        std::move(params),
-        std::vector<StmtPtr>{}));
+        id("foo"), std::move(params), std::vector<StmtPtr>{}));
     EXPECT_THROW(checker.check(stmts), CheckError);
 }
 
 // Duplicate param error message contains the param name
-TEST(FunctionCheckerTest, DuplicateParams_ErrorContainsName) {
-    Checker checker;
+TEST_F(FunctionCheckerTest, DuplicateParams_ErrorContainsName) {
     std::vector<Token> params = {
         tok(TokenType::IDENTIFIER, "x", {}, 1),
         tok(TokenType::IDENTIFIER, "x", {}, 2)
     };
-    std::vector<StmtPtr> stmts;
     stmts.push_back(std::make_unique<FunctionStmt>(
-        tok(TokenType::IDENTIFIER, "foo"),
-        std::move(params),
-        std::vector<StmtPtr>{}));
+        id("foo"), std::move(params), std::vector<StmtPtr>{}));
     try {
         checker.check(stmts);
         FAIL() << "Expected CheckError";
