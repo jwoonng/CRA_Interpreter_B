@@ -37,6 +37,24 @@ struct Environment {
         if (enclosing) return enclosing->contains(name);
         return false;
     }
+
+    // StaticBindingOptimizer가 계산한 distance 기반 O(1) 직접 접근
+    LiteralValue getAt(int distance, const std::string& name) {
+        auto* env = ancestor(distance);
+        auto  it  = env->values.find(name);
+        if (it != env->values.end()) return it->second;
+        throw std::runtime_error("Undefined variable '" + name + "'.");
+    }
+
+    void assignAt(int distance, const std::string& name, LiteralValue val) {
+        ancestor(distance)->values[name] = std::move(val);
+    }
+
+    Environment* ancestor(int distance) {
+        auto* env = this;
+        for (int i = 0; i < distance; ++i) env = env->enclosing;
+        return env;
+    }
 };
 
 // ── Function storage (raw, non-owning: valid during execute()) ────────

@@ -37,13 +37,15 @@ struct LiteralExpr : Expr {
 
 struct VariableExpr : Expr {
     Token name;
+    int   distance = -1;  // -1=글로벌/미설정, >=0=StaticBindingOptimizer가 계산한 스코프 깊이
     explicit VariableExpr(Token name) : name(std::move(name)) { this->line = this->name.line; }
     LiteralValue accept(ExprVisitor& v) override;
 };
 
 struct AssignExpr : Expr {
-    Token name;
+    Token   name;
     ExprPtr value;
+    int     distance = -1;  // -1=글로벌/미설정, >=0=StaticBindingOptimizer가 계산한 스코프 깊이
     AssignExpr(Token name, ExprPtr value) : name(std::move(name)), value(std::move(value)) { this->line = this->name.line; }
     LiteralValue accept(ExprVisitor& v) override;
 };

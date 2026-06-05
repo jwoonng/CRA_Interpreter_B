@@ -155,6 +155,7 @@
     <ClInclude Include="src\shell\Shell.h" />
     <ClInclude Include="src\optimizer\IOptimizer.h" />
     <ClInclude Include="src\optimizer\NoOpOptimizer.h" />
+    <ClInclude Include="src\optimizer\StaticBindingOptimizer.h" />
   </ItemGroup>
 
   <!-- ── 소스 파일 ── -->
@@ -180,6 +181,7 @@
     <ClCompile Include="test\Script_test.cpp" />
     <ClCompile Include="test\Function_test.cpp" />
     <ClCompile Include="test\Array_test.cpp" />
+    <ClCompile Include="test\StaticBinding_test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
