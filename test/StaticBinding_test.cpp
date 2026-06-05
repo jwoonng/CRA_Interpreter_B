@@ -15,7 +15,7 @@ using ::testing::Invoke;
 class MockExecutor : public IExecutor {
 public:
     MOCK_METHOD(void, execute,
-        (const std::vector<std::unique_ptr<Stmt>>&, std::ostream&),
+        (std::vector<std::unique_ptr<Stmt>>, std::ostream&),
         (override));
 };
 

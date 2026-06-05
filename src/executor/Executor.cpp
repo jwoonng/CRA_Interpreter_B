@@ -6,10 +6,11 @@
 #include <utility>
 
 // ── 진입점 ───────────────────────────────────────────────────────
-void Executor::execute(const std::vector<std::unique_ptr<Stmt>>& stmts,
+void Executor::execute(std::vector<std::unique_ptr<Stmt>> stmts,
                        std::ostream& out) {
     out_ = &out;
-    for (auto& s : stmts) run(*s);
+    ownedStmts_.push_back(std::move(stmts));
+    for (auto& s : ownedStmts_.back()) run(*s);
 }
 
 LiteralValue Executor::evaluate(Expr& e) { return e.accept(*this); }

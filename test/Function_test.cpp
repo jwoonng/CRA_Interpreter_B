@@ -95,7 +95,7 @@ protected:
     std::vector<StmtPtr> stmts;
 
     std::string runStmts() {
-        ex.execute(stmts, oss);
+        ex.execute(std::move(stmts), oss);
         return oss.str();
     }
 };
