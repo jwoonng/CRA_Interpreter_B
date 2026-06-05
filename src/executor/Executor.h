@@ -17,18 +17,18 @@ struct Environment {
         values[name] = std::move(val);
     }
 
-    LiteralValue get(const std::string& name) {
+    LiteralValue get(const std::string& name, int line = 0) {
         auto it = values.find(name);
         if (it != values.end()) return it->second;
-        if (enclosing) return enclosing->get(name);
-        throw std::runtime_error("Undefined variable '" + name + "'.");
+        if (enclosing) return enclosing->get(name, line);
+        throw std::runtime_error("[line " + std::to_string(line) + "] Undefined variable '" + name + "'.");
     }
 
-    void assign(const std::string& name, LiteralValue val) {
+    void assign(const std::string& name, LiteralValue val, int line = 0) {
         auto it = values.find(name);
         if (it != values.end()) { it->second = std::move(val); return; }
-        if (enclosing) { enclosing->assign(name, std::move(val)); return; }
-        throw std::runtime_error("Undefined variable '" + name + "'.");
+        if (enclosing) { enclosing->assign(name, std::move(val), line); return; }
+        throw std::runtime_error("[line " + std::to_string(line) + "] Undefined variable '" + name + "'.");
     }
 };
 
