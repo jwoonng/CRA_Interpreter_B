@@ -113,6 +113,96 @@ TEST_F(StaticBindingOptimizerFixture, AssignExprDistanceSetForOuterScope) {
     EXPECT_EQ(rawA->distance, 1);
 }
 
+// Func add(a, b) { return a + b; }  →  파라미터 a.distance == 0, b.distance == 0
+TEST_F(StaticBindingOptimizerFixture, FunctionParam_DistanceZero) {
+    auto aTok = identTok("a");
+    auto bTok = identTok("b");
+
+    auto aExpr = std::make_unique<VariableExpr>(aTok);
+    auto bExpr = std::make_unique<VariableExpr>(bTok);
+    VariableExpr* rawA = aExpr.get();
+    VariableExpr* rawB = bExpr.get();
+
+    std::vector<StmtPtr> body;
+    body.push_back(std::make_unique<ReturnStmt>(
+        makeTok(TokenType::RETURN, "return"),
+        std::make_unique<BinaryExpr>(
+            std::move(aExpr),
+            makeTok(TokenType::PLUS, "+"),
+            std::move(bExpr)
+        )
+    ));
+
+    std::vector<StmtPtr> stmts;
+    stmts.push_back(std::make_unique<FunctionStmt>(
+        identTok("add"),
+        std::vector<Token>{ aTok, bTok },
+        std::move(body)
+    ));
+
+    auto kept = optimizer_.optimize(std::move(stmts));
+
+    EXPECT_EQ(rawA->distance, 0);
+    EXPECT_EQ(rawB->distance, 0);
+}
+
+// Func f() { var x = 1; return x; }  →  x.distance == 0
+TEST_F(StaticBindingOptimizerFixture, FunctionLocalVar_DistanceZero) {
+    auto xTok  = identTok("x");
+    auto xExpr = std::make_unique<VariableExpr>(xTok);
+    VariableExpr* raw = xExpr.get();
+
+    std::vector<StmtPtr> body;
+    body.push_back(std::make_unique<VarDeclareStmt>(
+        xTok, std::make_unique<LiteralExpr>(1.0, 1)));
+    body.push_back(std::make_unique<ReturnStmt>(
+        makeTok(TokenType::RETURN, "return"),
+        std::move(xExpr)
+    ));
+
+    std::vector<StmtPtr> stmts;
+    stmts.push_back(std::make_unique<FunctionStmt>(
+        identTok("f"),
+        std::vector<Token>{},
+        std::move(body)
+    ));
+
+    auto kept = optimizer_.optimize(std::move(stmts));
+    EXPECT_EQ(raw->distance, 0);
+}
+
+// for (var i = 0; i < 5; i = i + 1) { print i; }  →  i.distance == 0
+TEST_F(StaticBindingOptimizerFixture, ForLoopVar_DistanceZero) {
+    auto iTok  = identTok("i");
+    auto iExpr = std::make_unique<VariableExpr>(iTok);
+    VariableExpr* raw = iExpr.get();
+
+    auto init = std::make_unique<VarDeclareStmt>(
+        iTok, std::make_unique<LiteralExpr>(0.0, 1));
+    auto cond = std::make_unique<BinaryExpr>(
+        std::make_unique<VariableExpr>(iTok),
+        makeTok(TokenType::LESS, "<"),
+        std::make_unique<LiteralExpr>(5.0, 1)
+    );
+    auto incr = std::make_unique<AssignExpr>(
+        iTok,
+        std::make_unique<BinaryExpr>(
+            std::make_unique<VariableExpr>(iTok),
+            makeTok(TokenType::PLUS, "+"),
+            std::make_unique<LiteralExpr>(1.0, 1)
+        )
+    );
+    auto body = std::make_unique<PrintStmt>(std::move(iExpr), 1);
+
+    std::vector<StmtPtr> stmts;
+    stmts.push_back(std::make_unique<ForStmt>(
+        std::move(init), std::move(cond), std::move(incr), std::move(body)
+    ));
+
+    auto kept = optimizer_.optimize(std::move(stmts));
+    EXPECT_EQ(raw->distance, 0);
+}
+
 // ════════════════════════════════════════════════════════════════════════════
 // Fixture 2: StaticBindingMockFixture
 // Test Double — Mock (gmock MockExecutor)
@@ -259,4 +349,17 @@ TEST_F(StaticBindingIntegrationFixture, LocalShadowsGlobal_OuterUnaffected) {
     shell_.runLine("var x = 10;");
     EXPECT_EQ(shell_.runLine("{ var x = 99; print x; }"), "99\n");
     EXPECT_EQ(shell_.runLine("print x;"), "10\n");
+}
+
+// Func f(x) { return x + 1; } print f(5);  →  "6\n"
+// 함수 선언과 호출을 같은 runLine 으로 실행 — FunctionEntry raw ptr 수명 보장
+TEST_F(StaticBindingIntegrationFixture, FunctionWithParam_ReturnsCorrectValue) {
+    EXPECT_EQ(shell_.runLine("Func f(x) { return x + 1; } print f(5);"), "6\n");
+}
+
+// Func fact(n) { if (n <= 1) return 1; return n * fact(n - 1); } print fact(5);  →  "120\n"
+TEST_F(StaticBindingIntegrationFixture, RecursiveFunction_ReturnsCorrectValue) {
+    EXPECT_EQ(shell_.runLine(
+        "Func fact(n) { if (n <= 1) return 1; return n * fact(n - 1); } print fact(5);"),
+        "120\n");
 }

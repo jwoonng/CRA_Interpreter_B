@@ -73,6 +73,10 @@ private:
             p->condition = wrapExpr(std::move(p->condition));
             p->increment = wrapExpr(std::move(p->increment));
             wrapStmt(p->body);
+        } else if (auto* p = dynamic_cast<FunctionStmt*>(s.get())) {
+            for (auto& inner : p->body) wrapStmt(inner);
+        } else if (auto* p = dynamic_cast<ReturnStmt*>(s.get())) {
+            if (p->value) p->value = wrapExpr(std::move(p->value));
         }
     }
 };
@@ -176,4 +180,24 @@ TEST(ShellConstantFoldingOptimizerTest, LargeLoop_RuntimeEvaluationCount_Verifie
         "}";
     EXPECT_EQ(evalCountFor(src, false), 1301);
     EXPECT_EQ(evalCountFor(src, true),   301);
+}
+
+// print "Hello" + " World";  →  1회 → 0회 (문자열 PLUS 경로 검증)
+TEST(ShellConstantFoldingOptimizerTest, StringConcatenation_ConstantFolded) {
+    EXPECT_EQ(evalCountFor(R"(print "Hello" + " World";)", false), 1);
+    EXPECT_EQ(evalCountFor(R"(print "Hello" + " World";)", true),  0);
+}
+
+// print 3 > 2;  →  1회 → 0회, 비교 연산 결과(true) LiteralExpr로 접힘
+TEST(ShellConstantFoldingOptimizerTest, ComparisonOperator_ConstantFolded) {
+    EXPECT_EQ(evalCountFor("print 3 > 2;", false), 1);
+    EXPECT_EQ(evalCountFor("print 3 > 2;", true),  0);
+}
+
+// Func f() { return 2 + 3; } print f();
+//   최적화 전: return 내 2+3 런타임 1회 평가
+//   최적화 후: return 내 LiteralExpr(5)로 교체 → 0회
+TEST(ShellConstantFoldingOptimizerTest, FunctionBody_ConstantFolded) {
+    EXPECT_EQ(evalCountFor("Func f() { return 2 + 3; } print f();", false), 1);
+    EXPECT_EQ(evalCountFor("Func f() { return 2 + 3; } print f();", true),  0);
 }
