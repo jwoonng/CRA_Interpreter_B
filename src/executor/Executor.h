@@ -86,5 +86,10 @@ private:
     void visitReturnStmt(ReturnStmt& s)         override;
 
     // ExprVisitor (function call)
-    LiteralValue visitCallExpr(CallExpr& e)     override;
+    LiteralValue visitCallExpr(CallExpr& e)          override;
+
+    // ExprVisitor (array)
+    LiteralValue visitIndexExpr(IndexExpr& e)             override;
+    LiteralValue visitIndexAssignExpr(IndexAssignExpr& e) override;
+    LiteralValue callBuiltinArray(CallExpr& e);
 };

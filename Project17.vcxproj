@@ -178,6 +178,7 @@
     <ClCompile Include="test\Shell_test.cpp" />
     <ClCompile Include="test\Script_test.cpp" />
     <ClCompile Include="test\Function_test.cpp" />
+    <ClCompile Include="test\Array_test.cpp" />
     <ClCompile Include="test\ConstantFoldingOptimizer_test.cpp" />
     <ClCompile Include="test\ShellConstantFoldingOptimizer_test.cpp" />
    </ItemGroup>
