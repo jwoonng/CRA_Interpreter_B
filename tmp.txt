@@ -1,0 +1,79 @@
+TEST(ShellTest, Func_DefinedAndCalledOnSeparateLines) {
+    Shell shell;
+    shell.runLine("Func add(a, b) { return a + b; }");
+    EXPECT_EQ(shell.runLine("print add(3, 7);"), "10\n");
+}
+
+// var 선언 + 함수 반환값 저장 + 출력 — 3줄 분리
+TEST(ShellTest, Func_ReturnValueStoredInVar_AcrossLines) {
+    Shell shell;
+    shell.runLine("Func add(a, b) { return a + b; }");
+    shell.runLine("var ret = add(3, 7);");
+    EXPECT_EQ(shell.runLine("print ret;"), "10\n");
+}
+
+// 재귀 함수
+TEST(ShellTest, Func_RecursiveFactorial_AcrossLines) {
+    Shell shell;
+    shell.runLine("Func fact(n) { if (n <= 1) return 1; return n * fact(n - 1); }");
+    EXPECT_EQ(shell.runLine("print fact(5);"), "120\n");
+}
+
+// 함수가 다른 함수를 호출 (각각 다른 줄에 선언)
+TEST(ShellTest, Func_CallingAnotherFunc_AcrossLines) {
+    Shell shell;
+    shell.runLine("Func dbl(x) { return x * 2; }");
+    shell.runLine("Func quad(x) { return dbl(dbl(x)); }");
+    EXPECT_EQ(shell.runLine("print quad(3);"), "12\n");
+}
+
+// 함수가 글로벌 변수에 접근
+TEST(ShellTest, Func_AccessesGlobalVar) {
+    Shell shell;
+    shell.runLine("var x = 10;");
+    shell.runLine("Func getX() { return x; }");
+    EXPECT_EQ(shell.runLine("print getX();"), "10\n");
+}
+
+// 함수가 글로벌 변수를 수정
+TEST(ShellTest, Func_ModifiesGlobalVar) {
+    Shell shell;
+    shell.runLine("var counter = 0;");
+    shell.runLine("Func inc() { counter = counter + 1; }");
+    shell.runLine("inc();");
+    EXPECT_EQ(shell.runLine("print counter;"), "1\n");
+}
+TEST(ShellTest, CheckerState_GhostScopeCleared_AfterBlockError) {
+    Shell shell;
+    shell.runLine("{ var a = a; }");      // CheckError: 자기 참조 → ghost scope 발생
+    EXPECT_EQ(shell.runLine("var a = 10;"), "");   // 중복 선언 오류 없어야 함
+    EXPECTEQ(shell.runLine("print a;"), "10\n");
+}
+
+// Checker 오류(함수 바디) 후 functionDepth 고착 → return 외부 사용 검출해야 함
+TEST(ShellTest, CheckerState_FunctionDepthResetAfterBodyError) {
+    Shell shell;
+    shell.runLine("Func foo() { var x = x; }");  // CheckError → functionDepth stuck at 1
+    std::string out = shell.runLine("return 5;"); // Checker가 "함수 외부 return" 오류를 잡아야 함
+    EXPECT_NE(out.find("function"), std::string::npos);
+}
+
+// ════════════════════════════════════════════════════
+// Wave 8 — 배열 멀티라인 (REPL 줄 간 상태 유지)
+// ════════════════════════════════════════════════════
+
+TEST(ShellTest, Array_PersistsAndWritable_AcrossLines) {
+    Shell shell;
+    shell.runLine("var arr = Array(3);");
+    shell.runLine("arr[0] = 42;");
+    EXPECT_EQ(shell.runLine("print arr[0];"), "42\n");
+}
+
+TEST(ShellTest, Array_MultipleElements_AcrossLines) {
+    Shell shell;
+    shell.runLine("var arr = Array(3);");
+    shell.runLine("arr[0] = 10;");
+    shell.runLine("arr[1] = 20;");
+    shell.runLine("arr[2] = 30;");
+    EXPECT_EQ(shell.runLine("print arr[0] + arr[1] + arr[2];"), "60\n");
+}
