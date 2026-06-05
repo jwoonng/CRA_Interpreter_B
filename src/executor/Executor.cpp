@@ -157,6 +157,60 @@ void Executor::visitIfStmt(IfStmt& s) {
         run(*s.elseBranch);
 }
 
+void Executor::visitFunctionStmt(FunctionStmt& s) {
+    functions_[s.name.lexeme] = FunctionEntry{ &s, env_ };
+}
+
+void Executor::visitReturnStmt(ReturnStmt& s) {
+    LiteralValue val;
+    if (s.value) val = evaluate(*s.value);
+    throw ReturnException{ std::move(val) };
+}
+
+LiteralValue Executor::visitCallExpr(CallExpr& e) {
+    auto* varExpr = dynamic_cast<VariableExpr*>(e.callee.get());
+    if (!varExpr)
+        throw std::runtime_error("Call target must be a named function.");
+
+    const std::string& name = varExpr->name.lexeme;
+    auto fit = functions_.find(name);
+    if (fit == functions_.end()) {
+        if (env_->contains(name))
+            throw std::runtime_error(
+                "[line " + std::to_string(e.line) + "] '" + name + "' is not a function.");
+        throw std::runtime_error(
+            "[line " + std::to_string(e.line) + "] Undefined function '" + name + "'.");
+    }
+
+    const FunctionEntry& fn = fit->second;
+    const auto& params = fn.decl->params;
+
+    if (e.arguments.size() != params.size())
+        throw std::runtime_error(
+            "[line " + std::to_string(e.line) + "] Expected " +
+            std::to_string(params.size()) + " arguments but got " +
+            std::to_string(e.arguments.size()) + ".");
+
+    std::vector<LiteralValue> argVals;
+    argVals.reserve(e.arguments.size());
+    for (auto& arg : e.arguments)
+        argVals.push_back(evaluate(*arg));
+
+    Environment callEnv(fn.closure);
+    for (size_t i = 0; i < params.size(); ++i)
+        callEnv.define(params[i].lexeme, argVals[i]);
+
+    ScopeGuard g{env_, std::exchange(env_, &callEnv)};
+    LiteralValue result;
+    try {
+        for (const auto& stmt : fn.decl->body)
+            run(*stmt);
+    } catch (ReturnException& ret) {
+        result = std::move(ret.value);
+    }
+    return result;
+}
+
 void Executor::visitForStmt(ForStmt& s) {
     Environment forScope(env_);
     ScopeGuard g{env_, std::exchange(env_, &forScope)};

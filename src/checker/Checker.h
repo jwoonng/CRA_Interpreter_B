@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 #include "IChecker.h"
 #include "src/common/Expr.h"
@@ -19,8 +20,9 @@ public:
     void check(const std::vector<std::unique_ptr<Stmt>>& stmts) override;
 
 private:
-    // false = 선언됨(미초기화), true = 초기화 완료
+    // false = declared(uninitialized), true = initialized
     std::vector<std::unordered_map<std::string, bool>> scopes_;
+    int functionDepth_ = 0;
 
     void beginScope();
     void endScope();
@@ -37,6 +39,8 @@ private:
     void visitBlockStmt(BlockStmt& s) override;
     void visitIfStmt(IfStmt& s) override;
     void visitForStmt(ForStmt& s) override;
+    void visitFunctionStmt(FunctionStmt& s) override;
+    void visitReturnStmt(ReturnStmt& s) override;
 
     // ExprVisitor 구현 (의미 검사용 — 반환값은 dummy)
     LiteralValue visitLiteralExpr(LiteralExpr& e) override;
@@ -46,4 +50,5 @@ private:
     LiteralValue visitUnaryExpr(UnaryExpr& e) override;
     LiteralValue visitGroupingExpr(GroupingExpr& e) override;
     LiteralValue visitLogicalExpr(LogicalExpr& e) override;
+    LiteralValue visitCallExpr(CallExpr& e) override;
 };
