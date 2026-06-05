@@ -67,7 +67,9 @@ LiteralValue Executor::visitLiteralExpr(LiteralExpr& e) {
 }
 
 LiteralValue Executor::visitVariableExpr(VariableExpr& e) {
-    return env_->get(e.name.lexeme, e.name.line);
+    if (e.distance >= 0)
+        return env_->getAt(e.distance, e.name.lexeme);   // O(1): StaticBindingOptimizer가 설정
+    return env_->get(e.name.lexeme, e.name.line);         // fallback: 글로벌 또는 미최적화
 }
 
 LiteralValue Executor::visitBinaryExpr(BinaryExpr& e) {
@@ -101,7 +103,10 @@ LiteralValue Executor::visitBinaryExpr(BinaryExpr& e) {
 
 LiteralValue Executor::visitAssignExpr(AssignExpr& e) {
     LiteralValue val = evaluate(*e.value);
-    env_->assign(e.name.lexeme, val, e.name.line);
+    if (e.distance >= 0)
+        env_->assignAt(e.distance, e.name.lexeme, val);  // O(1): StaticBindingOptimizer가 설정
+    else
+        env_->assign(e.name.lexeme, val, e.name.line);   // fallback: 글로벌 또는 미최적화
     return val;
 }
 
