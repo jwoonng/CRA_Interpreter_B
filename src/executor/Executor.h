@@ -31,6 +31,12 @@ struct Environment {
         if (enclosing) { enclosing->assign(name, std::move(val)); return; }
         throw std::runtime_error("Undefined variable '" + name + "'.");
     }
+
+    bool contains(const std::string& name) const {
+        if (values.count(name)) return true;
+        if (enclosing) return enclosing->contains(name);
+        return false;
+    }
 };
 
 // ── Function storage (raw, non-owning: valid during execute()) ────────

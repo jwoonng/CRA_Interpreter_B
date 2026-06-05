@@ -173,9 +173,7 @@ LiteralValue Executor::visitCallExpr(CallExpr& e) {
     const std::string& name = varExpr->name.lexeme;
     auto fit = functions_.find(name);
     if (fit == functions_.end()) {
-        bool inEnv = false;
-        try { env_->get(name); inEnv = true; } catch (const std::runtime_error&) {}
-        if (inEnv)
+        if (env_->contains(name))
             throw std::runtime_error(
                 "[line " + std::to_string(e.line) + "] '" + name + "' is not a function.");
         throw std::runtime_error(
