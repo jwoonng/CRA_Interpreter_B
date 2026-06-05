@@ -28,13 +28,14 @@ LiteralValue ConstantFoldingOptimizer::eval(Expr* e) {
 
     if (auto* u = dynamic_cast<UnaryExpr*>(e)) {
         auto val = eval(u->right.get());
+        const int line = u->op.line;
         if (u->op.type == TokenType::MINUS) {
             if (auto* d = std::get_if<double>(&val)) return -*d;
-            throw std::runtime_error("Operand must be a number.");
+            throw std::runtime_error("[line " + std::to_string(line) + "] Operand must be a number.");
         }
         if (u->op.type == TokenType::BANG) {
             if (auto* b = std::get_if<bool>(&val)) return !*b;
-            throw std::runtime_error("Operand must be a boolean.");
+            throw std::runtime_error("[line " + std::to_string(line) + "] Operand must be a boolean.");
         }
     }
 
@@ -45,41 +46,42 @@ LiteralValue ConstantFoldingOptimizer::eval(Expr* e) {
         auto* rd = std::get_if<double>(&rv);
         auto* ls = std::get_if<std::string>(&lv);
         auto* rs = std::get_if<std::string>(&rv);
+        const int line = b->op.line;
 
         switch (b->op.type) {
         case TokenType::PLUS:
             if (ld && rd) return *ld + *rd;
             if (ls && rs) return *ls + *rs;
-            throw std::runtime_error("Operands must be two numbers or two strings.");
+            throw std::runtime_error("[line " + std::to_string(line) + "] Operands must be two numbers or two strings.");
         case TokenType::MINUS:
             if (ld && rd) return *ld - *rd;
-            throw std::runtime_error("Operands must be numbers.");
+            throw std::runtime_error("[line " + std::to_string(line) + "] Operands must be numbers.");
         case TokenType::STAR:
             if (ld && rd) return *ld * *rd;
-            throw std::runtime_error("Operands must be numbers.");
+            throw std::runtime_error("[line " + std::to_string(line) + "] Operands must be numbers.");
         case TokenType::SLASH:
             if (ld && rd) {
-                if (*rd == 0.0) throw std::runtime_error("Division by zero.");
+                if (*rd == 0.0) throw std::runtime_error("[line " + std::to_string(line) + "] Division by zero.");
                 return *ld / *rd;
             }
-            throw std::runtime_error("Operands must be numbers.");
+            throw std::runtime_error("[line " + std::to_string(line) + "] Operands must be numbers.");
         case TokenType::PERCENT:
             if (ld && rd) {
-                if (*rd == 0.0) throw std::runtime_error("Division by zero.");
+                if (*rd == 0.0) throw std::runtime_error("[line " + std::to_string(line) + "] Division by zero.");
                 return std::fmod(*ld, *rd);
             }
-            throw std::runtime_error("Operands must be numbers.");
-        case TokenType::GREATER:       if (ld && rd) return *ld > *rd;  throw std::runtime_error("Operands must be numbers.");
-        case TokenType::GREATER_EQUAL: if (ld && rd) return *ld >= *rd; throw std::runtime_error("Operands must be numbers.");
-        case TokenType::LESS:          if (ld && rd) return *ld < *rd;  throw std::runtime_error("Operands must be numbers.");
-        case TokenType::LESS_EQUAL:    if (ld && rd) return *ld <= *rd; throw std::runtime_error("Operands must be numbers.");
+            throw std::runtime_error("[line " + std::to_string(line) + "] Operands must be numbers.");
+        case TokenType::GREATER:       if (ld && rd) return *ld > *rd;  throw std::runtime_error("[line " + std::to_string(line) + "] Operands must be numbers.");
+        case TokenType::GREATER_EQUAL: if (ld && rd) return *ld >= *rd; throw std::runtime_error("[line " + std::to_string(line) + "] Operands must be numbers.");
+        case TokenType::LESS:          if (ld && rd) return *ld < *rd;  throw std::runtime_error("[line " + std::to_string(line) + "] Operands must be numbers.");
+        case TokenType::LESS_EQUAL:    if (ld && rd) return *ld <= *rd; throw std::runtime_error("[line " + std::to_string(line) + "] Operands must be numbers.");
         case TokenType::EQUAL_EQUAL:   return lv == rv;
         case TokenType::BANG_EQUAL:    return lv != rv;
-        default: throw std::runtime_error("Unknown binary operator.");
+        default: throw std::runtime_error("[line " + std::to_string(line) + "] Unknown binary operator.");
         }
     }
 
-    throw std::runtime_error("Cannot evaluate constant expression.");
+    throw std::runtime_error("[line " + std::to_string(e->line) + "] Cannot evaluate constant expression.");
 }
 
 // ── Expr 접기: 상수이면 LiteralExpr로 교체, 아니면 자식 재귀 ───────────────
