@@ -36,6 +36,7 @@ static int netBraces(const std::string& line) {
     for (size_t i = 0; i < line.size(); ++i) {
         char c = line[i];
         if (inString) {
+            if (c == '\\' && i + 1 < line.size()) { ++i; continue; }
             if (c == '"') inString = false;
         } else {
             if      (c == '"')                                         inString = true;
