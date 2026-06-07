@@ -355,6 +355,12 @@ flowchart LR
 | 메시지 | 원인 |
 |--------|------|
 | `Unexpected character: X` | 지원하지 않는 문자 입력 |
+| `Unsupported operator '++'. Use 'x = x + 1'.` | `++` 증감 연산자 사용 |
+| `Unsupported operator '--'. Use 'x = x - 1'.` | `--` 감소 연산자 사용 |
+| `Unsupported operator '+='. Use 'x = x + value'.` | `+=` 복합 대입 사용 |
+| `Unsupported operator '-='. Use 'x = x - value'.` | `-=` 복합 대입 사용 |
+| `Unsupported operator '*='. Use 'x = x * value'.` | `*=` 복합 대입 사용 |
+| `Unsupported operator '/='. Use 'x = x / value'.` | `/=` 복합 대입 사용 |
 | `Unterminated string` | 닫는 `"` 없이 문자열 끝남 |
 | `Expected ')'` / `Expected '('` | 괄호 누락 |
 | `Expected ';'` | 세미콜론 누락 |

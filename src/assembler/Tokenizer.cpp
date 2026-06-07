@@ -46,12 +46,30 @@ void Tokenizer::Scanner::scanToken() {
         case ',': addToken(TokenType::COMMA);       break;
         case '[': addToken(TokenType::LEFT_BRACKET);  break;
         case ']': addToken(TokenType::RIGHT_BRACKET); break;
-        case '+': addToken(TokenType::PLUS);        break;
-        case '-': addToken(TokenType::MINUS);       break;
-        case '*': addToken(TokenType::STAR);        break;
+        case '+':
+            if (match('+')) throw std::runtime_error(
+                "[line " + std::to_string(line_) + "] Unsupported operator '++'. Use 'x = x + 1'.");
+            if (match('=')) throw std::runtime_error(
+                "[line " + std::to_string(line_) + "] Unsupported operator '+='. Use 'x = x + value'.");
+            addToken(TokenType::PLUS);
+            break;
+        case '-':
+            if (match('-')) throw std::runtime_error(
+                "[line " + std::to_string(line_) + "] Unsupported operator '--'. Use 'x = x - 1'.");
+            if (match('=')) throw std::runtime_error(
+                "[line " + std::to_string(line_) + "] Unsupported operator '-='. Use 'x = x - value'.");
+            addToken(TokenType::MINUS);
+            break;
+        case '*':
+            if (match('=')) throw std::runtime_error(
+                "[line " + std::to_string(line_) + "] Unsupported operator '*='. Use 'x = x * value'.");
+            addToken(TokenType::STAR);
+            break;
         case '%': addToken(TokenType::PERCENT);     break;
         case '/':
             if (match('/')) skipLineComment();
+            else if (match('=')) throw std::runtime_error(
+                "[line " + std::to_string(line_) + "] Unsupported operator '/='. Use 'x = x / value'.");
             else            addToken(TokenType::SLASH);
             break;
         case '!': addToken(match('=') ? TokenType::BANG_EQUAL    : TokenType::BANG);    break;

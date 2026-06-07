@@ -199,6 +199,39 @@ TEST_F(TokenizerTest, UnknownCharacterThrows) {
     }
 }
 
+TEST_F(TokenizerTest, UnsupportedOperator_Increment_Throws) {
+    EXPECT_THROW(tokenizer.tokenize("i++"), std::runtime_error);
+}
+
+TEST_F(TokenizerTest, UnsupportedOperator_Decrement_Throws) {
+    EXPECT_THROW(tokenizer.tokenize("i--"), std::runtime_error);
+}
+
+TEST_F(TokenizerTest, UnsupportedOperator_PlusAssign_Throws) {
+    EXPECT_THROW(tokenizer.tokenize("x += 1"), std::runtime_error);
+}
+
+TEST_F(TokenizerTest, UnsupportedOperator_MinusAssign_Throws) {
+    EXPECT_THROW(tokenizer.tokenize("x -= 1"), std::runtime_error);
+}
+
+TEST_F(TokenizerTest, UnsupportedOperator_StarAssign_Throws) {
+    EXPECT_THROW(tokenizer.tokenize("x *= 2"), std::runtime_error);
+}
+
+TEST_F(TokenizerTest, UnsupportedOperator_SlashAssign_Throws) {
+    EXPECT_THROW(tokenizer.tokenize("x /= 2"), std::runtime_error);
+}
+
+TEST_F(TokenizerTest, UnsupportedOperator_ErrorMessageContainsOperator) {
+    try {
+        tokenizer.tokenize("i++");
+        FAIL() << "expected throw";
+    } catch (const std::runtime_error& e) {
+        EXPECT_NE(std::string(e.what()).find("++"), std::string::npos);
+    }
+}
+
 TEST_F(TokenizerTest, LineComment) {
     // comment only -> only EOF
     {

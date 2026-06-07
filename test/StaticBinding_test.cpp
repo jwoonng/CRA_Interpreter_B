@@ -363,3 +363,22 @@ TEST_F(StaticBindingIntegrationFixture, RecursiveFunction_ReturnsCorrectValue) {
         "Func fact(n) { if (n <= 1) return 1; return n * fact(n - 1); } print fact(5);"),
         "120\n");
 }
+
+// { var a = 10; { print a; var b = 3; } print b; }
+// inner 에서 outer 변수 a 접근 가능 (distance=1 로 최적화),
+// outer 에서 inner 변수 b 접근 불가 (distance=-1 → 런타임 에러)
+TEST_F(StaticBindingIntegrationFixture, Scope_InnerAccessesOuter_OuterCannotAccessInner) {
+    std::string out = shell_.runLine(
+        "{ var a = 10; { print a; var b = 3; } print b; }");
+    // print a → "10\n", print b → Undefined variable error
+    EXPECT_EQ(out.substr(0, 3), "10\n");
+    EXPECT_NE(out.find("Undefined variable"), std::string::npos);
+}
+
+// { var x = 1; { var x = 2; print x; } print x; }
+// shadowing: 내부 x(distance=0)=2, 외부 x(distance=0)=1
+TEST_F(StaticBindingIntegrationFixture, Scope_ShadowedVar_OptimizerSetsCorrectDistance) {
+    EXPECT_EQ(shell_.runLine(
+        "{ var x = 1; { var x = 2; print x; } print x; }"),
+        "2\n1\n");
+}
