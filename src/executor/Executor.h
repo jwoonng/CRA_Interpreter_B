@@ -80,11 +80,27 @@ struct ReturnException {
     LiteralValue value;
 };
 
+// DebugObserver / DebugVar are declared in IExecutor.h so that the debug
+// hooks can live on the IExecutor interface (no concrete-type downcast).
+
 // ── Executor ─────────────────────────────────────────────────────────
 class Executor : public IExecutor, private ExprVisitor, private StmtVisitor {
 public:
     void execute(std::vector<std::unique_ptr<Stmt>> stmts,
                  std::ostream& out) override;
+
+    // ── Debug support (IExecutor overrides) ──────────────────────────
+    // Install (or clear with nullptr) an observer notified before each
+    // stoppable statement. Used by the factory "debug" mode.
+    void setDebugObserver(DebugObserver* observer) override { observer_ = observer; }
+
+    // Look up a variable by name through the active scope chain
+    // (nearest scope first). Returns false if undefined.
+    bool debugLookup(const std::string& name, LiteralValue& out) const override;
+
+    // Snapshot of every variable visible at the current pause point:
+    // local scopes (nearest first) followed by the global scope.
+    std::vector<DebugVar> debugSnapshot() const override;
 
 private:
     Environment  global_;
@@ -92,6 +108,9 @@ private:
     std::ostream* out_ = nullptr;
     std::unordered_map<std::string, FunctionEntry> functions_;
     std::vector<std::vector<std::unique_ptr<Stmt>>> ownedStmts_;
+
+    DebugObserver* observer_  = nullptr;  // null = normal execution
+    int            execDepth_ = 0;        // current block-nesting depth
 
     LiteralValue evaluate(Expr& e);
     void         run(Stmt& s);
