@@ -12,7 +12,7 @@
 struct CheckError : std::runtime_error {
     int line;
     CheckError(int line, const std::string& msg)
-        : std::runtime_error("[" + std::to_string(line) + "번째 줄] " + msg), line(line) {}
+        : std::runtime_error("[line " + std::to_string(line) + "] " + msg), line(line) {}
 };
 
 class Checker : public IChecker, public ExprVisitor, public StmtVisitor {

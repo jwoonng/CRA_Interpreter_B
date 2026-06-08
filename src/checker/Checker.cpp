@@ -11,7 +11,7 @@ void Checker::declare(const Token& name) {
     if (scopes_.empty()) return;
     auto& scope = scopes_.back();
     if (scope.count(name.lexeme))
-        throw CheckError(name.line, "변수 '" + name.lexeme + "'이(가) 이미 이 블록에서 선언되었습니다.");
+        throw CheckError(name.line, "Variable '" + name.lexeme + "' is already declared in this block.");
     scope[name.lexeme] = false;
 }
 
@@ -26,7 +26,7 @@ void Checker::resolveVar(const Token& name) {
         if (it != scopes_[i].end()) {
             if (!it->second)
                 throw CheckError(name.line,
-                    "자신의 초기화식에서 지역변수 '" + name.lexeme + "'을(를) 읽을 수 없습니다.");
+                    "Cannot read local variable '" + name.lexeme + "' in its own initializer.");
             return;
         }
     }
