@@ -62,19 +62,73 @@ static std::string trimmed(const std::string& s) {
 // ── prompt mode (REPL) ────────────────────────────────────────────
 // Accumulate lines until the { } depth returns to 0, then run the whole
 // block at once. While inside a multi-line block the "... " prompt is shown.
-// Typing "exit" or "quit" at the top level ends the session.
+//
+//  quit / exit          → 전체 블록 취소 후 종료 (어느 깊이에서든)
+//  문법 오류 줄         → 해당 줄만 스킵, 누적 블록·depth 유지
+//  스코프 여는 줄 오류  → 더미 } 붙여 단독 검사, 실패 시 그 줄만 스킵
 void Shell::run(std::istream& in, std::ostream& out) {
     std::string line;
     std::string accumulated;
     int depth = 0;
 
+    // 현재 depth에 맞는 프롬프트 출력
+    auto printPrompt = [&]() {
+        if (depth == 0)
+            out << "> ";
+        else
+            out << "... " << std::string((depth - 1) * 2, ' ');
+    };
+
     out << "> ";
     while (std::getline(in, line)) {
-        // "exit" / "quit" terminate the session, but only at the top level
-        // (not while accumulating a multi-line block).
-        if (accumulated.empty() && depth == 0) {
-            std::string t = trimmed(line);
-            if (t == "exit" || t == "quit") break;
+        std::string t = trimmed(line);
+
+        // quit / exit — 어느 깊이에서든 블록 취소 후 종료
+        if (t == "exit" || t == "quit") {
+            if (depth > 0) {
+                accumulated.clear();
+                depth = 0;
+                out << "[REPL] block discarded.\n";
+            }
+            break;
+        }
+
+        // 선행 검사 (tokenize → parse → Checker strict):
+        //   대상: '}'로 시작하지 않는 비어있지 않은 줄
+        //         && (블록 내부이거나 스코프를 새로 여는 줄)
+        //   검사 범위: 전체 누적 블록 + 새 줄 + 더미 '}'(미닫힌 중괄호 수)
+        //   Checker strict mode: 미선언 변수를 즉시 검출.
+        //   실패 시 해당 줄만 버리고 누적 블록·depth는 그대로 유지.
+        if (!t.empty() && t.front() != '}') {
+            int delta = netBraces(line);
+            if (depth > 0 || delta > 0) {
+                std::string fullBlock = accumulated;
+                if (!fullBlock.empty()) fullBlock += '\n';
+                fullBlock += line;
+                int totalOpen = depth + delta;
+                for (int i = 0; i < totalOpen; ++i) fullBlock += "\n}";
+
+                checker_->setStrictGlobalCheck(true);
+                bool checkCalled = false;
+                bool hadError    = false;
+                std::string errMsg;
+                try {
+                    auto tokens = tokenizer_->tokenize(fullBlock);
+                    auto stmts  = parser_->parse(tokens);
+                    checkCalled = true;
+                    checker_->check(stmts);
+                } catch (const std::exception& ex) {
+                    hadError = true;
+                    errMsg   = ex.what();
+                }
+                checker_->setStrictGlobalCheck(false);
+                if (checkCalled) checker_->rollbackLastCheck();
+                if (hadError) {
+                    out << errMsg << "\n";
+                    printPrompt();
+                    continue;          // 이 줄만 스킵 — 블록·depth 유지
+                }
+            }
         }
 
         depth += netBraces(line);

@@ -1,4 +1,7 @@
 #include "Parser.h"
+#include <algorithm>
+#include <cctype>
+#include <unordered_set>
 
 // ── 공개 진입점 ────────────────────────────────────────────────
 std::vector<std::unique_ptr<Stmt>> Parser::parse(const std::vector<Token>& tokens) {
@@ -51,6 +54,20 @@ StmtPtr Parser::statement() {
             throw error(peek(), "Unknown keyword '" + lex + "'. Use 'print' to output values.");
         if (lex == "elif" || lex == "elsif")
             throw error(peek(), "Unknown keyword '" + lex + "'. Use 'else if' for chained conditions.");
+
+        // 대소문자 혼용 keyword 감지 — Return, VAR, FOR 등
+        {
+            static const std::unordered_set<std::string> kw = {
+                "var", "if", "else", "for", "true", "false", "and",
+                "or", "print", "func", "return"
+            };
+            std::string lower = lex;
+            std::transform(lower.begin(), lower.end(), lower.begin(),
+                           [](unsigned char c){ return std::tolower(c); });
+            if (lower != lex && kw.count(lower))
+                throw error(peek(),
+                    "Keywords must be lowercase. Use '" + lower + "' instead of '" + lex + "'.");
+        }
     }
 
     if (check(TokenType::RIGHT_BRACE))
@@ -289,7 +306,10 @@ ExprPtr Parser::primary() {
         return std::make_unique<GroupingExpr>(std::move(expr));
     }
 
-    throw error(peek(), "Expected expression.");
+    const Token& bad = peek();
+    if (bad.type == TokenType::EOF_TOKEN)
+        throw error(bad, "Unexpected end of input.");
+    throw error(bad, "Unexpected token '" + bad.lexeme + "'.");
 }
 
 // ══════════════════════════════════════════════════════════════
