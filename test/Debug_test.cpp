@@ -202,7 +202,7 @@ TEST(DebugModeTest, WatchUndefinedVariable_ShowsUndefined) {
 
 TEST(DebugModeTest, RuntimeError_StopsAndReturnsOne) {
     Shell shell;
-    std::string path = writeTempScript("debug", "print 1 / 0;\n");
+    auto path = writeTempScript("debug", "print 1 / 0;\n");
     std::istringstream in("continue\n");
     std::ostringstream out;
     int code = shell.runDebug(path, in, out);
@@ -275,7 +275,7 @@ TEST(DebugModeTest, Watches_ExplicitCommand_UndefinedVar_ShowsUndefined) {
 TEST(DebugModeTest, RunDebug_WithOptimizer_ProducesCorrectOutput) {
     Shell shell;
     shell.addOptimizer(std::make_unique<ConstantFoldingOptimizer>());
-    std::string path = writeTempScript("debug", "print 2 + 3;\n");
+    auto path = writeTempScript("debug", "print 2 + 3;\n");
     std::istringstream in("continue\n");
     std::ostringstream out;
     EXPECT_EQ(shell.runDebug(path, in, out), 0);
