@@ -1,5 +1,6 @@
 #include "Debugger.h"
 #include <cmath>
+#include <cstdlib>
 #include <limits>
 #include <sstream>
 #include <unordered_set>
@@ -63,6 +64,21 @@ std::string trim(const std::string& s) {
     return s.substr(b, e - b + 1);
 }
 
+// Parse "name[index]" → true and fill out name/index; false if not that format.
+bool parseIndexedArg(const std::string& arg, std::string& name, int& index) {
+    auto lb = arg.find('[');
+    auto rb = arg.find(']');
+    if (lb == std::string::npos || rb == std::string::npos || rb < lb) return false;
+    name = arg.substr(0, lb);
+    if (name.empty()) return false;
+    try {
+        index = std::stoi(arg.substr(lb + 1, rb - lb - 1));
+    } catch (...) {
+        return false;
+    }
+    return true;
+}
+
 }  // namespace
 
 // ── construction ──────────────────────────────────────────────────────
@@ -107,6 +123,19 @@ void Debugger::reportStop(const Stmt& stmt, bool isBreakpoint) {
     out_ << " -> " << sourceText(stmt.line) << "\n";
 }
 
+std::string Debugger::resolveIndexedWatch(const std::string& name, int index) const {
+    std::string label = name + "[" + std::to_string(index) + "]";
+    LiteralValue arrVal;
+    if (!executor_.debugLookup(name, arrVal))
+        return label + " = <undefined>";
+    const auto* ap = std::get_if<ArrayPtr>(&arrVal);
+    if (!ap || !*ap)
+        return label + " = <not an array>";
+    if (index < 0 || index >= static_cast<int>((*ap)->elements.size()))
+        return label + " = <index out of range>";
+    return label + " = " + stringifyValue((*ap)->elements[index]);
+}
+
 void Debugger::reportWatches() {
     for (const auto& name : watches_) {
         LiteralValue value;
@@ -115,6 +144,8 @@ void Debugger::reportWatches() {
         else
             out_ << "[WATCH] " << name << " = <undefined>\n";
     }
+    for (const auto& w : indexedWatches_)
+        out_ << "[WATCH] " << resolveIndexedWatch(w.name, w.index) << "\n";
 }
 
 // ── command loop ──────────────────────────────────────────────────────
@@ -137,6 +168,7 @@ void Debugger::commandLoop(int depth) {
         if (cmd == "step" || cmd == "s")          { mode_ = Mode::Step; return; }
         if (cmd == "next" || cmd == "n")          { mode_ = Mode::Next; nextDepth_ = depth; return; }
         if (cmd == "continue" || cmd == "c")      { mode_ = Mode::Run;  return; }
+        if (cmd == "quit"  || cmd == "exit")      { out_ << "[DEBUG] session terminated.\n"; std::exit(0); }
         if (cmd == "break")                       cmdBreak(arg);
         else if (cmd == "remove")                 cmdRemove(arg);
         else if (cmd == "breakpoints")            cmdBreakpoints();
@@ -182,27 +214,61 @@ void Debugger::cmdBreakpoints() {
 }
 
 // ── watch commands ────────────────────────────────────────────────────
-void Debugger::cmdWatch(const std::string& name) {
-    if (name.empty()) { out_ << "[WATCH] usage: watch <name>\n"; return; }
+void Debugger::cmdWatch(const std::string& arg) {
+    if (arg.empty()) {
+        out_ << "[WATCH] usage: watch <name>  or  watch <name>[<index>]\n";
+        return;
+    }
+
+    std::string name;
+    int index = 0;
+    if (parseIndexedArg(arg, name, index)) {
+        for (const auto& w : indexedWatches_)
+            if (w.name == name && w.index == index) {
+                out_ << "[WATCH] '" << arg << "' is already watched\n";
+                return;
+            }
+        indexedWatches_.push_back({name, index});
+        out_ << "[WATCH] now watching '" << arg << "'\n";
+        return;
+    }
+
     for (const auto& w : watches_)
-        if (w == name) { out_ << "[WATCH] '" << name << "' is already watched\n"; return; }
-    watches_.push_back(name);
-    out_ << "[WATCH] now watching '" << name << "'\n";
+        if (w == arg) { out_ << "[WATCH] '" << arg << "' is already watched\n"; return; }
+    watches_.push_back(arg);
+    out_ << "[WATCH] now watching '" << arg << "'\n";
 }
 
-void Debugger::cmdUnwatch(const std::string& name) {
+void Debugger::cmdUnwatch(const std::string& arg) {
+    std::string name;
+    int index = 0;
+    if (parseIndexedArg(arg, name, index)) {
+        for (auto it = indexedWatches_.begin(); it != indexedWatches_.end(); ++it) {
+            if (it->name == name && it->index == index) {
+                indexedWatches_.erase(it);
+                out_ << "[WATCH] stopped watching '" << arg << "'\n";
+                return;
+            }
+        }
+        out_ << "[WATCH] '" << arg << "' is not watched\n";
+        return;
+    }
+
     for (auto it = watches_.begin(); it != watches_.end(); ++it) {
-        if (*it == name) {
+        if (*it == arg) {
             watches_.erase(it);
-            out_ << "[WATCH] stopped watching '" << name << "'\n";
+            out_ << "[WATCH] stopped watching '" << arg << "'\n";
             return;
         }
     }
-    out_ << "[WATCH] '" << name << "' is not watched\n";
+    out_ << "[WATCH] '" << arg << "' is not watched\n";
 }
 
 void Debugger::cmdWatches() {
-    if (watches_.empty()) { out_ << "[WATCH] no watched variables\n"; return; }
+    if (watches_.empty() && indexedWatches_.empty()) {
+        out_ << "[WATCH] no watched variables\n";
+        return;
+    }
     for (const auto& name : watches_) {
         LiteralValue value;
         if (executor_.debugLookup(name, value))
@@ -210,6 +276,8 @@ void Debugger::cmdWatches() {
         else
             out_ << "[WATCH] " << name << " = <undefined>\n";
     }
+    for (const auto& w : indexedWatches_)
+        out_ << "[WATCH] " << resolveIndexedWatch(w.name, w.index) << "\n";
 }
 
 void Debugger::cmdInspect() {
