@@ -22,6 +22,7 @@ public:
 private:
     // false = declared(uninitialized), true = initialized
     std::vector<std::unordered_map<std::string, bool>> scopes_;
+    std::unordered_map<std::string, int> globalScope_;  // name → line
     int functionDepth_ = 0;
 
     void beginScope();

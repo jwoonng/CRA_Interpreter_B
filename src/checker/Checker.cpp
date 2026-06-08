@@ -8,7 +8,15 @@ void Checker::beginScope() { scopes_.push_back({}); }
 void Checker::endScope() { scopes_.pop_back(); }
 
 void Checker::declare(const Token& name) {
-    if (scopes_.empty()) return;
+    if (scopes_.empty()) {
+        auto it = globalScope_.find(name.lexeme);
+        if (it != globalScope_.end())
+            throw CheckError(name.line,
+                "Variable '" + name.lexeme + "' is already declared in global scope (first declared at line " +
+                std::to_string(it->second) + ").");
+        globalScope_[name.lexeme] = name.line;
+        return;
+    }
     auto& scope = scopes_.back();
     if (scope.count(name.lexeme))
         throw CheckError(name.line, "Variable '" + name.lexeme + "' is already declared in this block.");

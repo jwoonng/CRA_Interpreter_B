@@ -53,6 +53,9 @@ StmtPtr Parser::statement() {
             throw error(peek(), "Unknown keyword '" + lex + "'. Use 'else if' for chained conditions.");
     }
 
+    if (check(TokenType::RIGHT_BRACE))
+        throw error(peek(), "Unexpected '}': no matching '{' found.");
+
     return expressionStatement();
 }
 

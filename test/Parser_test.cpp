@@ -1051,3 +1051,31 @@ TEST(ParserTest, ForMissingRightParenThrows) {
         std::exception
     );
 }
+
+TEST(ParserTest, UnmatchedClosingBraceThrows) {
+    // }  — 열린 스코프 없이 } 단독 사용
+    Parser parser;
+    EXPECT_THROW(
+        parser.parse({
+            tok(TokenType::RIGHT_BRACE, "}"),
+            eof()
+        }),
+        std::exception
+    );
+}
+
+TEST(ParserTest, UnmatchedClosingBraceErrorMessage) {
+    // 에러 메시지에 "}" 관련 내용이 포함되어야 함
+    Parser parser;
+    try {
+        parser.parse({
+            tok(TokenType::RIGHT_BRACE, "}", {}, 3),
+            eof()
+        });
+        FAIL() << "expected throw";
+    } catch (const std::exception& e) {
+        std::string msg = e.what();
+        EXPECT_NE(msg.find("}"), std::string::npos) << "message: " << msg;
+        EXPECT_NE(msg.find("line 3"), std::string::npos) << "message: " << msg;
+    }
+}
