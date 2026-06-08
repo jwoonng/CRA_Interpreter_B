@@ -153,9 +153,9 @@ TEST(DebugModeTest, UnknownCommand_PrintsError) {
     EXPECT_TRUE(contains(out, "[DEBUG] unknown command: bogus_cmd"));
 }
 
-TEST(DebugModeTest, BreakWithBadArg_PrintsUsage) {
+TEST(DebugModeTest, BreakWithBadArg_PrintsInvalidLineNumber) {
     std::string out = runDebug("var a = 1;\n", "break notanumber\ncontinue\n");
-    EXPECT_TRUE(contains(out, "[DEBUG] usage: break <line>"));
+    EXPECT_TRUE(contains(out, "[DEBUG] invalid line number: notanumber"));
 }
 
 TEST(DebugModeTest, RemoveNonexistentBreakpoint_PrintsNoBreakpoint) {
@@ -163,9 +163,9 @@ TEST(DebugModeTest, RemoveNonexistentBreakpoint_PrintsNoBreakpoint) {
     EXPECT_TRUE(contains(out, "[DEBUG] no breakpoint at line 999"));
 }
 
-TEST(DebugModeTest, RemoveWithBadArg_PrintsUsage) {
+TEST(DebugModeTest, RemoveWithBadArg_PrintsInvalidLineNumber) {
     std::string out = runDebug("var a = 1;\n", "remove notanumber\ncontinue\n");
-    EXPECT_TRUE(contains(out, "[DEBUG] usage: remove <line>"));
+    EXPECT_TRUE(contains(out, "[DEBUG] invalid line number: notanumber"));
 }
 
 TEST(DebugModeTest, WatchDuplicate_PrintsAlreadyWatched) {

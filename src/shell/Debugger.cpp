@@ -160,19 +160,20 @@ void Debugger::commandLoop(int depth) {
         std::istringstream iss(trim(line));
         std::string cmd;
         iss >> cmd;
-        std::string arg;
-        iss >> arg;
+        std::string args;
+        std::getline(iss, args);
+        args = trim(args);
 
         if (cmd.empty())                          continue;
         if (cmd == "step" || cmd == "s")          { mode_ = Mode::Step; return; }
         if (cmd == "next" || cmd == "n")          { mode_ = Mode::Next; nextDepth_ = depth; return; }
         if (cmd == "continue" || cmd == "c")      { mode_ = Mode::Run;  return; }
         if (cmd == "quit"  || cmd == "exit")      { out_ << "[DEBUG] session terminated.\n"; throw DebugQuitRequest{}; }
-        if (cmd == "break")                       cmdBreak(arg);
-        else if (cmd == "remove")                 cmdRemove(arg);
+        if (cmd == "break")                       cmdBreak(args);
+        else if (cmd == "remove")                 cmdRemove(args);
         else if (cmd == "breakpoints")            cmdBreakpoints();
-        else if (cmd == "watch")                  cmdWatch(arg);
-        else if (cmd == "unwatch")                cmdUnwatch(arg);
+        else if (cmd == "watch")                  cmdWatch(args);
+        else if (cmd == "unwatch")                cmdUnwatch(args);
         else if (cmd == "watches")                cmdWatches();
         else if (cmd == "inspect")                cmdInspect();
         else                                      out_ << "[DEBUG] unknown command: " << cmd << "\n";
@@ -180,26 +181,44 @@ void Debugger::commandLoop(int depth) {
 }
 
 // ── breakpoint commands ───────────────────────────────────────────────
-void Debugger::cmdBreak(const std::string& arg) {
-    try {
-        int line = std::stoi(arg);
-        breakpoints_.insert(line);
-        out_ << "[DEBUG] breakpoint set at line " << line << "\n";
-    } catch (...) {
-        out_ << "[DEBUG] usage: break <line>\n";
+void Debugger::cmdBreak(const std::string& args) {
+    std::istringstream iss(args);
+    std::string token;
+    bool any = false;
+    while (iss >> token) {
+        any = true;
+        try {
+            std::size_t pos;
+            int line = std::stoi(token, &pos);
+            if (pos != token.size()) throw std::invalid_argument("trailing chars");
+            breakpoints_.insert(line);
+            out_ << "[DEBUG] breakpoint set at line " << line << "\n";
+        } catch (...) {
+            out_ << "[DEBUG] invalid line number: " << token << "\n";
+        }
     }
+    if (!any) out_ << "[DEBUG] usage: break <line> [line2 ...]\n";
 }
 
-void Debugger::cmdRemove(const std::string& arg) {
-    try {
-        int line = std::stoi(arg);
-        if (breakpoints_.erase(line))
-            out_ << "[DEBUG] breakpoint removed at line " << line << "\n";
-        else
-            out_ << "[DEBUG] no breakpoint at line " << line << "\n";
-    } catch (...) {
-        out_ << "[DEBUG] usage: remove <line>\n";
+void Debugger::cmdRemove(const std::string& args) {
+    std::istringstream iss(args);
+    std::string token;
+    bool any = false;
+    while (iss >> token) {
+        any = true;
+        try {
+            std::size_t pos;
+            int line = std::stoi(token, &pos);
+            if (pos != token.size()) throw std::invalid_argument("trailing chars");
+            if (breakpoints_.erase(line))
+                out_ << "[DEBUG] breakpoint removed at line " << line << "\n";
+            else
+                out_ << "[DEBUG] no breakpoint at line " << line << "\n";
+        } catch (...) {
+            out_ << "[DEBUG] invalid line number: " << token << "\n";
+        }
     }
+    if (!any) out_ << "[DEBUG] usage: remove <line> [line2 ...]\n";
 }
 
 void Debugger::cmdBreakpoints() {
@@ -213,54 +232,72 @@ void Debugger::cmdBreakpoints() {
 }
 
 // ── watch commands ────────────────────────────────────────────────────
-void Debugger::cmdWatch(const std::string& arg) {
-    if (arg.empty()) {
-        out_ << "[WATCH] usage: watch <name>  or  watch <name>[<index>]\n";
-        return;
-    }
-
-    std::string name;
-    int index = 0;
-    if (parseIndexedArg(arg, name, index)) {
-        for (const auto& w : indexedWatches_)
-            if (w.name == name && w.index == index) {
-                out_ << "[WATCH] '" << arg << "' is already watched\n";
-                return;
+void Debugger::cmdWatch(const std::string& args) {
+    std::istringstream iss(args);
+    std::string token;
+    bool any = false;
+    while (iss >> token) {
+        any = true;
+        std::string name;
+        int index = 0;
+        if (parseIndexedArg(token, name, index)) {
+            bool dup = false;
+            for (const auto& w : indexedWatches_)
+                if (w.name == name && w.index == index) { dup = true; break; }
+            if (dup)
+                out_ << "[WATCH] '" << token << "' is already watched\n";
+            else {
+                indexedWatches_.push_back({name, index});
+                out_ << "[WATCH] now watching '" << token << "'\n";
             }
-        indexedWatches_.push_back({name, index});
-        out_ << "[WATCH] now watching '" << arg << "'\n";
-        return;
+        } else {
+            bool dup = false;
+            for (const auto& w : watches_)
+                if (w == token) { dup = true; break; }
+            if (dup)
+                out_ << "[WATCH] '" << token << "' is already watched\n";
+            else {
+                watches_.push_back(token);
+                out_ << "[WATCH] now watching '" << token << "'\n";
+            }
+        }
     }
-
-    for (const auto& w : watches_)
-        if (w == arg) { out_ << "[WATCH] '" << arg << "' is already watched\n"; return; }
-    watches_.push_back(arg);
-    out_ << "[WATCH] now watching '" << arg << "'\n";
+    if (!any) out_ << "[WATCH] usage: watch <name> [name2 ...]  or  watch <name>[<index>]\n";
 }
 
-void Debugger::cmdUnwatch(const std::string& arg) {
-    std::string name;
-    int index = 0;
-    if (parseIndexedArg(arg, name, index)) {
-        for (auto it = indexedWatches_.begin(); it != indexedWatches_.end(); ++it) {
-            if (it->name == name && it->index == index) {
-                indexedWatches_.erase(it);
-                out_ << "[WATCH] stopped watching '" << arg << "'\n";
-                return;
+void Debugger::cmdUnwatch(const std::string& args) {
+    std::istringstream iss(args);
+    std::string token;
+    bool any = false;
+    while (iss >> token) {
+        any = true;
+        std::string name;
+        int index = 0;
+        if (parseIndexedArg(token, name, index)) {
+            bool found = false;
+            for (auto it = indexedWatches_.begin(); it != indexedWatches_.end(); ++it) {
+                if (it->name == name && it->index == index) {
+                    indexedWatches_.erase(it);
+                    out_ << "[WATCH] stopped watching '" << token << "'\n";
+                    found = true;
+                    break;
+                }
             }
+            if (!found) out_ << "[WATCH] '" << token << "' is not watched\n";
+        } else {
+            bool found = false;
+            for (auto it = watches_.begin(); it != watches_.end(); ++it) {
+                if (*it == token) {
+                    watches_.erase(it);
+                    out_ << "[WATCH] stopped watching '" << token << "'\n";
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) out_ << "[WATCH] '" << token << "' is not watched\n";
         }
-        out_ << "[WATCH] '" << arg << "' is not watched\n";
-        return;
     }
-
-    for (auto it = watches_.begin(); it != watches_.end(); ++it) {
-        if (*it == arg) {
-            watches_.erase(it);
-            out_ << "[WATCH] stopped watching '" << arg << "'\n";
-            return;
-        }
-    }
-    out_ << "[WATCH] '" << arg << "' is not watched\n";
+    if (!any) out_ << "[WATCH] usage: unwatch <name> [name2 ...]\n";
 }
 
 void Debugger::cmdWatches() {
