@@ -86,3 +86,126 @@ TEST(FileModeTest, WithOptimizer_RunFileProducesCorrectOutput) {
     EXPECT_EQ(shell.runFile(path, out), 0);
     EXPECT_EQ(out.str(), "5\n");
 }
+
+// ── 빈 파일 ────────────────────────────────────────────────────────────
+
+TEST(FileModeTest, EmptyFile_ReturnsZeroWithNoOutput) {
+    auto path = writeTempScript("filemode", "");
+    Shell shell;
+    std::ostringstream out;
+    EXPECT_EQ(shell.runFile(path, out), 0);
+    EXPECT_EQ(out.str(), "");
+}
+
+// ── 배열 런타임 오류 — 줄 번호 포함 출력 후 즉시 종료 ──────────────────
+
+// arr[5] — 크기 3인 배열의 범위 초과 인덱스
+TEST(FileModeTest, RuntimeError_ArrayIndexOutOfBounds_ReportsLineAndStops) {
+    auto path = writeTempScript("filemode",
+        "var arr = array(3);\n"
+        "print arr[5];\n"        // 런타임 오류: 줄 2
+        "print \"FAIL\";\n");    // 즉시 종료 검증 — 출력되면 안 됨
+    Shell shell;
+    std::ostringstream out;
+    int code = shell.runFile(path, out);
+    EXPECT_EQ(code, 1);
+    EXPECT_TRUE(contains(out.str(), "[line 2]"));
+    EXPECT_FALSE(contains(out.str(), "FAIL"));
+}
+
+// arr["hello"] — 인덱스가 숫자가 아닌 경우
+TEST(FileModeTest, RuntimeError_NonNumericIndex_ReportsLineAndStops) {
+    auto path = writeTempScript("filemode",
+        "var arr = array(3);\n"
+        "print arr[\"hello\"];\n"  // 런타임 오류: 줄 2
+        "print \"FAIL\";\n");
+    Shell shell;
+    std::ostringstream out;
+    int code = shell.runFile(path, out);
+    EXPECT_EQ(code, 1);
+    EXPECT_TRUE(contains(out.str(), "[line 2]"));
+    EXPECT_FALSE(contains(out.str(), "FAIL"));
+}
+
+// var x = 10; x[0] — 배열이 아닌 대상에 [] 사용
+TEST(FileModeTest, RuntimeError_IndexOnNonArray_ReportsLineAndStops) {
+    auto path = writeTempScript("filemode",
+        "var x = 10;\n"
+        "print x[0];\n"          // 런타임 오류: 줄 2
+        "print \"FAIL\";\n");
+    Shell shell;
+    std::ostringstream out;
+    int code = shell.runFile(path, out);
+    EXPECT_EQ(code, 1);
+    EXPECT_TRUE(contains(out.str(), "[line 2]"));
+    EXPECT_FALSE(contains(out.str(), "FAIL"));
+}
+
+// array("hi") — 배열 크기로 숫자가 아닌 값
+TEST(FileModeTest, RuntimeError_NonNumericArraySize_ReportsLineAndStops) {
+    auto path = writeTempScript("filemode",
+        "var arr = array(\"hi\");\n"  // 런타임 오류: 줄 1
+        "print \"FAIL\";\n");
+    Shell shell;
+    std::ostringstream out;
+    int code = shell.runFile(path, out);
+    EXPECT_EQ(code, 1);
+    EXPECT_TRUE(contains(out.str(), "[line 1]"));
+    EXPECT_FALSE(contains(out.str(), "FAIL"));
+}
+
+// ── 함수 런타임 오류 — 줄 번호 포함 출력 후 즉시 종료 ─────────────────
+
+// var notFunc = "hello"; notFunc() — 함수가 아닌 대상 호출
+TEST(FileModeTest, RuntimeError_CallNonFunction_ReportsLineAndStops) {
+    auto path = writeTempScript("filemode",
+        "var notFunc = \"hello\";\n"
+        "notFunc();\n"            // 런타임 오류: 줄 2
+        "print \"FAIL\";\n");
+    Shell shell;
+    std::ostringstream out;
+    int code = shell.runFile(path, out);
+    EXPECT_EQ(code, 1);
+    EXPECT_TRUE(contains(out.str(), "[line 2]"));
+    EXPECT_FALSE(contains(out.str(), "FAIL"));
+}
+
+// func foo(a,b,c) {} foo(1,2) — 인자 개수 불일치 (3개 파라미터, 2개 인자)
+TEST(FileModeTest, RuntimeError_ArgCountMismatch_ReportsLineAndStops) {
+    auto path = writeTempScript("filemode",
+        "func foo(a, b, c) { return a + b + c; }\n"
+        "foo(1, 2);\n"            // 런타임 오류: 줄 2
+        "print \"FAIL\";\n");
+    Shell shell;
+    std::ostringstream out;
+    int code = shell.runFile(path, out);
+    EXPECT_EQ(code, 1);
+    EXPECT_TRUE(contains(out.str(), "[line 2]"));
+    EXPECT_FALSE(contains(out.str(), "FAIL"));
+}
+
+// ── Checker(정적) 오류 — 실행 전 검출, 즉시 종료 ─────────────────────
+
+// return 5; (전역 스코프) — Checker가 실행 전에 검출
+TEST(FileModeTest, CheckerError_ReturnOutsideFunction_StopsBeforeExecution) {
+    auto path = writeTempScript("filemode",
+        "return 5;\n"
+        "print \"FAIL\";\n");    // Checker 오류로 실행 자체가 시작되지 않음
+    Shell shell;
+    std::ostringstream out;
+    int code = shell.runFile(path, out);
+    EXPECT_EQ(code, 1);
+    EXPECT_FALSE(contains(out.str(), "FAIL"));
+}
+
+// func foo(a, a) {} — 파라미터 이름 중복, Checker가 실행 전에 검출
+TEST(FileModeTest, CheckerError_DuplicateParams_StopsBeforeExecution) {
+    auto path = writeTempScript("filemode",
+        "func foo(a, a) { return a; }\n"
+        "print \"FAIL\";\n");    // Checker 오류로 실행 자체가 시작되지 않음
+    Shell shell;
+    std::ostringstream out;
+    int code = shell.runFile(path, out);
+    EXPECT_EQ(code, 1);
+    EXPECT_FALSE(contains(out.str(), "FAIL"));
+}
