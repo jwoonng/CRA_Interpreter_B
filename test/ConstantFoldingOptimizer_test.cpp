@@ -5,6 +5,7 @@
 #include "src/common/Stmt.h"
 #include "src/executor/Executor.h"
 #include "src/optimizer/ConstantFoldingOptimizer.h"
+#include "TestHelpers.h"
 
 // ── Test Double: SpyBinaryExpr ────────────────────────────────────────────
 // accept()가 호출될 때마다 공유 카운터를 증가시켜 런타임 평가 횟수를 추적한다.
@@ -20,12 +21,6 @@ struct SpyBinaryExpr : BinaryExpr {
         return v.visitBinaryExpr(*this);
     }
 };
-
-// ── 헬퍼 ──────────────────────────────────────────────────────────────────
-static Token tok(TokenType type, std::string lexeme,
-                 LiteralValue lit = std::monostate{}, int line = 1) {
-    return Token{ type, std::move(lexeme), std::move(lit), line };
-}
 
 // print (2 * 3) + 4;  →  "10\n"
 // SpyBinaryExpr 2개: 곱셈 노드, 덧셈 노드

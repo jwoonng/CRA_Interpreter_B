@@ -3,6 +3,7 @@
 #include "src/executor/Executor.h"
 #include "src/common/Expr.h"
 #include "src/common/Stmt.h"
+#include "TestHelpers.h"
 
 // ── Fixture ─────────────────────────────────────────────────────
 class ExecutorTest : public ::testing::Test {
@@ -14,11 +15,6 @@ protected:
     std::string runStmts() {
         ex.execute(std::move(stmts), oss);
         return oss.str();
-    }
-
-    static Token tok(TokenType type, std::string lexeme,
-                     LiteralValue lit = std::monostate{}, int line = 1) {
-        return Token{ type, std::move(lexeme), std::move(lit), line };
     }
 };
 
