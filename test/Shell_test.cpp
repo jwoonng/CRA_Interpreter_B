@@ -519,7 +519,7 @@ TEST(ShellTest, StrictChecker_BlockContinuesAfterUndeclaredVar) {
         "}\n"
         "print add(3, 4);"
     );
-    EXPECT_NE(out.find("7"), std::string::npos);
+    EXPECT_NE(out.find("7\n"), std::string::npos);
 }
 
 // processLine으로 선언된 글로벌 변수는 함수 내에서 에러 없이 통과한다
@@ -570,7 +570,7 @@ TEST(ShellTest, Parser_CapitalizedReturn_InsideBlock_EarlyError) {
         "print add(3, 4);"
     );
     EXPECT_NE(out.find("lowercase"), std::string::npos);
-    EXPECT_NE(out.find("7"), std::string::npos);
+    EXPECT_NE(out.find("7\n"), std::string::npos);
 }
 
 // VAR (all caps) → lowercase 안내 메시지
