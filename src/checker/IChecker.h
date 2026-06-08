@@ -13,4 +13,7 @@ struct IChecker {
     // REPL 전용 — executor 런타임 에러 발생 시 마지막 check() 에서 추가된
     // 전역 선언을 되돌린다. 기본 구현은 no-op.
     virtual void rollbackLastCheck() {}
+
+    // REPL 선행 검사 전용 — true 시 미선언 변수를 즉시 CheckError로 보고.
+    virtual void setStrictGlobalCheck(bool) {}
 };
