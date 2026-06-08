@@ -23,6 +23,21 @@ StmtPtr Parser::statement() {
     if (match({TokenType::PRINT}))      return printStatement();
     if (match({TokenType::VAR}))        return varDeclaration();
     if (match({TokenType::LEFT_BRACE})) return block();
+
+    if (check(TokenType::IDENTIFIER)) {
+        const std::string& lex = peek().lexeme;
+        bool isTypeName = (lex == "int"   || lex == "float"  || lex == "double" ||
+                           lex == "string"|| lex == "bool"   || lex == "char"   ||
+                           lex == "long"  || lex == "short"  || lex == "byte"   || lex == "void");
+        if (isTypeName
+            && current_ + 1 < static_cast<int>(tokens_.size())
+            && tokens_[current_ + 1].type == TokenType::IDENTIFIER)
+        {
+            Token t = peek();
+            throw error(t, "Type annotations are not supported. Use 'var' instead of '" + t.lexeme + "'.");
+        }
+    }
+
     return expressionStatement();
 }
 
