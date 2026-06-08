@@ -9,6 +9,8 @@ void Checker::rollbackLastCheck() {
     globalScope_ = globalScopeSnapshot_;
 }
 
+void Checker::setStrictGlobalCheck(bool v) { strictGlobalCheck_ = v; }
+
 void Checker::beginScope() { scopes_.push_back({}); }
 void Checker::endScope() { scopes_.pop_back(); }
 
@@ -43,6 +45,9 @@ void Checker::resolveVar(const Token& name) {
             return;
         }
     }
+    // strict mode: 글로벌 스코프에도 없으면 미선언 변수로 즉시 보고
+    if (strictGlobalCheck_ && globalScope_.find(name.lexeme) == globalScope_.end())
+        throw CheckError(name.line, "Undefined variable '" + name.lexeme + "'.");
     // 글로벌 또는 미선언 변수 — 런타임 오류는 Executor가 처리
 }
 
@@ -128,6 +133,7 @@ LiteralValue Checker::visitLogicalExpr(LogicalExpr& e) {
 }
 
 void Checker::visitFunctionStmt(FunctionStmt& s) {
+    globalScope_[s.name.lexeme] = s.name.line; // 함수 이름을 전역 선언으로 등록
     std::unordered_set<std::string> seen;
     for (const auto& param : s.params) {
         if (!seen.insert(param.lexeme).second)
