@@ -1,0 +1,46 @@
+// ── func 테스트 ───────────────────────────────────────
+
+// 기본 함수 선언 및 호출
+func add(a, b) {
+    return a + b;
+}
+var result = add(3, 7);
+print result;
+
+// return 없는 함수 (nil 반환)
+func greet(name) {
+    print name;
+}
+greet("hello");
+
+// 재귀 함수 — 팩토리얼
+func fact(n) {
+    if (n <= 1) return 1;
+    return n * fact(n - 1);
+}
+print fact(5);
+print fact(10);
+
+// ── for 문 테스트 ─────────────────────────────────────
+
+// 기본 for 루프
+var sum = 0;
+for (var i = 1; i <= 10; i = i + 1) {
+    sum = sum + i;
+}
+print sum;
+
+// 중첩 for 루프 — 구구단 3단
+for (var i = 1; i <= 9; i = i + 1) {
+    print 3 * i;
+}
+
+// for + func 조합 — 누적 합을 함수로
+func sumTo(n) {
+    var total = 0;
+    for (var i = 1; i <= n; i = i + 1) {
+        total = total + i;
+    }
+    return total;
+}
+print sumTo(100);

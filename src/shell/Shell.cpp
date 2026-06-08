@@ -164,6 +164,9 @@ int Shell::runDebug(const std::string& path, std::istream& cmdIn, std::ostream& 
         executor_->setDebugObserver(&debugger);
         try {
             executor_->execute(std::move(stmts), out);
+        } catch (const DebugQuitRequest&) {
+            executor_->setDebugObserver(nullptr);
+            return 0;
         } catch (...) {
             executor_->setDebugObserver(nullptr);
             throw;
