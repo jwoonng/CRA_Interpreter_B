@@ -19,13 +19,13 @@ struct DebugQuitRequest {};
 // Commands:
 //   step                  run current statement, stop at the next one
 //   next                  run current statement without stepping into blocks
-//   break <line>          set a breakpoint at <line>
+//   break <line> [l2 ...] set one or more breakpoints
 //   breakpoints           list active breakpoints
-//   remove <line>         clear the breakpoint at <line>
+//   remove <line> [l2 ..] clear one or more breakpoints
 //   continue              run until the next breakpoint
-//   watch <name>          add a variable to the watch list
+//   watch <name> [n2 ...] add one or more variables to the watch list
 //   watch <name>[<idx>]   watch a specific array element (e.g. watch arr[0])
-//   unwatch <name>        remove a variable from the watch list
+//   unwatch <name> [n2 ..] remove one or more variables from the watch list
 //   unwatch <name>[<idx>] remove an indexed array element watch
 //   watches               print watched variables (nearest scope value)
 //   inspect               print every variable in the current scope chain
