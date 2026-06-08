@@ -65,43 +65,384 @@ Executor    AST 실행 → 출력
 
 ## 지원 문법
 
-```
-// 변수 선언 및 대입
+<details>
+<summary><b>전체 문법 레퍼런스 펼치기</b></summary>
+
+### 변수
+
+```js
 var x = 10;
-x = x + 1;
-
-// 출력
-print x;
-
-// 조건문
-if (x > 5) print "big"; else print "small";
-
-// 반복문
-for (var i = 0; i < 3; i = i + 1) { print i; }
-
-// 블록 (스코프)
-{ var y = "inner"; print y; }
-
-// 연산자
-// 산술: + - * / %
-// 비교: == != > >= < <=
-// 논리: and or !
-// 문자열 연결: "hello" + " world"
-
-// 함수 선언 / 호출 / 반환 / 재귀
-Func add(a, b) { return a + b; }
-var ret = add(3, 7);          // 10
-Func fact(n) { if (n <= 1) return 1; return n * fact(n - 1); }
-
-// 정적 배열 (생성 시 크기 확정, 인덱스 읽기/쓰기)
-var arr = Array(3);           // [nil, nil, nil]
-arr[0] = 10;
-print arr[0];                 // 10
-
-// 줄 주석
-// 이 줄은 무시됩니다
-var x = 10; // 인라인 주석도 가능
+var name = "Alice";
+var flag = true;
+var empty;        // 값 없이 선언 → nil
 ```
+
+변수 값은 언제든 바꿀 수 있습니다.
+
+```js
+x = x + 1;
+```
+
+---
+
+### 출력
+
+```js
+print x;
+print "안녕하세요, " + name;
+print 1 + 2;
+```
+
+| 저장된 값 | 출력 |
+|:---------:|:----:|
+| `10` (정수) | `10` |
+| `3.14` | `3.14` |
+| `true` / `false` | `true` / `false` |
+| 선언만 하고 값 없음 | `nil` |
+| `"hello"` | `hello` |
+
+---
+
+### 연산자
+
+```js
+// 산술
+print 10 + 3;    // 13
+print 10 / 3;    // 3.33333...
+print 10 * 2;    // 20
+print 10 - 4;    // 6
+print 10 % 3;    // 1  (나머지, 실수 가능: 2.5 % 1.2 → 0.1)
+
+// 문자열 이어붙이기
+print "Hello" + ", " + "World";  // Hello, World
+
+// 비교 (결과는 true / false)
+print 5 > 3;     // true
+print 3 >= 3;    // true
+print 1 != 2;    // true
+print 1 == 1;    // true
+
+// 논리
+print true and false;  // false
+print true or false;   // true
+print !true;           // false
+```
+
+> **참/거짓 판별**: `false`, `0`, `nil` 만 거짓입니다. 빈 문자열 `""` 도 참입니다.
+
+---
+
+### 조건문
+
+```js
+var score = 85;
+
+if (score >= 90) {
+    print "A";
+} else if (score >= 80) {
+    print "B";
+} else {
+    print "C";
+}
+```
+
+`else if` 와 `else` 는 생략할 수 있습니다.
+
+---
+
+### 반복문
+
+```js
+for (var i = 0; i < 5; i = i + 1) {
+    print i;
+}
+// 출력: 0  1  2  3  4
+```
+
+초기화 · 조건 · 증감식은 모두 생략 가능합니다.
+
+```js
+var i = 0;
+for (; i < 3; i = i + 1) {
+    print i;
+}
+```
+
+---
+
+### 함수
+
+**선언**
+
+```js
+func greet(name) {
+    print "Hello, " + name;
+}
+```
+
+**호출**
+
+```js
+greet("Alice");   // Hello, Alice
+```
+
+**반환값**
+
+```js
+func add(a, b) {
+    return a + b;
+}
+
+var result = add(3, 7);
+print result;   // 10
+```
+
+`return` 없이 끝나거나 `return;` 이면 `nil` 을 반환합니다.
+
+**재귀**
+
+```js
+func fact(n) {
+    if (n <= 1) return 1;
+    return n * fact(n - 1);
+}
+
+print fact(5);   // 120
+```
+
+---
+
+### 배열
+
+`array(n)` 으로 n개짜리 배열을 만듭니다. 초기값은 모두 `nil` 입니다.
+
+```js
+var arr = array(3);   // [nil, nil, nil]
+```
+
+**읽기 / 쓰기 / 전체 출력**
+
+```js
+arr[0] = 10;
+arr[1] = 20;
+arr[2] = 30;
+
+print arr[0];             // 10
+print arr[1] + arr[2];    // 50
+print arr;                // [10, 20, 30]
+```
+
+인덱스에 변수나 식을 쓸 수 있습니다.
+
+```js
+var i = 1;
+arr[i] = 99;
+print arr[i - 1];   // 10
+```
+
+**배열을 함수에 넘기기**
+
+배열은 참조로 전달되므로 함수 안에서 수정하면 밖에서도 반영됩니다.
+
+```js
+func fill(a, val) {
+    a[0] = val;
+    a[1] = val;
+    a[2] = val;
+}
+
+var arr = array(3);
+fill(arr, 7);
+print arr[0];   // 7
+```
+
+---
+
+### 블록과 스코프
+
+중괄호 `{}` 안에서 선언한 변수는 블록 밖에서 보이지 않습니다.
+
+```js
+var x = 1;
+{
+    var x = 2;
+    print x;   // 2  (블록 안)
+}
+print x;       // 1  (블록 밖, 원래 값)
+```
+
+---
+
+### 주석
+
+```js
+// 이 줄은 실행되지 않습니다
+var x = 10;   // 인라인 주석도 가능
+```
+
+---
+
+### 예시 모음
+
+**피보나치 수열**
+
+```js
+func fib(n) {
+    if (n <= 1) return n;
+    return fib(n - 1) + fib(n - 2);
+}
+
+for (var i = 0; i < 8; i = i + 1) {
+    print fib(i);
+}
+// 0  1  1  2  3  5  8  13
+```
+
+**1부터 10까지 합산**
+
+```js
+var sum = 0;
+for (var i = 1; i <= 10; i = i + 1) {
+    sum = sum + i;
+}
+print sum;   // 55
+```
+
+**배열 합산**
+
+```js
+var arr = array(5);
+for (var i = 0; i < 5; i = i + 1) {
+    arr[i] = i + 1;
+}
+
+var sum = 0;
+for (var i = 0; i < 5; i = i + 1) {
+    sum = sum + arr[i];
+}
+print sum;   // 15
+```
+
+**문자열 반복**
+
+```js
+func repeat(s, n) {
+    var result = "";
+    for (var i = 0; i < n; i = i + 1) {
+        result = result + s;
+    }
+    return result;
+}
+
+print repeat("ha", 3);   // hahaha
+```
+
+**최댓값 구하기**
+
+```js
+func max(a, b) {
+    if (a > b) return a;
+    return b;
+}
+
+print max(7, 13);   // 13
+```
+
+---
+
+### ✅ 되는 것 · ❌ 안 되는 것
+
+```mermaid
+flowchart LR
+    subgraph YES ["✅ 되는 것"]
+        direction TB
+        y1["var 변수 선언·재대입"]
+        y2["산술 · 문자열 · 논리 연산 (+ % 포함)"]
+        y3["if / else if / else"]
+        y4["for 반복문"]
+        y5["중첩 블록 · 스코프"]
+        y6["func 함수 선언·호출"]
+        y7["재귀 함수"]
+        y8["return 값 반환"]
+        y9["// 줄 주석"]
+        y10["array(n) 배열 생성·읽기·쓰기·전체 출력"]
+    end
+
+    subgraph NO ["❌ 안 되는 것"]
+        direction TB
+        n1["함수를 변수에 저장"]
+        n2["while 문"]
+        n3["break / continue"]
+        n4["++ / -- 연산자"]
+        n5["+= 복합 대입"]
+        n6["/* */ 블록 주석"]
+        n7["파일 입출력"]
+        n8["클래스 / 구조체"]
+    end
+
+    style YES fill:#f0fff4,stroke:#27ae60
+    style NO fill:#fff5f5,stroke:#e53e3e
+```
+
+---
+
+### ⚠️ 오류 메시지
+
+오류가 나면 다음 메시지를 확인하세요.
+
+<details>
+<summary><b>문법 오류 (입력 직후 표시)</b></summary>
+
+| 메시지 | 원인 |
+|--------|------|
+| `Unexpected character: X` | 지원하지 않는 문자 입력 |
+| `Unsupported operator '++'. Use 'x = x + 1'.` | `++` 증감 연산자 사용 |
+| `Unsupported operator '--'. Use 'x = x - 1'.` | `--` 감소 연산자 사용 |
+| `Unsupported operator '+='. Use 'x = x + value'.` | `+=` 복합 대입 사용 |
+| `Unsupported operator '-='. Use 'x = x - value'.` | `-=` 복합 대입 사용 |
+| `Unsupported operator '*='. Use 'x = x * value'.` | `*=` 복합 대입 사용 |
+| `Unsupported operator '/='. Use 'x = x / value'.` | `/=` 복합 대입 사용 |
+| `Unterminated string` | 닫는 `"` 없이 문자열 끝남 |
+| `Expected ')'` / `Expected '('` | 괄호 누락 |
+| `Expected ';'` | 세미콜론 누락 |
+| `Invalid assignment target.` | 대입 불가 대상에 `=` 사용 |
+| `Expected function name.` | `func` 다음에 이름 없음 |
+
+</details>
+
+<details>
+<summary><b>선언 오류 (실행 전 검사)</b></summary>
+
+| 메시지 | 원인 |
+|--------|------|
+| `변수 'X'이(가) 이미 이 블록에서 선언되었습니다.` | 같은 블록 안에서 같은 이름으로 `var` 두 번 |
+| `자신의 초기화식에서 지역변수 'X'을(를) 읽을 수 없습니다.` | `var x = x + 1;` 처럼 자기 자신 참조 |
+| `Cannot use 'return' outside of a function.` | 함수 밖에서 `return` 사용 |
+| `Duplicate parameter name 'X' in function 'F'.` | 파라미터 이름 중복 |
+
+</details>
+
+<details>
+<summary><b>런타임 오류 (실행 중 발생)</b></summary>
+
+| 메시지 | 원인 |
+|--------|------|
+| `Undefined variable 'X'.` | 선언하지 않은 변수 사용 |
+| `Division by zero.` | `0` 으로 나누기 |
+| `Operands must be numbers.` | 숫자가 아닌 값에 산술 연산 |
+| `Operands must be two numbers or two strings.` | `+` 에 숫자+문자열 혼용 |
+| `'X' is not a function.` | 변수를 함수처럼 호출 |
+| `Undefined function 'X'.` | 선언하지 않은 함수 호출 |
+| `Expected N arguments but got M.` | 인자 개수 불일치 |
+| `Value is not an array.` | 배열이 아닌 변수에 `[ ]` 사용 |
+| `Array index must be an integer.` | 인덱스에 정수가 아닌 값 사용 |
+| `Array index out of range.` | 배열 크기를 벗어난 인덱스 |
+| `array() expects exactly 1 argument.` | `array()` 인자 개수 오류 |
+| `array size must be a non-negative integer.` | `array` 크기에 음수·소수·문자열 등 사용 |
+
+</details>
+
+</details>
 
 ---
 
@@ -231,15 +572,23 @@ src/
 ├── assembler/    Tokenizer, Parser
 ├── checker/      Checker
 ├── executor/     Executor, Environment
-└── shell/        Shell (REPL)
+├── optimizer/    IOptimizer, ConstantFoldingOptimizer, StaticBindingOptimizer
+└── shell/        Shell (REPL), Debugger
 
 test/
 ├── Tokenizer_test.cpp
 ├── Parser_test.cpp
 ├── Checker_test.cpp
 ├── Executor_test.cpp
-├── Shell_test.cpp    — Shell 고유 동작 테스트 (실제 구현 사용)
-└── Script_test.cpp   — 전체 파이프라인 End-to-End 통합 테스트
+├── Function_test.cpp              — 함수 선언·호출·재귀 테스트
+├── Array_test.cpp                 — 배열 생성·읽기·쓰기·출력 테스트
+├── Shell_test.cpp                 — Shell 고유 동작 테스트 (실제 구현 사용)
+├── Script_test.cpp                — 전체 파이프라인 End-to-End 통합 테스트
+├── StaticBinding_test.cpp         — StaticBindingOptimizer 테스트
+├── ConstantFoldingOptimizer_test.cpp  — ConstantFoldingOptimizer 단위 테스트
+├── ShellConstantFoldingOptimizer_test.cpp — Shell + CFO 통합 테스트
+├── Debug_test.cpp                 — Debugger 명령어 테스트
+└── FileMode_test.cpp              — 파일 모드 테스트
 ```
 
 ---
@@ -257,8 +606,8 @@ test/
 
 | 분류 | 목록 |
 |------|------|
-| 키워드 | `var` `if` `else` `for` `true` `false` `and` `or` `print` |
-| 단일 연산자 | `+` `-` `*` `/` `!` `=` `>` `<` `(` `)` `{` `}` `;` |
+| 키워드 | `var` `if` `else` `for` `true` `false` `and` `or` `print` `func` `return` |
+| 단일 연산자 | `+` `-` `*` `/` `%` `!` `=` `>` `<` `(` `)` `{` `}` `[` `]` `;` `,` |
 | 복합 연산자 | `==` `!=` `>=` `<=` |
 | 리터럴 | NUMBER(double), STRING, IDENTIFIER |
 
@@ -291,15 +640,16 @@ test/
 
 | 단계 | 메서드 | 연산자 |
 |------|--------|--------|
-| 1 | `assignment` | `=` (우결합) |
+| 1 | `assignment` | `=` (우결합), `arr[i] = val` |
 | 2 | `logicalOr` | `or` |
 | 3 | `logicalAnd` | `and` |
 | 4 | `equality` | `==` `!=` |
 | 5 | `comparison` | `>` `>=` `<` `<=` |
 | 6 | `term` | `+` `-` |
-| 7 | `factor` | `*` `/` |
+| 7 | `factor` | `*` `/` `%` |
 | 8 | `unary` | `!` `-` (우결합) |
-| 9 | `primary` | 리터럴, 변수, `(expr)` |
+| 9 | `call` | `f(args)`, `arr[i]` |
+| 10 | `primary` | 리터럴, 변수, `(expr)` |
 
 #### 설계 포인트
 
@@ -311,6 +661,34 @@ test/
 #### 오류 처리
 
 모든 구문 오류는 `std::runtime_error("[line N] 메시지")` 형태로 던진다.
+
+#### 디자인 패턴 — Composite
+
+AST 노드가 다른 노드를 자식으로 포함한다. `BlockStmt`는 `Stmt` 목록을, `BinaryExpr`는 두 `Expr` 자식을 갖는다. 모든 노드가 동일한 `accept()` 인터페이스를 제공하므로 Visitor가 리프/복합 노드를 구분하지 않고 재귀 순회할 수 있다.
+
+```mermaid
+classDiagram
+    class Stmt {
+        <<abstract>>
+        +accept(StmtVisitor&)
+    }
+    class BlockStmt {
+        +statements : vector~StmtPtr~
+    }
+    class ForStmt {
+        +initializer : StmtPtr
+        +body        : StmtPtr
+    }
+    class PrintStmt {
+        +expression : ExprPtr
+    }
+
+    Stmt      <|-- BlockStmt
+    Stmt      <|-- ForStmt
+    Stmt      <|-- PrintStmt
+    BlockStmt *-- "0..*" Stmt : children
+    ForStmt   *--       Stmt : body
+```
 
 ---
 
@@ -348,6 +726,40 @@ checkExpr(e)     → e.accept(*this) 래퍼
 - **대입 대상 변수 존재 여부**: `visitAssignExpr`에서 대입 대상(좌변)은 검사하지 않고 우변 값 표현식만 검사. 글로벌 변수 대입은 Executor가 처리
 - **타입 오류**: 타입 검사는 Executor 담당
 - **다른 블록 스코프에서의 동명 변수(shadowing)**: 정상 허용
+
+#### 디자인 패턴 — Visitor
+
+`ExprVisitor`·`StmtVisitor` 인터페이스를 구현해 AST를 순회한다. 노드 클래스를 수정하지 않고 새로운 의미 검사 로직을 추가할 수 있으며, 각 노드 타입별 처리(`visitBinaryExpr`, `visitIfStmt` 등)가 Checker 클래스 안에 집중된다.
+
+```mermaid
+classDiagram
+    class ExprVisitor {
+        <<interface>>
+        +visitBinaryExpr(BinaryExpr&)
+        +visitVariableExpr(VariableExpr&)
+    }
+    class StmtVisitor {
+        <<interface>>
+        +visitVarDeclareStmt(VarDeclareStmt&)
+        +visitBlockStmt(BlockStmt&)
+    }
+    class Checker {
+        -scopes_ : vector~map~
+        -functionDepth_ : int
+        +check(stmts)
+    }
+    class BinaryExpr {
+        +accept(ExprVisitor&)
+    }
+    class BlockStmt {
+        +accept(StmtVisitor&)
+    }
+
+    ExprVisitor  <|.. Checker
+    StmtVisitor  <|.. Checker
+    BinaryExpr  ..> ExprVisitor : accept() →\nvisitBinaryExpr
+    BlockStmt   ..> StmtVisitor : accept() →\nvisitBlockStmt
+```
 
 ---
 
@@ -397,18 +809,123 @@ assign(name, val)   현재 → 상위 재귀 탐색 후 덮어쓰기; 없으면 
 | `bool true` | `"true"` |
 | `bool false` | `"false"` |
 | `string` | 그대로 출력 |
+| `ArrayPtr` | `"[e0, e1, ...]"` — 원소를 재귀적으로 stringify |
+| `ArrayPtr` (순환 참조) | `"[...]"` — 이미 방문한 배열은 `visited` 집합으로 감지 |
 
 #### 런타임 오류
 
+모든 런타임 오류는 `"[line N] 메시지"` 형태로 던진다.
+
 | 상황 | 메시지 |
 |------|--------|
-| 미정의 변수 | `"Undefined variable 'NAME'."` |
-| 0 나누기 | `"Division by zero."` |
-| 단항 `-`에 비숫자 | `"Operand must be a number."` |
-| `+` 타입 불일치 | `"Operands must be two numbers or two strings."` |
-| 숫자 연산에 비숫자 | `"Operands must be numbers."` |
+| 미정의 변수 | `"[line N] Undefined variable 'NAME'."` |
+| 미정의 함수 | `"[line N] Undefined function 'NAME'."` |
+| 0 나누기 / 0 모듈로 | `"[line N] Division by zero."` |
+| 단항 `-`에 비숫자 | `"[line N] Operand must be a number."` |
+| `+` 타입 불일치 | `"[line N] Operands must be two numbers or two strings."` |
+| 숫자 연산에 비숫자 | `"[line N] Operands must be numbers."` |
+| 배열 범위 초과 | `"[line N] Array index out of range."` |
+| 배열이 아닌 값에 인덱싱 | `"[line N] Value is not an array."` |
 
-### 5. Shell (REPL)
+#### 디자인 패턴 — Visitor · RAII/Scope Guard · Observer
+
+**Visitor**: `ExprVisitor`·`StmtVisitor`를 `private` 상속하여 각 노드 타입별 실행 로직을 단일 클래스 안에 집중시킨다. 노드 구조 변경 없이 실행 동작을 독립적으로 수정할 수 있다.
+
+**RAII / Scope Guard**: 블록·함수 진입 시 `env_`를 교체하고 소멸자에서 자동 복원한다. `ReturnException` 같은 비-`std::exception` 예외가 던져져도 스택 언와인딩으로 환경이 오염되지 않는다.
+
+**Observer**: `DebugObserver*`가 `nullptr`이면 런타임 오버헤드 없이 실행된다. 디버그 모드에서 `Debugger`를 꽂으면 매 Stmt 실행 전 `beforeStatement()`가 호출된다.
+
+```mermaid
+classDiagram
+    class Executor {
+        -env_      : Environment*
+        -global_   : Environment
+        -observer_ : DebugObserver*
+        -run(Stmt&)
+    }
+    class ExprVisitor  { <<interface>> }
+    class StmtVisitor  { <<interface>> }
+    class ScopeGuard {
+        -prev : Environment*
+        +~ScopeGuard()
+    }
+    class DebugObserver {
+        <<interface>>
+        +beforeStatement(Stmt, depth)
+    }
+    class Debugger {
+        +beforeStatement(Stmt, depth)
+    }
+
+    ExprVisitor   <|.. Executor
+    StmtVisitor   <|.. Executor
+    Executor      ..>  ScopeGuard   : creates on block/func entry
+    Executor       o-- DebugObserver : observer_\n(nullable)
+    DebugObserver <|..  Debugger
+```
+
+### 5. Optimizer (최적화 패스)
+
+**담당 파일**: `src/optimizer/`  
+**인터페이스**: `optimize(vector<StmtPtr>) → vector<StmtPtr>`
+
+AST를 받아 최적화된 AST를 반환한다. Strategy 패턴으로 여러 패스를 체인으로 연결할 수 있다(`Shell::addOptimizer()`).
+
+| 구현체 | 동작 |
+|--------|------|
+| `NoOpOptimizer` | 아무 변환 없이 원본 반환 (Null Object 패턴) |
+| `ConstantFoldingOptimizer` | 순수 리터럴 서브트리를 컴파일 타임에 미리 계산하여 `LiteralExpr` 하나로 교체 |
+| `StaticBindingOptimizer` | 변수 참조 깊이(distance)를 정적 분석으로 계산 — Executor에서 O(1) 스코프 접근 가능 |
+
+#### 디자인 패턴 — Strategy · Chain of Responsibility · Null Object
+
+- **Strategy**: `IOptimizer` 인터페이스 뒤로 알고리즘을 숨겨 Shell 코드 변경 없이 교체·추가 가능
+- **Chain of Responsibility**: `addOptimizer()`로 여러 패스를 순서대로 연결하고, 각 패스의 출력이 다음 패스의 입력이 됨
+- **Null Object**: `NoOpOptimizer`로 null 체크 없이 파이프라인이 항상 동일한 흐름으로 동작
+
+```mermaid
+classDiagram
+    class IOptimizer {
+        <<interface>>
+        +optimize(stmts) stmts
+    }
+    class NoOpOptimizer {
+        +optimize(stmts) stmts
+    }
+    class ConstantFoldingOptimizer {
+        +optimize(stmts) stmts
+        -foldExpr(ExprPtr) ExprPtr
+    }
+    class StaticBindingOptimizer {
+        +optimize(stmts) stmts
+    }
+    class Shell {
+        -optimizers_ : vector~IOptimizer~
+        +addOptimizer(IOptimizer)
+    }
+
+    IOptimizer <|.. NoOpOptimizer
+    IOptimizer <|.. ConstantFoldingOptimizer
+    IOptimizer <|.. StaticBindingOptimizer
+    Shell       o-- "0..*" IOptimizer : Chain of Responsibility
+```
+
+#### ConstantFoldingOptimizer 예시
+
+```
+// 최적화 전
+for (var i = 0; i < 100; i = i + 1) {
+    total = total + (1 - 2 * 3 * 4 * 5 / 6 + 7 + 8 + 9) % 1000 % 30;
+}
+// 최적화 후 (상수식 10개 → LiteralExpr(5) 1개)
+for (var i = 0; i < 100; i = i + 1) {
+    total = total + 5;
+}
+```
+
+---
+
+### 6. Shell (REPL)
 
 **담당 파일**: `src/shell/Shell.h/.cpp`
 
@@ -425,7 +942,37 @@ assign(name, val)   현재 → 상위 재귀 탐색 후 덮어쓰기; 없으면 
 
 - 빈 줄은 파이프라인을 거치지 않고 즉시 반환
 - 오류(`std::exception`) 발생 시 예외를 캡처하여 오류 메시지를 `ostream`에 출력 후 다음 줄 계속 처리 — Shell이 크래시되지 않고 다음 입력을 정상 처리함
-- **실행 상태(변수 등)는 줄 간에 유지됨** — `Executor` 인스턴스가 Shell과 동일한 생명주기를 가지므로 `global_` 환경이 `runLine`/`run` 호출 사이에 유지됨
+- **실행 상태(변수·함수 정의)는 줄 간에 유지됨** — `Executor` 인스턴스가 Shell과 동일한 생명주기를 가지므로 `global_` 환경과 `functions_` 테이블이 `runLine`/`run` 호출 사이에 유지됨
+- **멀티라인 입력** — `run()`은 중괄호 깊이를 추적하여 `{`·`}`가 균형을 이룰 때까지 줄을 누적한 뒤 한 번에 실행한다. 누적 중에는 `"... "` 보조 프롬프트를 표시한다
+
+#### 디자인 패턴 — Dependency Injection
+
+`Shell`이 구체 클래스 대신 인터페이스(`ITokenizer`, `IParser`, `IChecker`, `IExecutor`)에 의존한다. 기본 생성자는 구체 구현을 생성하고, DI 생성자는 Mock 객체를 주입받아 테스트 시 파이프라인 특정 단계를 격리 검증할 수 있다.
+
+```mermaid
+classDiagram
+    class Shell {
+        +Shell()
+        +Shell(ITokenizer, IParser, IChecker, IExecutor)
+        -tokenizer_ : ITokenizer
+        -parser_    : IParser
+        -checker_   : IChecker
+        -executor_  : IExecutor
+    }
+    class ITokenizer { <<interface>> }
+    class IParser    { <<interface>> }
+    class IChecker   { <<interface>> }
+    class IExecutor  { <<interface>> }
+
+    Shell o-- ITokenizer
+    Shell o-- IParser
+    Shell o-- IChecker
+    Shell o-- IExecutor
+    ITokenizer <|.. Tokenizer
+    IParser    <|.. Parser
+    IChecker   <|.. Checker
+    IExecutor  <|.. Executor
+```
 
 #### 테스트 구조
 
