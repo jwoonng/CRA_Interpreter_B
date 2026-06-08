@@ -109,6 +109,24 @@ TEST(DebugModeTest, UnwatchStopsReporting) {
     EXPECT_TRUE(contains(out, "[WATCH] stopped watching 'a'"));
 }
 
+TEST(DebugModeTest, WatchesCommand_EmptyList_ShowsNoWatches) {
+    std::string out = runDebug(
+        "var a = 1;\n"
+        "print a;\n",
+        "watches\ncontinue\n");
+    EXPECT_TRUE(contains(out, "[WATCH] no watched variables"));
+}
+
+TEST(DebugModeTest, WatchesCommand_ListsAllWatched) {
+    std::string out = runDebug(
+        "var x = 7;\n"
+        "var y = 3;\n"
+        "print x;\n",
+        "watch x\nwatch y\nstep\nstep\nwatches\ncontinue\n");
+    EXPECT_TRUE(contains(out, "[WATCH] x = 7"));
+    EXPECT_TRUE(contains(out, "[WATCH] y = 3"));
+}
+
 TEST(DebugModeTest, InspectShowsLocalAndGlobalScopes) {
     // Pause at "print b;" (line 4) where b is a local in the block and
     // a is a global — inspect must label each scope.
