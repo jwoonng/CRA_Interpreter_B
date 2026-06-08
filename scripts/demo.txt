@@ -37,7 +37,6 @@ print label;
 print active;
 print empty;
 
-
 // ── 2. Arithmetic & Modulo ────────────────────────────────
 //   + - * /   => number operations
 //   %         => remainder (works with decimals too)
@@ -60,7 +59,6 @@ print product;
 print quotient;
 print remainder;
 print negated;
-print "";
 
 // ── 3. Comparison & Logical ───────────────────────────────
 //   == != > >= < <=  => boolean result
@@ -87,7 +85,6 @@ print eq;
 print both;
 print either;
 print negEq;
-print "";
 
 // ── 4. Conditionals ───────────────────────────────────────
 //   if (<cond>) { ... }
