@@ -65,7 +65,7 @@ TEST(FileModeTest, FunctionAndArray_WorkFromFile) {
 
 // Checker 오류(중복 선언)는 실행을 막고 에러 코드 1을 반환한다
 TEST(FileModeTest, CheckerError_StopsExecutionAndReturnsOne) {
-    std::string path = writeTempScript("filemode",
+    auto path = writeTempScript("filemode",
         "{ var a = 1; var a = 2; }\n"
         "print 42;\n");  // 절대 실행되면 안 된다
     Shell shell;
@@ -79,7 +79,7 @@ TEST(FileModeTest, CheckerError_StopsExecutionAndReturnsOne) {
 // Shell에 옵티마이저가 추가된 상태에서도 runFile이 올바른 결과를 낸다
 // (Shell::runFile의 optimizer 루프 경로 커버)
 TEST(FileModeTest, WithOptimizer_RunFileProducesCorrectOutput) {
-    std::string path = writeTempScript("filemode", "print 2 + 3;\n");
+    auto path = writeTempScript("filemode", "print 2 + 3;\n");
     Shell shell;
     shell.addOptimizer(std::make_unique<ConstantFoldingOptimizer>());
     std::ostringstream out;
