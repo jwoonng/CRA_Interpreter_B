@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include "src/shell/Shell.h"
 #include "FileTestHelpers.h"
+#include "src/optimizer/ConstantFoldingOptimizer.h"
 #include <sstream>
 #include <string>
 
@@ -141,4 +142,142 @@ TEST(DebugModeTest, NextStepsOverBlockBody) {
     // never the loop body (line 2's "s = s + i").
     EXPECT_TRUE(contains(out, "stopped at line 3 -> print s;"));
     EXPECT_TRUE(contains(out, "3\n"));  // 0 + 1 + 2
+}
+
+// ════════════════════════════════════════════════════
+// 커버리지 보강 — 디버거 커맨드 엣지 케이스
+// ════════════════════════════════════════════════════
+
+TEST(DebugModeTest, UnknownCommand_PrintsError) {
+    std::string out = runDebug("var a = 1;\n", "bogus_cmd\ncontinue\n");
+    EXPECT_TRUE(contains(out, "[DEBUG] unknown command: bogus_cmd"));
+}
+
+TEST(DebugModeTest, BreakWithBadArg_PrintsUsage) {
+    std::string out = runDebug("var a = 1;\n", "break notanumber\ncontinue\n");
+    EXPECT_TRUE(contains(out, "[DEBUG] usage: break <line>"));
+}
+
+TEST(DebugModeTest, RemoveNonexistentBreakpoint_PrintsNoBreakpoint) {
+    std::string out = runDebug("var a = 1;\n", "remove 999\ncontinue\n");
+    EXPECT_TRUE(contains(out, "[DEBUG] no breakpoint at line 999"));
+}
+
+TEST(DebugModeTest, RemoveWithBadArg_PrintsUsage) {
+    std::string out = runDebug("var a = 1;\n", "remove notanumber\ncontinue\n");
+    EXPECT_TRUE(contains(out, "[DEBUG] usage: remove <line>"));
+}
+
+TEST(DebugModeTest, WatchDuplicate_PrintsAlreadyWatched) {
+    std::string out = runDebug("var a = 1;\n", "watch a\nwatch a\ncontinue\n");
+    EXPECT_TRUE(contains(out, "[WATCH] 'a' is already watched"));
+}
+
+TEST(DebugModeTest, UnwatchNotWatched_PrintsError) {
+    std::string out = runDebug("var a = 1;\n", "unwatch z\ncontinue\n");
+    EXPECT_TRUE(contains(out, "[WATCH] 'z' is not watched"));
+}
+
+TEST(DebugModeTest, Watches_EmptyList_PrintsNoWatches) {
+    std::string out = runDebug("var a = 1;\n", "watches\ncontinue\n");
+    EXPECT_TRUE(contains(out, "[WATCH] no watched variables"));
+}
+
+TEST(DebugModeTest, Watches_WithValue_PrintsCurrentValue) {
+    std::string out = runDebug(
+        "var a = 42;\n"
+        "print a;\n",
+        "watch a\nstep\nwatches\ncontinue\n");
+    EXPECT_TRUE(contains(out, "[WATCH] a = 42"));
+}
+
+TEST(DebugModeTest, WatchUndefinedVariable_ShowsUndefined) {
+    // notDefined 는 스크립트에 없는 변수 — debugLookup 실패 → <undefined>
+    std::string out = runDebug(
+        "var a = 1;\n"
+        "var b = 2;\n",
+        "watch notDefined\nstep\nstep\n");
+    EXPECT_TRUE(contains(out, "[WATCH] notDefined = <undefined>"));
+}
+
+TEST(DebugModeTest, RuntimeError_StopsAndReturnsOne) {
+    Shell shell;
+    std::string path = writeTempScript("debug", "print 1 / 0;\n");
+    std::istringstream in("continue\n");
+    std::ostringstream out;
+    int code = shell.runDebug(path, in, out);
+    EXPECT_EQ(code, 1);
+    EXPECT_TRUE(contains(out.str(), "Division by zero"));
+}
+
+// ════════════════════════════════════════════════════
+// 커버리지 보강 — typeName / stringifyValue 경로
+// ════════════════════════════════════════════════════
+
+TEST(DebugModeTest, InspectShowsBoolAndStringTypes) {
+    // var flag = true; var name = "hello"; 선언 후 inspect → Boolean / String 타입 표시
+    std::string out = runDebug(
+        "var flag = true;\n"
+        "var name = \"hello\";\n"
+        "print flag;\n",
+        "step\nstep\ninspect\ncontinue\n");
+    EXPECT_TRUE(contains(out, "flag = true (Boolean)"));
+    EXPECT_TRUE(contains(out, "name = hello (String)"));
+}
+
+TEST(DebugModeTest, WatchFloat_ShowsDecimalValue) {
+    // formatDouble 의 ostringstream 경로: 정수가 아닌 실수
+    std::string out = runDebug(
+        "var pi = 3.14;\n"
+        "print pi;\n",
+        "watch pi\nstep\nstep\n");
+    EXPECT_TRUE(contains(out, "[WATCH] pi = 3.14"));
+}
+
+TEST(DebugModeTest, WatchArray_ShowsBracketNotation) {
+    // stringifyValue(ArrayPtr) 경로
+    std::string out = runDebug(
+        "var arr = array(2);\n"
+        "arr[0] = 10;\n"
+        "arr[1] = 20;\n"
+        "print arr;\n",
+        "watch arr\nstep\nstep\nstep\nstep\n");
+    EXPECT_TRUE(contains(out, "[WATCH] arr = [10, 20]"));
+}
+
+// typeName(Nil): nil 타입 변수를 inspect하면 "(Nil)" 표시
+TEST(DebugModeTest, InspectShowsNilType) {
+    std::string out = runDebug(
+        "var x;\n"
+        "print 0;\n",
+        "step\ninspect\ncontinue\n");
+    EXPECT_TRUE(contains(out, "x = nil (Nil)"));
+}
+
+// typeName(Array): 배열 타입 변수를 inspect하면 "(Array)" 표시
+TEST(DebugModeTest, InspectShowsArrayType) {
+    std::string out = runDebug(
+        "var arr = array(2);\n"
+        "print 0;\n",
+        "step\ninspect\ncontinue\n");
+    EXPECT_TRUE(contains(out, "(Array)"));
+}
+
+// cmdWatches 명시적 호출 시 미정의 변수 → else 분기 "[WATCH] ... = <undefined>"
+TEST(DebugModeTest, Watches_ExplicitCommand_UndefinedVar_ShowsUndefined) {
+    std::string out = runDebug(
+        "var a = 1;\n",
+        "watch notDefined\nwatches\ncontinue\n");
+    EXPECT_TRUE(contains(out, "[WATCH] notDefined = <undefined>"));
+}
+
+// runDebug 에서 optimizer 루프가 실행되는 경로 커버 (Shell.cpp line 158)
+TEST(DebugModeTest, RunDebug_WithOptimizer_ProducesCorrectOutput) {
+    Shell shell;
+    shell.addOptimizer(std::make_unique<ConstantFoldingOptimizer>());
+    std::string path = writeTempScript("debug", "print 2 + 3;\n");
+    std::istringstream in("continue\n");
+    std::ostringstream out;
+    EXPECT_EQ(shell.runDebug(path, in, out), 0);
+    EXPECT_TRUE(contains(out.str(), "5"));
 }
