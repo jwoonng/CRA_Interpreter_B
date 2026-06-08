@@ -1,0 +1,321 @@
+// ============================================================
+//   CodeFab Interpreter -- Syntax Guide (Debug Mode Demo)
+//
+//   Recommended debug commands:
+//     step           -- enter blocks / functions          (alias: s)
+//     next           -- skip over blocks / functions      (alias: n)
+//     continue       -- run to next breakpoint            (alias: c)
+//     quit / exit    -- end the debug session
+//     break <line> [line2 ...]   -- set one or more breakpoints
+//     remove <line> [line2 ...]  -- remove one or more breakpoints
+//     breakpoints                -- list all active breakpoints
+//     watch <name> [name2 ...]   -- track variables at every stop  (also: arr[idx])
+//     unwatch <name> [name2 ...]  -- stop watching variables
+//     watches        -- print current values of all watched variables
+//     inspect        -- dump all variables in scope
+// ============================================================
+
+// ── 1. Variable Declaration & Assignment ─────────────────
+//   var <name> = <value>;
+//   var <name>;            => nil by default
+//   <name> = <expression>; => reassign
+print "";
+print "1. Variable Declaration & Assignment";
+
+var x = 10;
+var y = 3;
+var label = "score";
+var active = true;
+var empty;
+
+x = x + y;
+y = y * 2;
+
+print x;
+print y;
+print label;
+print active;
+print empty;
+
+
+// ── 2. Arithmetic & Modulo ────────────────────────────────
+//   + - * /   => number operations
+//   %         => remainder (works with decimals too)
+//   -expr     => negate
+print "";
+print "2. Arithmetic & Modulo";
+
+var dividend = 17;
+var divisor  = 5;
+var sum      = dividend + divisor;
+var diff     = dividend - divisor;
+var product  = dividend * divisor;
+var quotient = dividend / divisor;
+var remainder = dividend % divisor;
+var negated  = -dividend;
+
+print sum;
+print diff;
+print product;
+print quotient;
+print remainder;
+print negated;
+print "";
+
+// ── 3. Comparison & Logical ───────────────────────────────
+//   == != > >= < <=  => boolean result
+//   and or !         => logical (short-circuit)
+//   falsy: false, 0, nil   truthy: everything else
+print "";
+print "3. Comparison & Logical";
+
+var a = 10;
+var b = 3;
+
+var eq  = a == 10;
+var neq = a != b;
+var gt  = a > b;
+var gte = a >= 10;
+var lt  = b < a;
+var lte = b <= 3;
+
+var both = eq and gt;
+var either = false or gt;
+var negEq = !eq;
+
+print eq;
+print both;
+print either;
+print negEq;
+print "";
+
+// ── 4. Conditionals ───────────────────────────────────────
+//   if (<cond>) { ... }
+//   if (<cond>) { ... } else { ... }
+//   if (<cond>) { ... } else if (<cond>) { ... }
+print "";
+print "4. Conditionals";
+
+var temperature = 22;
+var weather = "unknown";
+
+if (temperature >= 30) {
+    weather = "hot";
+} else if (temperature >= 20) {
+    weather = "warm";
+} else if (temperature >= 10) {
+    weather = "cool";
+} else {
+    weather = "cold";
+}
+
+print weather;
+
+// ── 5. For Loop ───────────────────────────────────────────
+//   for (<init>; <cond>; <increment>) { <body> }
+//   tip: watch the loop variable to observe each iteration
+print "";
+print "5. For Loop";
+
+var total = 0;
+var count = 5;
+
+for (var i = 1; i <= count; i = i + 1) {
+    total = total + i;
+}
+
+print total;
+
+// accumulate into an array while looping
+var nums = array(5);
+
+for (var i = 0; i < 5; i = i + 1) {
+    nums[i] = (i + 1) * (i + 1);
+}
+
+print nums;
+
+// ── 6. Block Scope & Shadowing ────────────────────────────
+//   { } creates a new scope
+//   inner var shadows outer var; restored on exit
+//   tip: watch 'scope_val' to see shadowing
+print "";
+print "6. Block Scope & Shadowing";
+
+var scope_val = "outer";
+
+print scope_val;
+
+{
+    var scope_val = "inner-1";
+    print scope_val;
+
+    {
+        var scope_val = "inner-2";
+        print scope_val;
+    }
+
+    print scope_val;
+}
+
+print scope_val;
+
+// ── 7. Functions ──────────────────────────────────────────
+//   func <name>(<params>) { <body> }
+//   return <expr>;   exits and returns value
+//   no return / return; => returns nil
+//   tip: step INTO a call to watch params inside
+print "";
+print "7. Functions";
+
+func add(p, q) {
+    var result = p + q;
+    return result;
+}
+
+func clamp(val, lo, hi) {
+    if (val < lo) return lo;
+    if (val > hi) return hi;
+    return val;
+}
+
+func isEven(n) {
+    return n % 2 == 0;
+}
+
+var r1 = add(7, 5);
+var r2 = clamp(150, 0, 100);
+var r3 = clamp(-5,  0, 100);
+var r4 = isEven(8);
+var r5 = isEven(7);
+
+print r1;
+print r2;
+print r3;
+print r4;
+print r5;
+
+// ── 8. Recursion ──────────────────────────────────────────
+//   a function that calls itself
+//   tip: use 'next' to skip recursion, 'step' to trace into it
+print "";
+print "8. Recursion";
+
+func factorial(n) {
+    if (n <= 1) return 1;
+    return n * factorial(n - 1);
+}
+
+func fib(n) {
+    if (n <= 1) return n;
+    return fib(n - 1) + fib(n - 2);
+}
+
+var fact5 = factorial(5);
+var fact7 = factorial(7);
+var fib8  = fib(8);
+
+print fact5;
+print fact7;
+print fib8;
+
+// ── 9. Arrays ─────────────────────────────────────────────
+//   var arr = array(n);   create (all nil)
+//   arr[i] = val;         write
+//   arr[i]               read
+//   print arr;            print whole array
+//   NOTE: arrays are reference types (shared)
+//   tip: watch 'scores' to see element-by-element fill
+print "";
+print "9. Arrays";
+
+var scores = array(6);
+
+scores[0] = 88;
+scores[1] = 73;
+scores[2] = 95;
+scores[3] = 61;
+scores[4] = 82;
+scores[5] = 49;
+
+print scores;
+
+var best = scores[0];
+for (var i = 1; i < 6; i = i + 1) {
+    if (scores[i] > best) {
+        best = scores[i];
+    }
+}
+
+print best;
+
+// reference semantics: alias shares the same array
+var alias = scores;
+alias[0] = 100;
+
+print scores;
+
+// ── 10. String Concatenation ──────────────────────────────
+//   string + string  => concatenated string
+//   NOTE: both sides must be strings
+print "";
+print "10. String Concatenation";
+
+var first = "Code";
+var second = "Fab";
+var lang = first + second;
+
+var greeting = "Hello" + ", " + lang + "!";
+
+print lang;
+print greeting;
+
+func repeatStr(s, n) {
+    var out = "";
+    for (var i = 0; i < n; i = i + 1) {
+        out = out + s;
+    }
+    return out;
+}
+
+var line = repeatStr("-", 24);
+print line;
+
+// ── 11. Short-circuit Evaluation ─────────────────────────
+//   'or'  returns first truthy, skips rest if found
+//   'and' returns first falsy, skips rest if found
+//   => right side is NOT evaluated when unnecessary
+//   tip: 1/0 never throws here because it is never reached
+print "";
+print "11. Short-circuit Evaluation";
+
+var sc1 = true  or  (1 / 0);
+var sc2 = false and (1 / 0);
+var sc3 = 0     or  42;
+var sc4 = 1     and 99;
+
+print sc1;
+print sc2;
+print sc3;
+print sc4;
+
+// ── 12. Global State via Functions ───────────────────────
+//   functions can read and write global variables
+//   tip: watch 'counter' while calling inc() / dec()
+print "";
+print "12. Global State via Functions";
+
+var counter = 0;
+
+func inc() { counter = counter + 1; }
+func dec() { counter = counter - 1; }
+func resetCounter() { counter = 0; }
+
+inc();
+inc();
+inc();
+dec();
+resetCounter();
+
+print counter;
+print "End";
