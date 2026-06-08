@@ -1,37 +1,24 @@
-#include <gtest/gtest.h>
+﻿#include <gtest/gtest.h>
 #include "src/assembler/Parser.h"
 #include "src/common/Stmt.h"
 #include "src/common/Expr.h"
+#include "TestHelpers.h"
 
 // ── 개발자 2 담당 영역 ──────────────────────────────
 // TDD 순서: Wave 1 → 2 → ... 순서대로 Red-Green-Refactor
 
-// ── 헬퍼 ────────────────────────────────────────────
-namespace {
-
-Token tok(TokenType type, std::string lexeme, LiteralValue lit = {}, int line = 1) {
-    return Token{ type, std::move(lexeme), std::move(lit), line };
-}
-Token num(double v, int line = 1)         { return tok(TokenType::NUMBER,     std::to_string(v), v,           line); }
-Token str(std::string s, int line = 1)    { return tok(TokenType::STRING,     s,                 s,           line); }
-Token eof(int line = 1)                   { return tok(TokenType::EOF_TOKEN,  "",                {},          line); }
-
-// AST 캐스팅 헬퍼
-template<typename T>
-T* as(Stmt* s) { return dynamic_cast<T*>(s); }
-template<typename T>
-T* as(Expr* e) { return dynamic_cast<T*>(e); }
-
-} // namespace
+class ParserTest : public ::testing::Test {
+protected:
+    Parser parser;
+};
 
 // ════════════════════════════════════════════════════
 // Wave 1 — 리터럴 (ExpressionStmt + LiteralExpr)
 // 목표: parse()가 최소한 리터럴 하나를 ExpressionStmt로 감싸서 반환
 // ════════════════════════════════════════════════════
 
-TEST(ParserTest, NumberLiteral) {
+TEST_F(ParserTest, NumberLiteral) {
     // 42;
-    Parser parser;
     auto stmts = parser.parse({
         num(42), tok(TokenType::SEMICOLON, ";"), eof()
     });
@@ -44,9 +31,8 @@ TEST(ParserTest, NumberLiteral) {
     EXPECT_DOUBLE_EQ(std::get<double>(lit->value), 42.0);
 }
 
-TEST(ParserTest, StringLiteral) {
+TEST_F(ParserTest, StringLiteral) {
     // "hello";
-    Parser parser;
     auto stmts = parser.parse({
         str("hello"), tok(TokenType::SEMICOLON, ";"), eof()
     });
@@ -59,9 +45,8 @@ TEST(ParserTest, StringLiteral) {
     EXPECT_EQ(std::get<std::string>(lit->value), "hello");
 }
 
-TEST(ParserTest, BoolTrueLiteral) {
+TEST_F(ParserTest, BoolTrueLiteral) {
     // true;
-    Parser parser;
     auto stmts = parser.parse({
         tok(TokenType::TRUE_KW, "true", true), tok(TokenType::SEMICOLON, ";"), eof()
     });
@@ -74,13 +59,13 @@ TEST(ParserTest, BoolTrueLiteral) {
     EXPECT_TRUE(std::get<bool>(lit->value));
 }
 
-TEST(ParserTest, BoolFalseLiteral) {
+TEST_F(ParserTest, BoolFalseLiteral) {
     // false;
-    Parser parser;
     auto stmts = parser.parse({
         tok(TokenType::FALSE_KW, "false", false), tok(TokenType::SEMICOLON, ";"), eof()
     });
 
+    ASSERT_EQ(stmts.size(), 1u);
     auto* es = as<ExpressionStmt>(stmts[0].get());
     ASSERT_NE(es, nullptr);
     auto* lit = as<LiteralExpr>(es->expression.get());
@@ -92,9 +77,8 @@ TEST(ParserTest, BoolFalseLiteral) {
 // Wave 2 — 단항 연산자 (UnaryExpr)
 // ════════════════════════════════════════════════════
 
-TEST(ParserTest, UnaryMinus) {
+TEST_F(ParserTest, UnaryMinus) {
     // -42;
-    Parser parser;
     auto stmts = parser.parse({
         tok(TokenType::MINUS, "-"), num(42), tok(TokenType::SEMICOLON, ";"), eof()
     });
@@ -110,9 +94,8 @@ TEST(ParserTest, UnaryMinus) {
     EXPECT_DOUBLE_EQ(std::get<double>(operand->value), 42.0);
 }
 
-TEST(ParserTest, UnaryBang) {
+TEST_F(ParserTest, UnaryBang) {
     // !true;
-    Parser parser;
     auto stmts = parser.parse({
         tok(TokenType::BANG, "!"),
         tok(TokenType::TRUE_KW, "true", true),
@@ -130,9 +113,8 @@ TEST(ParserTest, UnaryBang) {
 // Wave 3 — 사칙연산 (BinaryExpr)
 // ════════════════════════════════════════════════════
 
-TEST(ParserTest, Addition) {
+TEST_F(ParserTest, Addition) {
     // 1 + 2;
-    Parser parser;
     auto stmts = parser.parse({
         num(1), tok(TokenType::PLUS, "+"), num(2), tok(TokenType::SEMICOLON, ";"), eof()
     });
@@ -150,9 +132,8 @@ TEST(ParserTest, Addition) {
     EXPECT_DOUBLE_EQ(std::get<double>(rhs->value), 2.0);
 }
 
-TEST(ParserTest, Subtraction) {
+TEST_F(ParserTest, Subtraction) {
     // 5 - 3;
-    Parser parser;
     auto stmts = parser.parse({
         num(5), tok(TokenType::MINUS, "-"), num(3), tok(TokenType::SEMICOLON, ";"), eof()
     });
@@ -164,9 +145,8 @@ TEST(ParserTest, Subtraction) {
     EXPECT_EQ(bin->op.type, TokenType::MINUS);
 }
 
-TEST(ParserTest, Multiplication) {
+TEST_F(ParserTest, Multiplication) {
     // 2 * 3;
-    Parser parser;
     auto stmts = parser.parse({
         num(2), tok(TokenType::STAR, "*"), num(3), tok(TokenType::SEMICOLON, ";"), eof()
     });
@@ -178,9 +158,8 @@ TEST(ParserTest, Multiplication) {
     EXPECT_EQ(bin->op.type, TokenType::STAR);
 }
 
-TEST(ParserTest, Division) {
+TEST_F(ParserTest, Division) {
     // 6 / 2;
-    Parser parser;
     auto stmts = parser.parse({
         num(6), tok(TokenType::SLASH, "/"), num(2), tok(TokenType::SEMICOLON, ";"), eof()
     });
@@ -192,9 +171,8 @@ TEST(ParserTest, Division) {
     EXPECT_EQ(bin->op.type, TokenType::SLASH);
 }
 
-TEST(ParserTest, Modulo) {
+TEST_F(ParserTest, Modulo) {
     // 10 % 3;
-    Parser parser;
     auto stmts = parser.parse({
         num(10), tok(TokenType::PERCENT, "%"), num(3),
         tok(TokenType::SEMICOLON, ";"), eof()
@@ -217,9 +195,8 @@ TEST(ParserTest, Modulo) {
 // Wave 4 — 연산자 우선순위
 // ════════════════════════════════════════════════════
 
-TEST(ParserTest, MultiplicationBeforeAddition) {
+TEST_F(ParserTest, MultiplicationBeforeAddition) {
     // 1 + 2 * 3  →  BinaryExpr(1, +, BinaryExpr(2, *, 3))
-    Parser parser;
     auto stmts = parser.parse({
         num(1), tok(TokenType::PLUS,  "+"),
         num(2), tok(TokenType::STAR,  "*"), num(3),
@@ -237,9 +214,8 @@ TEST(ParserTest, MultiplicationBeforeAddition) {
     EXPECT_EQ(mul->op.type, TokenType::STAR);
 }
 
-TEST(ParserTest, GroupingOverridesPrecedence) {
+TEST_F(ParserTest, GroupingOverridesPrecedence) {
     // (1 + 2) * 3  →  BinaryExpr(GroupingExpr(BinaryExpr(1,+,2)), *, 3)
-    Parser parser;
     auto stmts = parser.parse({
         tok(TokenType::LEFT_PAREN, "("),
         num(1), tok(TokenType::PLUS, "+"), num(2),
@@ -256,10 +232,9 @@ TEST(ParserTest, GroupingOverridesPrecedence) {
     ASSERT_NE(as<GroupingExpr>(mul->left.get()), nullptr);
 }
 
-TEST(ParserTest, ModuloBeforeAddition) {
+TEST_F(ParserTest, ModuloBeforeAddition) {
     // 1 + 10 % 3  →  BinaryExpr(1, +, BinaryExpr(10, %, 3))
     // % 가 + 보다 먼저 묶여야 함
-    Parser parser;
     auto stmts = parser.parse({
         num(1), tok(TokenType::PLUS, "+"),
         num(10), tok(TokenType::PERCENT, "%"), num(3),
@@ -281,9 +256,8 @@ TEST(ParserTest, ModuloBeforeAddition) {
 // Wave 5 — 비교 / 논리 연산자
 // ════════════════════════════════════════════════════
 
-TEST(ParserTest, EqualEqual) {
+TEST_F(ParserTest, EqualEqual) {
     // 1 == 1;
-    Parser parser;
     auto stmts = parser.parse({
         num(1), tok(TokenType::EQUAL_EQUAL, "=="), num(1),
         tok(TokenType::SEMICOLON, ";"), eof()
@@ -296,9 +270,8 @@ TEST(ParserTest, EqualEqual) {
     EXPECT_EQ(bin->op.type, TokenType::EQUAL_EQUAL);
 }
 
-TEST(ParserTest, BangEqual) {
+TEST_F(ParserTest, BangEqual) {
     // 1 != 2;
-    Parser parser;
     auto stmts = parser.parse({
         num(1), tok(TokenType::BANG_EQUAL, "!="), num(2),
         tok(TokenType::SEMICOLON, ";"), eof()
@@ -311,9 +284,8 @@ TEST(ParserTest, BangEqual) {
     EXPECT_EQ(bin->op.type, TokenType::BANG_EQUAL);
 }
 
-TEST(ParserTest, LessThan) {
+TEST_F(ParserTest, LessThan) {
     // 1 < 2;
-    Parser parser;
     auto stmts = parser.parse({
         num(1), tok(TokenType::LESS, "<"), num(2),
         tok(TokenType::SEMICOLON, ";"), eof()
@@ -326,9 +298,8 @@ TEST(ParserTest, LessThan) {
     EXPECT_EQ(bin->op.type, TokenType::LESS);
 }
 
-TEST(ParserTest, LogicalAnd) {
+TEST_F(ParserTest, LogicalAnd) {
     // true and false;
-    Parser parser;
     auto stmts = parser.parse({
         tok(TokenType::TRUE_KW,  "true",  true),
         tok(TokenType::AND,      "and"),
@@ -343,9 +314,8 @@ TEST(ParserTest, LogicalAnd) {
     EXPECT_EQ(logical->op.type, TokenType::AND);
 }
 
-TEST(ParserTest, LogicalOr) {
+TEST_F(ParserTest, LogicalOr) {
     // false or true;
-    Parser parser;
     auto stmts = parser.parse({
         tok(TokenType::FALSE_KW, "false", false),
         tok(TokenType::OR,       "or"),
@@ -364,9 +334,8 @@ TEST(ParserTest, LogicalOr) {
 // Wave 6 — 변수 선언 / 참조 / 대입 (VarDeclareStmt, VariableExpr, AssignExpr)
 // ════════════════════════════════════════════════════
 
-TEST(ParserTest, VarDeclNoInitializer) {
+TEST_F(ParserTest, VarDeclNoInitializer) {
     // var x;
-    Parser parser;
     auto stmts = parser.parse({
         tok(TokenType::VAR,        "var"),
         tok(TokenType::IDENTIFIER, "x"),
@@ -380,9 +349,8 @@ TEST(ParserTest, VarDeclNoInitializer) {
     EXPECT_EQ(vd->initializer, nullptr);
 }
 
-TEST(ParserTest, VarDeclWithInitializer) {
+TEST_F(ParserTest, VarDeclWithInitializer) {
     // var x = 42;
-    Parser parser;
     auto stmts = parser.parse({
         tok(TokenType::VAR,        "var"),
         tok(TokenType::IDENTIFIER, "x"),
@@ -399,9 +367,8 @@ TEST(ParserTest, VarDeclWithInitializer) {
     EXPECT_DOUBLE_EQ(std::get<double>(init->value), 42.0);
 }
 
-TEST(ParserTest, VariableReference) {
+TEST_F(ParserTest, VariableReference) {
     // x;
-    Parser parser;
     auto stmts = parser.parse({
         tok(TokenType::IDENTIFIER, "x"),
         tok(TokenType::SEMICOLON,  ";"), eof()
@@ -414,9 +381,8 @@ TEST(ParserTest, VariableReference) {
     EXPECT_EQ(var->name.lexeme, "x");
 }
 
-TEST(ParserTest, AssignExpression) {
+TEST_F(ParserTest, AssignExpression) {
     // x = 10;
-    Parser parser;
     auto stmts = parser.parse({
         tok(TokenType::IDENTIFIER, "x"),
         tok(TokenType::EQUAL,      "="),
@@ -438,9 +404,8 @@ TEST(ParserTest, AssignExpression) {
 // Wave 7 — print 문 (PrintStmt)
 // ════════════════════════════════════════════════════
 
-TEST(ParserTest, PrintLiteralStatement) {
+TEST_F(ParserTest, PrintLiteralStatement) {
     // print 42;
-    Parser parser;
     auto stmts = parser.parse({
         tok(TokenType::PRINT,     "print"),
         num(42),
@@ -455,9 +420,8 @@ TEST(ParserTest, PrintLiteralStatement) {
     EXPECT_DOUBLE_EQ(std::get<double>(lit->value), 42.0);
 }
 
-TEST(ParserTest, PrintExpressionStatement) {
+TEST_F(ParserTest, PrintExpressionStatement) {
     // print 1 + 2;
-    Parser parser;
     auto stmts = parser.parse({
         tok(TokenType::PRINT,     "print"),
         num(1), tok(TokenType::PLUS, "+"), num(2),
@@ -473,9 +437,8 @@ TEST(ParserTest, PrintExpressionStatement) {
 // Wave 8 — 블록 (BlockStmt)
 // ════════════════════════════════════════════════════
 
-TEST(ParserTest, EmptyBlock) {
+TEST_F(ParserTest, EmptyBlock) {
     // {}
-    Parser parser;
     auto stmts = parser.parse({
         tok(TokenType::LEFT_BRACE,  "{"),
         tok(TokenType::RIGHT_BRACE, "}"),
@@ -488,9 +451,8 @@ TEST(ParserTest, EmptyBlock) {
     EXPECT_TRUE(block->statements.empty());
 }
 
-TEST(ParserTest, BlockWithTwoStatements) {
+TEST_F(ParserTest, BlockWithTwoStatements) {
     // { print 1; print 2; }
-    Parser parser;
     auto stmts = parser.parse({
         tok(TokenType::LEFT_BRACE,  "{"),
         tok(TokenType::PRINT, "print"), num(1), tok(TokenType::SEMICOLON, ";"),
@@ -508,9 +470,8 @@ TEST(ParserTest, BlockWithTwoStatements) {
 // Wave 9 — if / if-else (IfStmt)
 // ════════════════════════════════════════════════════
 
-TEST(ParserTest, IfStatement) {
+TEST_F(ParserTest, IfStatement) {
     // if (true) print 1;
-    Parser parser;
     auto stmts = parser.parse({
         tok(TokenType::IF,         "if"),
         tok(TokenType::LEFT_PAREN, "("),
@@ -527,9 +488,8 @@ TEST(ParserTest, IfStatement) {
     EXPECT_EQ(ifs->elseBranch, nullptr);
 }
 
-TEST(ParserTest, IfElseStatement) {
+TEST_F(ParserTest, IfElseStatement) {
     // if (true) print 1; else print 2;
-    Parser parser;
     auto stmts = parser.parse({
         tok(TokenType::IF,          "if"),
         tok(TokenType::LEFT_PAREN,  "("),
@@ -551,9 +511,8 @@ TEST(ParserTest, IfElseStatement) {
 // Wave 10 — for 문 (ForStmt)
 // ════════════════════════════════════════════════════
 
-TEST(ParserTest, ForStatement) {
+TEST_F(ParserTest, ForStatement) {
     // for (var i = 0; i < 3; i = i + 1) print i;
-    Parser parser;
     auto stmts = parser.parse({
         tok(TokenType::FOR,         "for"),
         tok(TokenType::LEFT_PAREN,  "("),
@@ -591,9 +550,8 @@ TEST(ParserTest, ForStatement) {
     ASSERT_NE(fs->body,        nullptr);
 }
 
-TEST(ParserTest, ForStatementNoInit) {
+TEST_F(ParserTest, ForStatementNoInit) {
     // for (; i < 3; i = i + 1) print i;
-    Parser parser;
     auto stmts = parser.parse({
         tok(TokenType::FOR,         "for"),
         tok(TokenType::LEFT_PAREN,  "("),
@@ -616,9 +574,8 @@ TEST(ParserTest, ForStatementNoInit) {
 // Wave 11 — 여러 문 연속 파싱
 // ════════════════════════════════════════════════════
 
-TEST(ParserTest, MultipleStatements) {
+TEST_F(ParserTest, MultipleStatements) {
     // var x = 1; print x;
-    Parser parser;
     auto stmts = parser.parse({
         tok(TokenType::VAR,        "var"),
         tok(TokenType::IDENTIFIER, "x"),
@@ -640,15 +597,13 @@ TEST(ParserTest, MultipleStatements) {
 // Wave 12 — 에러 케이스 (예외 throw 확인)
 // ════════════════════════════════════════════════════
 
-TEST(ParserTest, MissingSemicolonThrows) {
+TEST_F(ParserTest, MissingSemicolonThrows) {
     // 42  (세미콜론 없음)
-    Parser parser;
     EXPECT_THROW(parser.parse({ num(42), eof() }), std::exception);
 }
 
-TEST(ParserTest, UnclosedParenThrows) {
+TEST_F(ParserTest, UnclosedParenThrows) {
     // (1 + 2;  — 닫힌 괄호 없음
-    Parser parser;
     EXPECT_THROW(
         parser.parse({
             tok(TokenType::LEFT_PAREN, "("),
@@ -659,9 +614,8 @@ TEST(ParserTest, UnclosedParenThrows) {
     );
 }
 
-TEST(ParserTest, UnclosedBraceThrows) {
+TEST_F(ParserTest, UnclosedBraceThrows) {
     // { print 1;  — 닫힌 중괄호 없음
-    Parser parser;
     EXPECT_THROW(
         parser.parse({
             tok(TokenType::LEFT_BRACE, "{"),
@@ -676,11 +630,10 @@ TEST(ParserTest, UnclosedBraceThrows) {
 // Wave 13 — 연산자 우선순위 심화
 // ════════════════════════════════════════════════════
 
-TEST(ParserTest, LogicalAndPrecedenceOverOr) {
+TEST_F(ParserTest, LogicalAndPrecedenceOverOr) {
     // false or true and false
     // → LogicalExpr(false, or, LogicalExpr(true, and, false))
     // and가 or보다 먼저 묶여야 함
-    Parser parser;
     auto stmts = parser.parse({
         tok(TokenType::FALSE_KW, "false", false),
         tok(TokenType::OR,       "or"),
@@ -702,11 +655,10 @@ TEST(ParserTest, LogicalAndPrecedenceOverOr) {
     EXPECT_EQ(andExpr->op.type, TokenType::AND);
 }
 
-TEST(ParserTest, ComparisonPrecedenceOverEquality) {
+TEST_F(ParserTest, ComparisonPrecedenceOverEquality) {
     // 1 < 2 == true
     // → BinaryExpr(BinaryExpr(1, <, 2), ==, true)
     // < 가 == 보다 먼저 묶여야 함
-    Parser parser;
     auto stmts = parser.parse({
         num(1), tok(TokenType::LESS, "<"), num(2),
         tok(TokenType::EQUAL_EQUAL, "=="),
@@ -731,9 +683,8 @@ TEST(ParserTest, ComparisonPrecedenceOverEquality) {
 // Note: LessThan(<)은 Wave 5에 있음
 // ════════════════════════════════════════════════════
 
-TEST(ParserTest, GreaterThan) {
+TEST_F(ParserTest, GreaterThan) {
     // 2 > 1;
-    Parser parser;
     auto stmts = parser.parse({
         num(2), tok(TokenType::GREATER, ">"), num(1),
         tok(TokenType::SEMICOLON, ";"), eof()
@@ -746,9 +697,8 @@ TEST(ParserTest, GreaterThan) {
     EXPECT_EQ(bin->op.type, TokenType::GREATER);
 }
 
-TEST(ParserTest, GreaterEqual) {
+TEST_F(ParserTest, GreaterEqual) {
     // 2 >= 2;
-    Parser parser;
     auto stmts = parser.parse({
         num(2), tok(TokenType::GREATER_EQUAL, ">="), num(2),
         tok(TokenType::SEMICOLON, ";"), eof()
@@ -761,9 +711,8 @@ TEST(ParserTest, GreaterEqual) {
     EXPECT_EQ(bin->op.type, TokenType::GREATER_EQUAL);
 }
 
-TEST(ParserTest, LessEqual) {
+TEST_F(ParserTest, LessEqual) {
     // 1 <= 2;
-    Parser parser;
     auto stmts = parser.parse({
         num(1), tok(TokenType::LESS_EQUAL, "<="), num(2),
         tok(TokenType::SEMICOLON, ";"), eof()
@@ -780,10 +729,9 @@ TEST(ParserTest, LessEqual) {
 // Wave 15 — 결합성 (Associativity)
 // ════════════════════════════════════════════════════
 
-TEST(ParserTest, SubtractionLeftAssociative) {
+TEST_F(ParserTest, SubtractionLeftAssociative) {
     // 1 - 2 - 3  →  (1 - 2) - 3
     // BinaryExpr(BinaryExpr(1, -, 2), -, 3)
-    Parser parser;
     auto stmts = parser.parse({
         num(1), tok(TokenType::MINUS, "-"),
         num(2), tok(TokenType::MINUS, "-"),
@@ -807,10 +755,9 @@ TEST(ParserTest, SubtractionLeftAssociative) {
     EXPECT_DOUBLE_EQ(std::get<double>(rhs->value), 3.0);
 }
 
-TEST(ParserTest, AssignmentRightAssociative) {
+TEST_F(ParserTest, AssignmentRightAssociative) {
     // x = y = 1  →  x = (y = 1)
     // AssignExpr(x, AssignExpr(y, 1))
-    Parser parser;
     auto stmts = parser.parse({
         tok(TokenType::IDENTIFIER, "x"),
         tok(TokenType::EQUAL,      "="),
@@ -839,9 +786,8 @@ TEST(ParserTest, AssignmentRightAssociative) {
 // Wave 16 — for 변형 (nullable 절 조합)
 // ════════════════════════════════════════════════════
 
-TEST(ParserTest, ForStatementAllClausesEmpty) {
+TEST_F(ParserTest, ForStatementAllClausesEmpty) {
     // for (;;) print 1;
-    Parser parser;
     auto stmts = parser.parse({
         tok(TokenType::FOR,         "for"),
         tok(TokenType::LEFT_PAREN,  "("),
@@ -861,9 +807,8 @@ TEST(ParserTest, ForStatementAllClausesEmpty) {
     ASSERT_NE(fs->body,        nullptr);
 }
 
-TEST(ParserTest, ForStatementConditionOnly) {
+TEST_F(ParserTest, ForStatementConditionOnly) {
     // for (; i < 3;) print i;
-    Parser parser;
     auto stmts = parser.parse({
         tok(TokenType::FOR,         "for"),
         tok(TokenType::LEFT_PAREN,  "("),
@@ -882,9 +827,8 @@ TEST(ParserTest, ForStatementConditionOnly) {
     EXPECT_EQ(fs->increment,   nullptr);
 }
 
-TEST(ParserTest, ForStatementIncrementOnly) {
+TEST_F(ParserTest, ForStatementIncrementOnly) {
     // for (;; i = i + 1) print i;
-    Parser parser;
     auto stmts = parser.parse({
         tok(TokenType::FOR,         "for"),
         tok(TokenType::LEFT_PAREN,  "("),
@@ -904,9 +848,8 @@ TEST(ParserTest, ForStatementIncrementOnly) {
     ASSERT_NE(fs->increment,   nullptr);
 }
 
-TEST(ParserTest, ForStatementInitOnly) {
+TEST_F(ParserTest, ForStatementInitOnly) {
     // for (var i = 0;;) print i;
-    Parser parser;
     auto stmts = parser.parse({
         tok(TokenType::FOR,         "for"),
         tok(TokenType::LEFT_PAREN,  "("),
@@ -927,9 +870,8 @@ TEST(ParserTest, ForStatementInitOnly) {
     EXPECT_EQ(fs->increment,   nullptr);
 }
 
-TEST(ParserTest, ForStatementInitAndCond) {
+TEST_F(ParserTest, ForStatementInitAndCond) {
     // for (var i = 0; i < 3;) print i;
-    Parser parser;
     auto stmts = parser.parse({
         tok(TokenType::FOR,         "for"),
         tok(TokenType::LEFT_PAREN,  "("),
@@ -951,9 +893,8 @@ TEST(ParserTest, ForStatementInitAndCond) {
     EXPECT_EQ(fs->increment,   nullptr);
 }
 
-TEST(ParserTest, ForStatementInitAndIncr) {
+TEST_F(ParserTest, ForStatementInitAndIncr) {
     // for (var i = 0;; i = i + 1) print i;
-    Parser parser;
     auto stmts = parser.parse({
         tok(TokenType::FOR,         "for"),
         tok(TokenType::LEFT_PAREN,  "("),
@@ -980,9 +921,8 @@ TEST(ParserTest, ForStatementInitAndIncr) {
 // Wave 17 — 에러 케이스 추가
 // ════════════════════════════════════════════════════
 
-TEST(ParserTest, VarMissingIdentifierThrows) {
+TEST_F(ParserTest, VarMissingIdentifierThrows) {
     // var ;  — 변수명 없음
-    Parser parser;
     EXPECT_THROW(
         parser.parse({
             tok(TokenType::VAR,       "var"),
@@ -992,9 +932,8 @@ TEST(ParserTest, VarMissingIdentifierThrows) {
     );
 }
 
-TEST(ParserTest, IfMissingLeftParenThrows) {
+TEST_F(ParserTest, IfMissingLeftParenThrows) {
     // if true) print 1;  — ( 없음
-    Parser parser;
     EXPECT_THROW(
         parser.parse({
             tok(TokenType::IF,          "if"),
@@ -1007,9 +946,8 @@ TEST(ParserTest, IfMissingLeftParenThrows) {
     );
 }
 
-TEST(ParserTest, IfMissingRightParenThrows) {
+TEST_F(ParserTest, IfMissingRightParenThrows) {
     // if (true print 1;  — ) 없음
-    Parser parser;
     EXPECT_THROW(
         parser.parse({
             tok(TokenType::IF,         "if"),
@@ -1022,9 +960,8 @@ TEST(ParserTest, IfMissingRightParenThrows) {
     );
 }
 
-TEST(ParserTest, ForMissingLeftParenThrows) {
+TEST_F(ParserTest, ForMissingLeftParenThrows) {
     // for ;; )  — ( 없음
-    Parser parser;
     EXPECT_THROW(
         parser.parse({
             tok(TokenType::FOR,        "for"),
@@ -1037,9 +974,8 @@ TEST(ParserTest, ForMissingLeftParenThrows) {
     );
 }
 
-TEST(ParserTest, ForMissingRightParenThrows) {
+TEST_F(ParserTest, ForMissingRightParenThrows) {
     // for ( ;; — ) 없음
-    Parser parser;
     EXPECT_THROW(
         parser.parse({
             tok(TokenType::FOR,        "for"),
@@ -1052,9 +988,8 @@ TEST(ParserTest, ForMissingRightParenThrows) {
     );
 }
 
-TEST(ParserTest, UnmatchedClosingBraceThrows) {
+TEST_F(ParserTest, UnmatchedClosingBraceThrows) {
     // }  — 열린 스코프 없이 } 단독 사용
-    Parser parser;
     EXPECT_THROW(
         parser.parse({
             tok(TokenType::RIGHT_BRACE, "}"),
@@ -1064,9 +999,8 @@ TEST(ParserTest, UnmatchedClosingBraceThrows) {
     );
 }
 
-TEST(ParserTest, UnmatchedClosingBraceErrorMessage) {
+TEST_F(ParserTest, UnmatchedClosingBraceErrorMessage) {
     // 에러 메시지에 "}" 관련 내용이 포함되어야 함
-    Parser parser;
     try {
         parser.parse({
             tok(TokenType::RIGHT_BRACE, "}", {}, 3),

@@ -1,31 +1,12 @@
-#include <gtest/gtest.h>
+﻿#include <gtest/gtest.h>
 #include "src/shell/Shell.h"
-#include <filesystem>
-#include <fstream>
+#include "FileTestHelpers.h"
 #include <sstream>
 #include <string>
 
 // ── File mode tests (factory "run <path>") ────────────────────────────
 // Verifies Shell::runFile: whole-file execution, file-not-found handling,
 // and immediate stop with a line-numbered message on runtime error.
-
-namespace {
-
-// Write content to a unique temp file and return its path.
-std::string writeTempScript(const std::string& content) {
-    namespace fs = std::filesystem;
-    static int counter = 0;
-    fs::path p = fs::temp_directory_path() /
-                 ("codefab_filemode_" + std::to_string(++counter) + ".txt");
-    std::ofstream(p) << content;
-    return p.string();
-}
-
-bool contains(const std::string& haystack, const std::string& needle) {
-    return haystack.find(needle) != std::string::npos;
-}
-
-}  // namespace
 
 TEST(FileModeTest, MissingFile_ReturnsErrorCode) {
     Shell shell;
@@ -36,7 +17,7 @@ TEST(FileModeTest, MissingFile_ReturnsErrorCode) {
 }
 
 TEST(FileModeTest, SimpleProgram_ProducesOutput) {
-    std::string path = writeTempScript("print 1 + 2;\n");
+    auto path = writeTempScript("filemode", "print 1 + 2;\n");
     Shell shell;
     std::ostringstream out;
     int code = shell.runFile(path, out);
@@ -45,7 +26,7 @@ TEST(FileModeTest, SimpleProgram_ProducesOutput) {
 }
 
 TEST(FileModeTest, MultipleStatements_RunInOrder) {
-    std::string path = writeTempScript(
+    auto path = writeTempScript("filemode",
         "var a = 10;\n"
         "var b = 20;\n"
         "print a + b;\n");
@@ -56,7 +37,7 @@ TEST(FileModeTest, MultipleStatements_RunInOrder) {
 }
 
 TEST(FileModeTest, RuntimeError_ReportsLineAndStops) {
-    std::string path = writeTempScript(
+    auto path = writeTempScript("filemode",
         "print 1;\n"
         "print 1 / 0;\n"   // runtime error on line 2
         "print 3;\n");     // must NOT run
@@ -70,7 +51,7 @@ TEST(FileModeTest, RuntimeError_ReportsLineAndStops) {
 }
 
 TEST(FileModeTest, FunctionAndArray_WorkFromFile) {
-    std::string path = writeTempScript(
+    auto path = writeTempScript("filemode",
         "func add(a, b) { return a + b; }\n"
         "var arr = array(2);\n"
         "arr[0] = add(3, 4);\n"

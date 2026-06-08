@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
 #include "src/shell/Shell.h"
-#include <filesystem>
-#include <fstream>
+#include "FileTestHelpers.h"
 #include <sstream>
 #include <string>
 
@@ -11,22 +10,9 @@
 
 namespace {
 
-std::string writeTempScript(const std::string& content) {
-    namespace fs = std::filesystem;
-    static int counter = 0;
-    fs::path p = fs::temp_directory_path() /
-                 ("codefab_debug_" + std::to_string(++counter) + ".txt");
-    std::ofstream(p) << content;
-    return p.string();
-}
-
-bool contains(const std::string& haystack, const std::string& needle) {
-    return haystack.find(needle) != std::string::npos;
-}
-
 // Run debug mode over `source` feeding `commands`, return everything printed.
 std::string runDebug(const std::string& source, const std::string& commands) {
-    std::string path = writeTempScript(source);
+    auto path = writeTempScript("debug", source);
     Shell shell;
     std::istringstream in(commands);
     std::ostringstream out;
