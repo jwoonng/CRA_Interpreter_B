@@ -7,50 +7,6 @@
 #include "TestHelpers.h"
 #include <sstream>
 
-// ── helpers (Function-specific) ───────────────────────────────────────
-namespace {
-
-StmtPtr retStmt(ExprPtr val = nullptr, int line = 1) {
-    return std::make_unique<ReturnStmt>(
-        tok(TokenType::RETURN, "return", {}, line), std::move(val));
-}
-
-// Function / call builders
-StmtPtr makeFuncDecl(
-    const std::string& name,
-    std::vector<std::string> paramNames,
-    std::vector<StmtPtr> body,
-    int line = 1)
-{
-    std::vector<Token> params;
-    for (auto& p : paramNames)
-        params.push_back(id(p, line));
-    return std::make_unique<FunctionStmt>(
-        id(name, line), std::move(params), std::move(body));
-}
-
-ExprPtr makeCallExpr(
-    const std::string& funcName,
-    std::vector<ExprPtr> args,
-    int line = 1)
-{
-    return std::make_unique<CallExpr>(
-        varExpr(funcName, line),
-        tok(TokenType::RIGHT_PAREN, ")", {}, line),
-        std::move(args));
-}
-
-StmtPtr makeCallStmt(
-    const std::string& funcName,
-    std::vector<ExprPtr> args,
-    int line = 1)
-{
-    return std::make_unique<ExpressionStmt>(
-        makeCallExpr(funcName, std::move(args), line));
-}
-
-} // namespace
-
 // ── Executor fixture ─────────────────────────────────────────────────
 class FunctionExecutorTest : public ::testing::Test {
 protected:

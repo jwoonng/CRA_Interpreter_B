@@ -8,41 +8,6 @@
 #include "TestHelpers.h"
 #include <sstream>
 
-// ── helpers (Array-specific) ──────────────────────────────────────────
-namespace {
-
-// Array(n) 호출 식 생성
-ExprPtr makeArrayCall(LiteralValue sizeLit, int line = 1) {
-    std::vector<ExprPtr> args;
-    args.push_back(std::make_unique<LiteralExpr>(std::move(sizeLit), line));
-    return std::make_unique<CallExpr>(
-        varExpr("array", line),
-        tok(TokenType::RIGHT_PAREN, ")", {}, line),
-        std::move(args));
-}
-ExprPtr makeArrayCall(double n, int line = 1) {
-    return makeArrayCall(LiteralValue{n}, line);
-}
-
-// unique_ptr<IndexExpr> 반환 — IndexAssignExpr 생성에 사용 (타입 안전)
-std::unique_ptr<IndexExpr> makeIndexExpr(ExprPtr obj, ExprPtr idx, int line = 1) {
-    return std::make_unique<IndexExpr>(
-        std::move(obj), std::move(idx),
-        tok(TokenType::RIGHT_BRACKET, "]", {}, line));
-}
-
-// ExprPtr 반환 — 읽기 컨텍스트(printStmt 등)에 사용
-ExprPtr makeIndex(ExprPtr obj, ExprPtr idx, int line = 1) {
-    return makeIndexExpr(std::move(obj), std::move(idx), line);
-}
-
-// arr[idx] = val — unique_ptr<IndexExpr>로 타입 레벨에서 IndexExpr 강제
-ExprPtr makeIndexAssign(std::unique_ptr<IndexExpr> target, ExprPtr val, int line = 1) {
-    return std::make_unique<IndexAssignExpr>(std::move(target), std::move(val), line);
-}
-
-} // namespace
-
 // ── Executor fixture ─────────────────────────────────────────────────
 class ArrayExecutorTest : public ::testing::Test {
 protected:
