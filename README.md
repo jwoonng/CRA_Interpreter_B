@@ -83,10 +83,20 @@ for (var i = 0; i < 3; i = i + 1) { print i; }
 { var y = "inner"; print y; }
 
 // 연산자
-// 산술: + - * /
+// 산술: + - * / %
 // 비교: == != > >= < <=
 // 논리: and or !
 // 문자열 연결: "hello" + " world"
+
+// 함수 선언 / 호출 / 반환 / 재귀
+Func add(a, b) { return a + b; }
+var ret = add(3, 7);          // 10
+Func fact(n) { if (n <= 1) return 1; return n * fact(n - 1); }
+
+// 정적 배열 (생성 시 크기 확정, 인덱스 읽기/쓰기)
+var arr = Array(3);           // [nil, nil, nil]
+arr[0] = 10;
+print arr[0];                 // 10
 
 // 줄 주석
 // 이 줄은 무시됩니다
@@ -116,16 +126,100 @@ msbuild Project17.vcxproj /p:Configuration=Debug /p:Platform=x64
 .\x64\Debug\Project17.exe --shell
 ```
 
-#### Release 빌드 — Shell 자동 실행 (`main.cpp`)
+#### Release 빌드 — 공장 제어 쉘 (`main.cpp`)
 
 ```
 msbuild Project17.vcxproj /p:Configuration=Release /p:Platform=x64
-
-# 실행하면 곧바로 REPL 진입
-.\x64\Release\Project17.exe
 ```
 
+Release 빌드의 실행 파일이 **공장 제어 쉘(factory)** 이며, 명령행 인자로 모드를 선택한다.
+
 테스트 프레임워크: Google Test / GoogleMock 1.11.0 (NuGet)
+
+---
+
+## 공장 제어 쉘 (Factory Control Shell)
+
+공장 제어 쉘은 Interpreter Factory(Tokenizer → Parser → Checker → Optimizer\* → Executor)를
+운용·점검하는 인터페이스로, 세 가지 실행 모드를 제공한다.
+
+| 모드 | 명령 | 설명 |
+|------|------|------|
+| 프롬프트 모드 (REPL) | `factory` | 소스를 한 줄씩 입력하는 대화형 실행. 전역 변수는 세션 종료까지 유지 |
+| 파일 모드 | `factory run <path>` | 소스 파일을 읽어 한 번에 실행 |
+| 디버그 모드 | `factory debug <path>` | 소스를 Stmt 단위로 멈추며 단계 실행 |
+
+> 아래 예시의 `factory`는 `.\x64\Release\Project17.exe`를 가리킨다.
+
+### 1. 프롬프트 모드 (REPL)
+
+인자 없이 실행하면 진입한다. `> ` 프롬프트에 코드를 입력하면 즉시 실행되고, `{ }`가 닫힐 때까지
+여러 줄을 누적한다. 입력 스트림이 끝나면(EOF) 종료한다.
+
+```
+$ factory
+> var a = 3;
+> var b = 7;
+> print a + b;
+10
+```
+
+### 2. 파일 모드
+
+```
+$ factory run ./scripts/hello.txt
+```
+
+- 파일이 존재하지 않으면 `Error: cannot open file '<path>'` 출력 후 종료 코드 `1`
+- 실행 중 런타임 오류가 나면 `[line N] ...` 형식으로 오류 줄 번호와 함께 출력 후 **즉시 종료**
+
+### 3. 디버그 모드
+
+```
+$ factory debug ./scripts/test.txt
+[DEBUG] loaded source: ./scripts/test.txt
+[DEBUG] stopped at line 1 -> var a = 3;
+> step
+[DEBUG] stopped at line 2 -> var b = a + 1;
+> break 7
+[DEBUG] breakpoint set at line 7
+> continue
+[DEBUG] stopped at line 7 (breakpoint) -> print a;
+```
+
+stepping 단위는 Stmt 기준이며, `watch`는 변수 저장소에서 직접 조회한다.
+
+#### Stepping 명령어
+
+| 명령어 | 설명 |
+|--------|------|
+| `step` | 현재 Stmt 실행 후 다음 Stmt 에서 정지 (블록 내부로 진입) |
+| `next` | 현재 Stmt 실행 (블록/함수 내부로 진입하지 않고 건너뜀) |
+| `break <line>` | 해당 줄에 breakpoint 설정 |
+| `breakpoints` | 현재 설정된 breakpoint 목록 출력 |
+| `remove <line>` | breakpoint 해제 |
+| `continue` | 다음 breakpoint 까지 실행 |
+
+#### Watch 명령어
+
+| 명령어 | 설명 |
+|--------|------|
+| `watch <name>` | 변수를 감시 목록에 추가 (정지할 때마다 값 자동 출력) |
+| `unwatch <name>` | 감시 목록에서 제거 |
+| `watches` | 현재 감시 중인 변수와 값 출력 (가장 인접한 스코프 기준) |
+| `inspect` | 현재 스코프 체인의 모든 변수와 타입 출력 (`[local]` / `[global]`) |
+
+```
+> watch a
+[WATCH] now watching 'a'
+> step
+[DEBUG] stopped at line 5 -> a = a + 1;
+[WATCH] a = 3
+> inspect
+--- current scope variables ---
+[local] b = 10 (Number)
+[global] a = 4 (Number)
+```
 
 ---
 
