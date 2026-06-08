@@ -67,13 +67,30 @@ static std::string formatDouble(double d) {
 
 // ── 출력 포맷 ────────────────────────────────────────────────────
 std::string Executor::stringify(const LiteralValue& v) {
-    return std::visit([](auto&& val) -> std::string {
+    std::unordered_set<const LiteralArray*> visited;
+    return stringify(v, visited);
+}
+
+std::string Executor::stringify(const LiteralValue& v,
+                                std::unordered_set<const LiteralArray*>& visited) {
+    return std::visit([this, &visited](auto&& val) -> std::string {
         using T = std::decay_t<decltype(val)>;
         if constexpr (std::is_same_v<T, std::monostate>) return "nil";
         if constexpr (std::is_same_v<T, bool>)           return val ? "true" : "false";
         if constexpr (std::is_same_v<T, std::string>)    return val;
         if constexpr (std::is_same_v<T, double>)         return formatDouble(val);
-        if constexpr (std::is_same_v<T, ArrayPtr>)       return "<array>";
+        if constexpr (std::is_same_v<T, ArrayPtr>) {
+            if (!val) return "nil";
+            if (visited.count(val.get())) return "[...]";  // 순환 참조 감지
+            visited.insert(val.get());
+            std::string result = "[";
+            for (std::size_t i = 0; i < val->elements.size(); ++i) {
+                if (i > 0) result += ", ";
+                result += stringify(val->elements[i], visited);
+            }
+            visited.erase(val.get());
+            return result + "]";
+        }
     }, v);
 }
 

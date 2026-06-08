@@ -447,3 +447,61 @@ TEST_F(ArrayCheckerTest, IndexWithVariable_NoThrow) {
     stmts.push_back(printStmt(makeIndex(varExpr("arr"), varExpr("i"))));
     EXPECT_NO_THROW(checker.check(stmts));
 }
+
+// ════════════════════════════════════════════════════
+// Wave 10 — Executor: 배열 전체 출력 (print arr)
+// ════════════════════════════════════════════════════
+
+// var arr = Array(3);  print arr;  →  "[nil, nil, nil]"
+TEST_F(ArrayExecutorTest, PrintArray_AllNil) {
+    stmts.push_back(varDecl("arr", makeArrayCall(3)));
+    stmts.push_back(printStmt(varExpr("arr")));
+    EXPECT_EQ(runStmts(), "[nil, nil, nil]\n");
+}
+
+// var arr = Array(0);  print arr;  →  "[]"
+TEST_F(ArrayExecutorTest, PrintArray_Empty) {
+    stmts.push_back(varDecl("arr", makeArrayCall(0)));
+    stmts.push_back(printStmt(varExpr("arr")));
+    EXPECT_EQ(runStmts(), "[]\n");
+}
+
+// arr[0]=10; arr[1]=20; arr[2]=30;  print arr;  →  "[10, 20, 30]"
+TEST_F(ArrayExecutorTest, PrintArray_NumericElements) {
+    stmts.push_back(varDecl("arr", makeArrayCall(3)));
+    stmts.push_back(exprStmt(makeIndexAssign(makeIndexExpr(varExpr("arr"), litNum(0)), litNum(10))));
+    stmts.push_back(exprStmt(makeIndexAssign(makeIndexExpr(varExpr("arr"), litNum(1)), litNum(20))));
+    stmts.push_back(exprStmt(makeIndexAssign(makeIndexExpr(varExpr("arr"), litNum(2)), litNum(30))));
+    stmts.push_back(printStmt(varExpr("arr")));
+    EXPECT_EQ(runStmts(), "[10, 20, 30]\n");
+}
+
+// 문자열 원소  →  "[hello, world]"
+TEST_F(ArrayExecutorTest, PrintArray_StringElements) {
+    stmts.push_back(varDecl("arr", makeArrayCall(2)));
+    stmts.push_back(exprStmt(makeIndexAssign(makeIndexExpr(varExpr("arr"), litNum(0)), litStr("hello"))));
+    stmts.push_back(exprStmt(makeIndexAssign(makeIndexExpr(varExpr("arr"), litNum(1)), litStr("world"))));
+    stmts.push_back(printStmt(varExpr("arr")));
+    EXPECT_EQ(runStmts(), "[hello, world]\n");
+}
+
+// 혼합 타입  →  "[42, hi, true, nil]"
+TEST_F(ArrayExecutorTest, PrintArray_MixedTypes) {
+    stmts.push_back(varDecl("arr", makeArrayCall(4)));
+    stmts.push_back(exprStmt(makeIndexAssign(makeIndexExpr(varExpr("arr"), litNum(0)), litNum(42))));
+    stmts.push_back(exprStmt(makeIndexAssign(makeIndexExpr(varExpr("arr"), litNum(1)), litStr("hi"))));
+    stmts.push_back(exprStmt(makeIndexAssign(makeIndexExpr(varExpr("arr"), litNum(2)),
+        std::make_unique<LiteralExpr>(LiteralValue{true}, 1))));
+    // arr[3]은 nil 그대로
+    stmts.push_back(printStmt(varExpr("arr")));
+    EXPECT_EQ(runStmts(), "[42, hi, true, nil]\n");
+}
+
+// 참조 공유 후 출력  →  두 변수가 같은 배열을 가리킴
+TEST_F(ArrayExecutorTest, PrintArray_SharedReference) {
+    stmts.push_back(varDecl("arr", makeArrayCall(2)));
+    stmts.push_back(varDecl("brr", varExpr("arr")));
+    stmts.push_back(exprStmt(makeIndexAssign(makeIndexExpr(varExpr("brr"), litNum(0)), litNum(7))));
+    stmts.push_back(printStmt(varExpr("arr")));   // arr도 동일하게 반영
+    EXPECT_EQ(runStmts(), "[7, nil]\n");
+}

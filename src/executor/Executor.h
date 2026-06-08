@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 // ── 스코프 환경 ──────────────────────────────────────────────────
 struct Environment {
@@ -115,6 +116,8 @@ private:
     LiteralValue evaluate(Expr& e);
     void         run(Stmt& s);
     std::string  stringify(const LiteralValue& v);
+    std::string  stringify(const LiteralValue& v,
+                           std::unordered_set<const LiteralArray*>& visited);
 
     // ExprVisitor
     LiteralValue visitLiteralExpr(LiteralExpr& e)   override;
