@@ -23,7 +23,15 @@ std::string stringifyValue(const LiteralValue& v) {
         if constexpr (std::is_same_v<T, bool>)           return val ? "true" : "false";
         if constexpr (std::is_same_v<T, std::string>)    return val;
         if constexpr (std::is_same_v<T, double>)         return formatDouble(val);
-        if constexpr (std::is_same_v<T, ArrayPtr>)       return "<array>";
+        if constexpr (std::is_same_v<T, ArrayPtr>) {
+            if (!val) return "nil";
+            std::string result = "[";
+            for (std::size_t i = 0; i < val->elements.size(); ++i) {
+                if (i > 0) result += ", ";
+                result += stringifyValue(val->elements[i]);
+            }
+            return result + "]";
+        }
     }, v);
 }
 
