@@ -35,15 +35,17 @@ TEST_F(TokenizerTest, VarDeclarationTokens) {
 TEST_F(TokenizerTest, KeywordRecognition) {
     struct Case { std::string src; TokenType expected; };
     std::vector<Case> cases = {
-        {"var",   TokenType::VAR},
-        {"if",    TokenType::IF},
-        {"else",  TokenType::ELSE},
-        {"for",   TokenType::FOR},
-        {"true",  TokenType::TRUE_KW},
-        {"false", TokenType::FALSE_KW},
-        {"and",   TokenType::AND},
-        {"or",    TokenType::OR},
-        {"print", TokenType::PRINT},
+        {"var",    TokenType::VAR},
+        {"if",     TokenType::IF},
+        {"else",   TokenType::ELSE},
+        {"for",    TokenType::FOR},
+        {"true",   TokenType::TRUE_KW},
+        {"false",  TokenType::FALSE_KW},
+        {"and",    TokenType::AND},
+        {"or",     TokenType::OR},
+        {"print",  TokenType::PRINT},
+        {"func",   TokenType::FUN},
+        {"return", TokenType::RETURN},
     };
 
     for (auto& [src, expected] : cases) {
@@ -142,7 +144,8 @@ TEST_F(TokenizerTest, OperatorTokens) {
         {">", TokenType::GREATER}, {"<", TokenType::LESS},
         {"(", TokenType::LEFT_PAREN},  {")", TokenType::RIGHT_PAREN},
         {"{", TokenType::LEFT_BRACE},  {"}", TokenType::RIGHT_BRACE},
-        {";", TokenType::SEMICOLON},
+        {"[", TokenType::LEFT_BRACKET}, {"]", TokenType::RIGHT_BRACKET},
+        {";", TokenType::SEMICOLON},   {",", TokenType::COMMA},
     };
 
     for (auto& [src, expected] : singleCases) {
