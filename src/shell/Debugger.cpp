@@ -1,6 +1,5 @@
 #include "Debugger.h"
 #include <cmath>
-#include <cstdlib>
 #include <limits>
 #include <sstream>
 #include <unordered_set>
@@ -168,7 +167,7 @@ void Debugger::commandLoop(int depth) {
         if (cmd == "step" || cmd == "s")          { mode_ = Mode::Step; return; }
         if (cmd == "next" || cmd == "n")          { mode_ = Mode::Next; nextDepth_ = depth; return; }
         if (cmd == "continue" || cmd == "c")      { mode_ = Mode::Run;  return; }
-        if (cmd == "quit"  || cmd == "exit")      { out_ << "[DEBUG] session terminated.\n"; std::exit(0); }
+        if (cmd == "quit"  || cmd == "exit")      { out_ << "[DEBUG] session terminated.\n"; throw DebugQuitRequest{}; }
         if (cmd == "break")                       cmdBreak(arg);
         else if (cmd == "remove")                 cmdRemove(arg);
         else if (cmd == "breakpoints")            cmdBreakpoints();

@@ -6,6 +6,9 @@
 #include <string>
 #include <vector>
 
+// quit / exit 명령어 시 throw — Shell::runDebug() 에서 catch 하여 정상 종료
+struct DebugQuitRequest {};
+
 // ── Debugger — statement-level stepping driver (factory "debug" mode) ──
 //
 // Implements DebugObserver: the Executor invokes beforeStatement() before
