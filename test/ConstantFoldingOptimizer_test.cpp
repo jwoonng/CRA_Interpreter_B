@@ -218,3 +218,255 @@ TEST(ConstantFoldingOptimizerTest, DivisionByZero_KeepsOriginalAndThrowsAtRuntim
     std::ostringstream oss;
     EXPECT_THROW(ex.execute(std::move(optimized), oss), std::runtime_error);
 }
+
+// !true  →  bool BANG 폴딩: LiteralExpr(false)로 교체
+TEST(ConstantFoldingOptimizerTest, BoolBANG_True_FoldedToFalse) {
+    std::vector<StmtPtr> stmts;
+    stmts.push_back(std::make_unique<PrintStmt>(
+        std::make_unique<UnaryExpr>(
+            tok(TokenType::BANG, "!"),
+            std::make_unique<LiteralExpr>(true, 1)
+        ), 1
+    ));
+
+    ConstantFoldingOptimizer opt;
+    auto optimized = opt.optimize(std::move(stmts));
+
+    // !true 는 const → LiteralExpr(false)로 교체됨
+    auto* ps = dynamic_cast<PrintStmt*>(optimized[0].get());
+    ASSERT_NE(ps, nullptr);
+    auto* lit = dynamic_cast<LiteralExpr*>(ps->expression.get());
+    ASSERT_NE(lit, nullptr);
+    EXPECT_EQ(std::get<bool>(lit->value), false);
+
+    Executor ex;
+    std::ostringstream oss;
+    ex.execute(std::move(optimized), oss);
+    EXPECT_EQ(oss.str(), "false\n");
+}
+
+// !5  →  bool 아닌 피연산자 → 폴딩 예외 → 원본 UnaryExpr 유지
+TEST(ConstantFoldingOptimizerTest, NumberBANG_KeepsOriginalUnaryExpr) {
+    std::vector<StmtPtr> stmts;
+    stmts.push_back(std::make_unique<PrintStmt>(
+        std::make_unique<UnaryExpr>(
+            tok(TokenType::BANG, "!"),
+            std::make_unique<LiteralExpr>(5.0, 1)
+        ), 1
+    ));
+
+    ConstantFoldingOptimizer opt;
+    auto optimized = opt.optimize(std::move(stmts));
+
+    // 폴딩 실패(BANG + 숫자) → UnaryExpr 원본 유지
+    auto* ps = dynamic_cast<PrintStmt*>(optimized[0].get());
+    ASSERT_NE(ps, nullptr);
+    EXPECT_NE(dynamic_cast<UnaryExpr*>(ps->expression.get()), nullptr);
+
+    Executor ex;
+    std::ostringstream oss;
+    ex.execute(std::move(optimized), oss);
+    EXPECT_EQ(oss.str(), "false\n");  // isTruthy(5) = true → !true = false
+}
+
+// 1 == 1  →  EQUAL_EQUAL SpyBinaryExpr → 폴딩 후 런타임 평가 횟수 0
+TEST(ConstantFoldingOptimizerTest, EqualEqual_ConstFolded) {
+    auto count = std::make_shared<int>(0);
+    std::vector<StmtPtr> stmts;
+    stmts.push_back(std::make_unique<PrintStmt>(
+        std::make_unique<SpyBinaryExpr>(
+            std::make_unique<LiteralExpr>(1.0, 1),
+            tok(TokenType::EQUAL_EQUAL, "=="),
+            std::make_unique<LiteralExpr>(1.0, 1),
+            count
+        ), 1
+    ));
+
+    ConstantFoldingOptimizer opt;
+    auto optimized = opt.optimize(std::move(stmts));
+
+    Executor ex;
+    std::ostringstream oss;
+    ex.execute(std::move(optimized), oss);
+
+    EXPECT_EQ(*count, 0);      // 폴딩됨 → 런타임 미평가
+    EXPECT_EQ(oss.str(), "true\n");
+}
+
+// 1 != 2  →  BANG_EQUAL SpyBinaryExpr → 폴딩 후 런타임 평가 횟수 0
+TEST(ConstantFoldingOptimizerTest, BangEqual_ConstFolded) {
+    auto count = std::make_shared<int>(0);
+    std::vector<StmtPtr> stmts;
+    stmts.push_back(std::make_unique<PrintStmt>(
+        std::make_unique<SpyBinaryExpr>(
+            std::make_unique<LiteralExpr>(1.0, 1),
+            tok(TokenType::BANG_EQUAL, "!="),
+            std::make_unique<LiteralExpr>(2.0, 1),
+            count
+        ), 1
+    ));
+
+    ConstantFoldingOptimizer opt;
+    auto optimized = opt.optimize(std::move(stmts));
+
+    Executor ex;
+    std::ostringstream oss;
+    ex.execute(std::move(optimized), oss);
+
+    EXPECT_EQ(*count, 0);
+    EXPECT_EQ(oss.str(), "true\n");
+}
+
+// x and (2+3): 좌변이 변수(비상수)여도 우변 상수 부분이 폴딩된다
+// LogicalExpr 자식 재귀 경로 (foldExpr lines 108-110) 커버
+TEST(ConstantFoldingOptimizerTest, LogicalExpr_ConstRightSide_Folded) {
+    auto spy = std::make_shared<int>(0);
+
+    std::vector<StmtPtr> stmts;
+    stmts.push_back(std::make_unique<VarDeclareStmt>(
+        tok(TokenType::IDENTIFIER, "x"),
+        std::make_unique<LiteralExpr>(true, 1)
+    ));
+    stmts.push_back(std::make_unique<PrintStmt>(
+        std::make_unique<LogicalExpr>(
+            std::make_unique<VariableExpr>(tok(TokenType::IDENTIFIER, "x")),
+            tok(TokenType::AND, "and"),
+            std::make_unique<SpyBinaryExpr>(
+                std::make_unique<LiteralExpr>(2.0, 1),
+                tok(TokenType::PLUS, "+"),
+                std::make_unique<LiteralExpr>(3.0, 1),
+                spy
+            )
+        ), 1
+    ));
+
+    ConstantFoldingOptimizer opt;
+    auto optimized = opt.optimize(std::move(stmts));
+
+    Executor ex;
+    std::ostringstream oss;
+    ex.execute(std::move(optimized), oss);
+
+    EXPECT_EQ(*spy, 0);        // (2+3) SpyBinaryExpr → LiteralExpr(5)로 폴딩
+    EXPECT_EQ(oss.str(), "5\n");
+}
+
+// (x + (2+3)): 비상수 GroupingExpr 내부의 상수 자식이 폴딩된다
+// GroupingExpr 비상수 재귀 경로 (foldExpr lines 99-100) 커버
+TEST(ConstantFoldingOptimizerTest, GroupingExpr_NonConst_InnerConstFolded) {
+    auto spy = std::make_shared<int>(0);
+
+    std::vector<StmtPtr> stmts;
+    stmts.push_back(std::make_unique<VarDeclareStmt>(
+        tok(TokenType::IDENTIFIER, "x"),
+        std::make_unique<LiteralExpr>(10.0, 1)
+    ));
+    stmts.push_back(std::make_unique<PrintStmt>(
+        std::make_unique<GroupingExpr>(
+            std::make_unique<BinaryExpr>(
+                std::make_unique<VariableExpr>(tok(TokenType::IDENTIFIER, "x")),
+                tok(TokenType::PLUS, "+"),
+                std::make_unique<SpyBinaryExpr>(
+                    std::make_unique<LiteralExpr>(2.0, 1),
+                    tok(TokenType::PLUS, "+"),
+                    std::make_unique<LiteralExpr>(3.0, 1),
+                    spy
+                )
+            )
+        ), 1
+    ));
+
+    ConstantFoldingOptimizer opt;
+    auto optimized = opt.optimize(std::move(stmts));
+
+    Executor ex;
+    std::ostringstream oss;
+    ex.execute(std::move(optimized), oss);
+
+    EXPECT_EQ(*spy, 0);        // (2+3) → LiteralExpr(5)로 폴딩
+    EXPECT_EQ(oss.str(), "15\n");  // 10 + 5 = 15
+}
+
+// -true: MINUS를 bool에 적용 → 폴딩 평가 예외(line 34) → 원본 UnaryExpr 유지
+TEST(ConstantFoldingOptimizerTest, BoolMinus_KeepsOriginalUnaryExpr) {
+    std::vector<StmtPtr> stmts;
+    stmts.push_back(std::make_unique<PrintStmt>(
+        std::make_unique<UnaryExpr>(
+            tok(TokenType::MINUS, "-"),
+            std::make_unique<LiteralExpr>(true, 1)
+        ), 1
+    ));
+
+    ConstantFoldingOptimizer opt;
+    auto optimized = opt.optimize(std::move(stmts));
+
+    // -true는 폴딩 불가(MINUS + bool) → UnaryExpr 원본 유지
+    auto* ps = dynamic_cast<PrintStmt*>(optimized[0].get());
+    ASSERT_NE(ps, nullptr);
+    EXPECT_NE(dynamic_cast<UnaryExpr*>(ps->expression.get()), nullptr);
+}
+
+// "hello" + 1: PLUS 타입 불일치 → 폴딩 평가 예외(line 55) → 원본 BinaryExpr 유지
+TEST(ConstantFoldingOptimizerTest, StringPlusNumber_KeepsOriginalBinaryExpr) {
+    auto count = std::make_shared<int>(0);
+    std::vector<StmtPtr> stmts;
+    stmts.push_back(std::make_unique<PrintStmt>(
+        std::make_unique<SpyBinaryExpr>(
+            std::make_unique<LiteralExpr>(std::string("hello"), 1),
+            tok(TokenType::PLUS, "+"),
+            std::make_unique<LiteralExpr>(1.0, 1),
+            count
+        ), 1
+    ));
+
+    ConstantFoldingOptimizer opt;
+    auto optimized = opt.optimize(std::move(stmts));
+
+    // 폴딩 실패(타입 불일치) → SpyBinaryExpr 원본 유지
+    auto* ps = dynamic_cast<PrintStmt*>(optimized[0].get());
+    ASSERT_NE(ps, nullptr);
+    EXPECT_NE(dynamic_cast<SpyBinaryExpr*>(ps->expression.get()), nullptr);
+
+    // 런타임에도 동일 에러 발생
+    Executor ex;
+    std::ostringstream oss;
+    EXPECT_THROW(ex.execute(std::move(optimized), oss), std::runtime_error);
+    EXPECT_EQ(*count, 1);  // SpyBinaryExpr는 런타임에 평가됨 (폴딩 안 됨)
+}
+
+// -(x + (2+3)): 비상수 UnaryExpr 내부의 상수 자식이 폴딩된다
+// UnaryExpr 비상수 재귀 경로 (foldExpr lines 101-102) 커버
+TEST(ConstantFoldingOptimizerTest, UnaryExpr_NonConst_InnerConstFolded) {
+    auto spy = std::make_shared<int>(0);
+
+    std::vector<StmtPtr> stmts;
+    stmts.push_back(std::make_unique<VarDeclareStmt>(
+        tok(TokenType::IDENTIFIER, "x"),
+        std::make_unique<LiteralExpr>(10.0, 1)
+    ));
+    stmts.push_back(std::make_unique<PrintStmt>(
+        std::make_unique<UnaryExpr>(
+            tok(TokenType::MINUS, "-"),
+            std::make_unique<BinaryExpr>(
+                std::make_unique<VariableExpr>(tok(TokenType::IDENTIFIER, "x")),
+                tok(TokenType::PLUS, "+"),
+                std::make_unique<SpyBinaryExpr>(
+                    std::make_unique<LiteralExpr>(2.0, 1),
+                    tok(TokenType::PLUS, "+"),
+                    std::make_unique<LiteralExpr>(3.0, 1),
+                    spy
+                )
+            )
+        ), 1
+    ));
+
+    ConstantFoldingOptimizer opt;
+    auto optimized = opt.optimize(std::move(stmts));
+
+    Executor ex;
+    std::ostringstream oss;
+    ex.execute(std::move(optimized), oss);
+
+    EXPECT_EQ(*spy, 0);        // (2+3) → LiteralExpr(5)로 폴딩
+    EXPECT_EQ(oss.str(), "-15\n");  // -(10 + 5) = -15
+}

@@ -365,3 +365,130 @@ TEST(ShellTest, ExitInsideBlock_NotTreatedAsCommand) {
     shell.runLine("var exit = 5;");
     EXPECT_EQ(shell.runLine("print exit;"), "5\n");
 }
+
+// ════════════════════════════════════════════════════
+// Wave 12 — 파서 잘못된 키워드 힌트 (커버리지 보강)
+// ════════════════════════════════════════════════════
+
+TEST(ShellTest, WrongKeyword_Func_SuggestsLowercase) {
+    Shell shell;
+    std::string out = shell.runLine("Func foo() {}");
+    EXPECT_NE(out.find("func"), std::string::npos);
+}
+
+TEST(ShellTest, WrongKeyword_Array_SuggestsLowercase) {
+    Shell shell;
+    std::string out = shell.runLine("Array(3);");
+    EXPECT_NE(out.find("array"), std::string::npos);
+}
+
+TEST(ShellTest, WrongKeyword_Function_SuggestsFunc) {
+    Shell shell;
+    std::string out = shell.runLine("function foo() {}");
+    EXPECT_NE(out.find("func"), std::string::npos);
+}
+
+TEST(ShellTest, WrongKeyword_Let_SuggestsVar) {
+    Shell shell;
+    std::string out = shell.runLine("let x = 5;");
+    EXPECT_NE(out.find("var"), std::string::npos);
+}
+
+TEST(ShellTest, WrongKeyword_Const_SuggestsVar) {
+    Shell shell;
+    std::string out = shell.runLine("const x = 5;");
+    EXPECT_NE(out.find("var"), std::string::npos);
+}
+
+TEST(ShellTest, WrongKeyword_While_SuggestsFor) {
+    Shell shell;
+    std::string out = shell.runLine("while (x) {}");
+    EXPECT_NE(out.find("for"), std::string::npos);
+}
+
+TEST(ShellTest, WrongKeyword_Println_SuggestsPrint) {
+    Shell shell;
+    std::string out = shell.runLine("println x;");
+    EXPECT_NE(out.find("print"), std::string::npos);
+}
+
+TEST(ShellTest, WrongKeyword_Elif_SuggestsElseIf) {
+    Shell shell;
+    std::string out = shell.runLine("elif (x) {}");
+    EXPECT_NE(out.find("else if"), std::string::npos);
+}
+
+TEST(ShellTest, TypeAnnotation_SuggestsVar) {
+    Shell shell;
+    std::string out = shell.runLine("int x = 5;");
+    EXPECT_NE(out.find("var"), std::string::npos);
+}
+
+// ════════════════════════════════════════════════════
+// Wave 13 — isTruthy 숫자/nil 경로 (커버리지 보강)
+// ════════════════════════════════════════════════════
+
+TEST(ShellTest, ITruthy_ZeroIsFalsy) {
+    Shell shell;
+    EXPECT_EQ(shell.runLine("if (0) { print 1; } else { print 0; }"), "0\n");
+}
+
+TEST(ShellTest, ITruthy_NonzeroIsTruthy) {
+    Shell shell;
+    EXPECT_EQ(shell.runLine("if (5) { print 1; } else { print 0; }"), "1\n");
+}
+
+TEST(ShellTest, ITruthy_NilFromNoReturnIsFalsy) {
+    Shell shell;
+    shell.runLine("func noRet() { var x = 1; }");
+    shell.runLine("var r = noRet();");
+    EXPECT_EQ(shell.runLine("if (r) { print 1; } else { print 0; }"), "0\n");
+}
+
+// ════════════════════════════════════════════════════
+// Wave 14 — EOF 미완성 블록 처리 (커버리지 보강)
+// ════════════════════════════════════════════════════
+
+TEST(ShellTest, EOFWithUnclosedBlock_ProcessedWithError) {
+    Shell shell;
+    std::istringstream in("{\nvar y = 2;");  // 닫는 } 없음
+    std::ostringstream out;
+    shell.run(in, out);  // 크래시 없이 종료해야 한다
+    EXPECT_NE(out.str().find("Expected '}'"), std::string::npos);
+}
+
+// ════════════════════════════════════════════════════
+// Wave 15 — 파서 엣지 케이스 / isTruthy 확장 (커버리지 보강)
+// ════════════════════════════════════════════════════
+
+// for 루프 이니셜라이저가 표현식 문인 경우 (var 선언 아님)
+// Parser.cpp line 100 커버
+TEST(ShellTest, ForLoop_ExpressionInitializer) {
+    Shell shell;
+    shell.runLine("var x = 0;");
+    EXPECT_EQ(shell.runLine("for (x = 1; x < 3; x = x + 1) {} print x;"), "3\n");
+}
+
+// 좌변이 리터럴인 대입문 → "Invalid assignment target" 파싱 오류
+// Parser.cpp line 199 커버
+TEST(ShellTest, InvalidAssignmentTarget_PrintsError) {
+    Shell shell;
+    std::string out = shell.runLine("1 = 5;");
+    EXPECT_NE(out.find("Invalid assignment"), std::string::npos);
+}
+
+// 문자열 조건은 truthy → isTruthy(string) = true 경로 커버
+// Executor.cpp line 41 커버
+TEST(ShellTest, ITruthy_NonEmptyStringIsTruthy) {
+    Shell shell;
+    EXPECT_EQ(shell.runLine("if (\"hello\") { print 1; } else { print 0; }"), "1\n");
+}
+
+// 괄호로 감싼 함수명으로 호출 → "Call target must be a named function" 런타임 에러
+// Executor.cpp line 218 커버
+TEST(ShellTest, CallGroupingCallee_PrintsError) {
+    Shell shell;
+    shell.runLine("func foo() { return 1; }");
+    std::string out = shell.runLine("var r = (foo)();");
+    EXPECT_NE(out.find("Call target must be a named function"), std::string::npos);
+}

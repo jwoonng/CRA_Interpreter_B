@@ -171,6 +171,120 @@ TEST_F(StaticBindingOptimizerFixture, FunctionLocalVar_DistanceZero) {
     EXPECT_EQ(raw->distance, 0);
 }
 
+// { var x = 1; print (x); }  →  GroupingExpr 내부 VariableExpr distance == 0
+TEST_F(StaticBindingOptimizerFixture, GroupingExpr_VariableResolved) {
+    auto varTok  = identTok("x");
+    auto varExpr = std::make_unique<VariableExpr>(varTok);
+    VariableExpr* raw = varExpr.get();
+
+    std::vector<StmtPtr> block;
+    block.push_back(std::make_unique<VarDeclareStmt>(varTok));
+    block.push_back(std::make_unique<PrintStmt>(
+        std::make_unique<GroupingExpr>(std::move(varExpr)), 1));
+
+    std::vector<StmtPtr> stmts;
+    stmts.push_back(std::make_unique<BlockStmt>(std::move(block)));
+
+    auto kept = optimizer_.optimize(std::move(stmts));  // 소유권 유지 — raw ptr 유효성 보장
+    EXPECT_EQ(raw->distance, 0);
+}
+
+// { var x = 1; print -x; }  →  UnaryExpr 내부 VariableExpr distance == 0
+TEST_F(StaticBindingOptimizerFixture, UnaryExpr_VariableResolved) {
+    auto varTok  = identTok("x");
+    auto varExpr = std::make_unique<VariableExpr>(varTok);
+    VariableExpr* raw = varExpr.get();
+
+    std::vector<StmtPtr> block;
+    block.push_back(std::make_unique<VarDeclareStmt>(varTok));
+    block.push_back(std::make_unique<PrintStmt>(
+        std::make_unique<UnaryExpr>(
+            makeTok(TokenType::MINUS, "-"),
+            std::move(varExpr)
+        ), 1));
+
+    std::vector<StmtPtr> stmts;
+    stmts.push_back(std::make_unique<BlockStmt>(std::move(block)));
+
+    auto kept = optimizer_.optimize(std::move(stmts));  // 소유권 유지
+    EXPECT_EQ(raw->distance, 0);
+}
+
+// { var x = true; print x and x; }  →  LogicalExpr 양 변 VariableExpr distance == 0
+TEST_F(StaticBindingOptimizerFixture, LogicalExpr_BothSidesResolved) {
+    auto varTok    = identTok("x");
+    auto leftExpr  = std::make_unique<VariableExpr>(varTok);
+    auto rightExpr = std::make_unique<VariableExpr>(varTok);
+    VariableExpr* rawL = leftExpr.get();
+    VariableExpr* rawR = rightExpr.get();
+
+    std::vector<StmtPtr> block;
+    block.push_back(std::make_unique<VarDeclareStmt>(varTok));
+    block.push_back(std::make_unique<PrintStmt>(
+        std::make_unique<LogicalExpr>(
+            std::move(leftExpr),
+            makeTok(TokenType::AND, "and"),
+            std::move(rightExpr)
+        ), 1));
+
+    std::vector<StmtPtr> stmts;
+    stmts.push_back(std::make_unique<BlockStmt>(std::move(block)));
+
+    auto kept = optimizer_.optimize(std::move(stmts));  // 소유권 유지
+    EXPECT_EQ(rawL->distance, 0);
+    EXPECT_EQ(rawR->distance, 0);
+}
+
+// { var arr = ...; print arr[0]; }  →  IndexExpr object VariableExpr distance == 0
+TEST_F(StaticBindingOptimizerFixture, IndexExpr_ObjectVariableResolved) {
+    auto arrTok  = identTok("arr");
+    auto arrExpr = std::make_unique<VariableExpr>(arrTok);
+    VariableExpr* rawArr = arrExpr.get();
+
+    std::vector<StmtPtr> block;
+    block.push_back(std::make_unique<VarDeclareStmt>(arrTok));
+    block.push_back(std::make_unique<PrintStmt>(
+        std::make_unique<IndexExpr>(
+            std::move(arrExpr),
+            std::make_unique<LiteralExpr>(0.0, 1),
+            makeTok(TokenType::RIGHT_BRACKET, "]")
+        ), 1));
+
+    std::vector<StmtPtr> stmts;
+    stmts.push_back(std::make_unique<BlockStmt>(std::move(block)));
+
+    auto kept = optimizer_.optimize(std::move(stmts));  // 소유권 유지
+    EXPECT_EQ(rawArr->distance, 0);
+}
+
+// { var arr = ...; arr[0] = 42; }  →  IndexAssignExpr target.object distance == 0
+TEST_F(StaticBindingOptimizerFixture, IndexAssignExpr_ObjectVariableResolved) {
+    auto arrTok  = identTok("arr");
+    auto arrExpr = std::make_unique<VariableExpr>(arrTok);
+    VariableExpr* rawArr = arrExpr.get();
+
+    auto target = std::make_unique<IndexExpr>(
+        std::move(arrExpr),
+        std::make_unique<LiteralExpr>(0.0, 1),
+        makeTok(TokenType::RIGHT_BRACKET, "]")
+    );
+
+    std::vector<StmtPtr> block;
+    block.push_back(std::make_unique<VarDeclareStmt>(arrTok));
+    block.push_back(std::make_unique<ExpressionStmt>(
+        std::make_unique<IndexAssignExpr>(
+            std::move(target),
+            std::make_unique<LiteralExpr>(42.0, 1),
+            1
+        )));
+
+    std::vector<StmtPtr> stmts;
+    stmts.push_back(std::make_unique<BlockStmt>(std::move(block)));
+
+    auto kept = optimizer_.optimize(std::move(stmts));  // 소유권 유지
+    EXPECT_EQ(rawArr->distance, 0);
+}
+
 // for (var i = 0; i < 5; i = i + 1) { print i; }  →  i.distance == 0
 TEST_F(StaticBindingOptimizerFixture, ForLoopVar_DistanceZero) {
     auto iTok  = identTok("i");
@@ -381,4 +495,11 @@ TEST_F(StaticBindingIntegrationFixture, Scope_ShadowedVar_OptimizerSetsCorrectDi
     EXPECT_EQ(shell_.runLine(
         "{ var x = 1; { var x = 2; print x; } print x; }"),
         "2\n1\n");
+}
+
+// { var x = 0; x = 99; print x; }
+// 로컬 변수 대입 시 StaticBinding이 distance=0으로 설정 → assignAt() 경로 커버
+// Executor.cpp line 145 커버
+TEST_F(StaticBindingIntegrationFixture, LocalVarAssignment_UsesAssignAt) {
+    EXPECT_EQ(shell_.runLine("{ var x = 0; x = 99; print x; }"), "99\n");
 }

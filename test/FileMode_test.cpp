@@ -1,6 +1,7 @@
 ﻿#include <gtest/gtest.h>
 #include "src/shell/Shell.h"
 #include "FileTestHelpers.h"
+#include "src/optimizer/ConstantFoldingOptimizer.h"
 #include <sstream>
 #include <string>
 
@@ -60,4 +61,28 @@ TEST(FileModeTest, FunctionAndArray_WorkFromFile) {
     std::ostringstream out;
     EXPECT_EQ(shell.runFile(path, out), 0);
     EXPECT_EQ(out.str(), "7\n");
+}
+
+// Checker 오류(중복 선언)는 실행을 막고 에러 코드 1을 반환한다
+TEST(FileModeTest, CheckerError_StopsExecutionAndReturnsOne) {
+    std::string path = writeTempScript("filemode",
+        "{ var a = 1; var a = 2; }\n"
+        "print 42;\n");  // 절대 실행되면 안 된다
+    Shell shell;
+    std::ostringstream out;
+    int code = shell.runFile(path, out);
+    EXPECT_EQ(code, 1);
+    EXPECT_TRUE(contains(out.str(), "already declared"));
+    EXPECT_FALSE(contains(out.str(), "42"));
+}
+
+// Shell에 옵티마이저가 추가된 상태에서도 runFile이 올바른 결과를 낸다
+// (Shell::runFile의 optimizer 루프 경로 커버)
+TEST(FileModeTest, WithOptimizer_RunFileProducesCorrectOutput) {
+    std::string path = writeTempScript("filemode", "print 2 + 3;\n");
+    Shell shell;
+    shell.addOptimizer(std::make_unique<ConstantFoldingOptimizer>());
+    std::ostringstream out;
+    EXPECT_EQ(shell.runFile(path, out), 0);
+    EXPECT_EQ(out.str(), "5\n");
 }
