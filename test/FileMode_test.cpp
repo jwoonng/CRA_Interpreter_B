@@ -17,7 +17,7 @@ TEST(FileModeTest, MissingFile_ReturnsErrorCode) {
 }
 
 TEST(FileModeTest, SimpleProgram_ProducesOutput) {
-    std::string path = writeTempScript("filemode", "print 1 + 2;\n");
+    auto path = writeTempScript("filemode", "print 1 + 2;\n");
     Shell shell;
     std::ostringstream out;
     int code = shell.runFile(path, out);
@@ -26,7 +26,7 @@ TEST(FileModeTest, SimpleProgram_ProducesOutput) {
 }
 
 TEST(FileModeTest, MultipleStatements_RunInOrder) {
-    std::string path = writeTempScript("filemode",
+    auto path = writeTempScript("filemode",
         "var a = 10;\n"
         "var b = 20;\n"
         "print a + b;\n");
@@ -37,7 +37,7 @@ TEST(FileModeTest, MultipleStatements_RunInOrder) {
 }
 
 TEST(FileModeTest, RuntimeError_ReportsLineAndStops) {
-    std::string path = writeTempScript("filemode",
+    auto path = writeTempScript("filemode",
         "print 1;\n"
         "print 1 / 0;\n"   // runtime error on line 2
         "print 3;\n");     // must NOT run
@@ -51,7 +51,7 @@ TEST(FileModeTest, RuntimeError_ReportsLineAndStops) {
 }
 
 TEST(FileModeTest, FunctionAndArray_WorkFromFile) {
-    std::string path = writeTempScript("filemode",
+    auto path = writeTempScript("filemode",
         "func add(a, b) { return a + b; }\n"
         "var arr = array(2);\n"
         "arr[0] = add(3, 4);\n"

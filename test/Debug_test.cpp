@@ -12,7 +12,7 @@ namespace {
 
 // Run debug mode over `source` feeding `commands`, return everything printed.
 std::string runDebug(const std::string& source, const std::string& commands) {
-    std::string path = writeTempScript("debug", source);
+    auto path = writeTempScript("debug", source);
     Shell shell;
     std::istringstream in(commands);
     std::ostringstream out;
