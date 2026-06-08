@@ -108,41 +108,41 @@ TEST(ShellTest, ErrorDoesNotCrashShell) {
 
 TEST(ShellTest, Func_DefinedAndCalledOnSeparateLines) {
     Shell shell;
-    shell.runLine("Func add(a, b) { return a + b; }");
+    shell.runLine("func add(a, b) { return a + b; }");
     EXPECT_EQ(shell.runLine("print add(3, 7);"), "10\n");
 }
 
 TEST(ShellTest, Func_ReturnValueStoredInVar_AcrossLines) {
     Shell shell;
-    shell.runLine("Func add(a, b) { return a + b; }");
+    shell.runLine("func add(a, b) { return a + b; }");
     shell.runLine("var ret = add(3, 7);");
     EXPECT_EQ(shell.runLine("print ret;"), "10\n");
 }
 
 TEST(ShellTest, Func_RecursiveFactorial_AcrossLines) {
     Shell shell;
-    shell.runLine("Func fact(n) { if (n <= 1) return 1; return n * fact(n - 1); }");
+    shell.runLine("func fact(n) { if (n <= 1) return 1; return n * fact(n - 1); }");
     EXPECT_EQ(shell.runLine("print fact(5);"), "120\n");
 }
 
 TEST(ShellTest, Func_CallingAnotherFunc_AcrossLines) {
     Shell shell;
-    shell.runLine("Func dbl(x) { return x * 2; }");
-    shell.runLine("Func quad(x) { return dbl(dbl(x)); }");
+    shell.runLine("func dbl(x) { return x * 2; }");
+    shell.runLine("func quad(x) { return dbl(dbl(x)); }");
     EXPECT_EQ(shell.runLine("print quad(3);"), "12\n");
 }
 
 TEST(ShellTest, Func_AccessesGlobalVar) {
     Shell shell;
     shell.runLine("var x = 10;");
-    shell.runLine("Func getX() { return x; }");
+    shell.runLine("func getX() { return x; }");
     EXPECT_EQ(shell.runLine("print getX();"), "10\n");
 }
 
 TEST(ShellTest, Func_ModifiesGlobalVar) {
     Shell shell;
     shell.runLine("var counter = 0;");
-    shell.runLine("Func inc() { counter = counter + 1; }");
+    shell.runLine("func inc() { counter = counter + 1; }");
     shell.runLine("inc();");
     EXPECT_EQ(shell.runLine("print counter;"), "1\n");
 }
@@ -160,7 +160,7 @@ TEST(ShellTest, CheckerState_GhostScopeCleared_AfterBlockError) {
 
 TEST(ShellTest, CheckerState_FunctionDepthResetAfterBodyError) {
     Shell shell;
-    shell.runLine("Func foo() { var x = x; }");
+    shell.runLine("func foo() { var x = x; }");
     std::string out = shell.runLine("return 5;");
     EXPECT_NE(out.find("function"), std::string::npos);
 }
@@ -171,14 +171,14 @@ TEST(ShellTest, CheckerState_FunctionDepthResetAfterBodyError) {
 
 TEST(ShellTest, Array_PersistsAndWritable_AcrossLines) {
     Shell shell;
-    shell.runLine("var arr = Array(3);");
+    shell.runLine("var arr = array(3);");
     shell.runLine("arr[0] = 42;");
     EXPECT_EQ(shell.runLine("print arr[0];"), "42\n");
 }
 
 TEST(ShellTest, Array_MultipleElements_AcrossLines) {
     Shell shell;
-    shell.runLine("var arr = Array(3);");
+    shell.runLine("var arr = array(3);");
     shell.runLine("arr[0] = 10;");
     shell.runLine("arr[1] = 20;");
     shell.runLine("arr[2] = 30;");
@@ -214,7 +214,7 @@ static std::string runScript(const std::string& src) {
 // Func 멀티라인 — 선언과 호출 모두 여러 줄
 TEST(ShellTest, MultiLine_Func_BasicCall) {
     EXPECT_EQ(runScript(
-        "Func add(a, b) {\n"
+        "func add(a, b) {\n"
         "    return a + b;\n"
         "}\n"
         "print add(3, 7);"
@@ -224,7 +224,7 @@ TEST(ShellTest, MultiLine_Func_BasicCall) {
 // Func 멀티라인 — 반환값을 변수에 저장
 TEST(ShellTest, MultiLine_Func_ReturnValueStoredInVar) {
     EXPECT_EQ(runScript(
-        "Func mul(a, b) {\n"
+        "func mul(a, b) {\n"
         "    return a * b;\n"
         "}\n"
         "var r = mul(4, 5);\n"
@@ -260,7 +260,7 @@ TEST(ShellTest, MultiLine_NestedBlocks) {
 // 재귀 함수 멀티라인
 TEST(ShellTest, MultiLine_Func_Recursive) {
     EXPECT_EQ(runScript(
-        "Func fact(n) {\n"
+        "func fact(n) {\n"
         "    if (n <= 1) return 1;\n"
         "    return n * fact(n - 1);\n"
         "}\n"
@@ -271,7 +271,7 @@ TEST(ShellTest, MultiLine_Func_Recursive) {
 // Func + for 조합 멀티라인
 TEST(ShellTest, MultiLine_Func_WithForLoop) {
     EXPECT_EQ(runScript(
-        "Func sumTo(n) {\n"
+        "func sumTo(n) {\n"
         "    var s = 0;\n"
         "    for (var i = 1; i <= n; i = i + 1) {\n"
         "        s = s + i;\n"
@@ -285,7 +285,7 @@ TEST(ShellTest, MultiLine_Func_WithForLoop) {
 // 문자열 리터럴 안의 { } 는 깊이 계산에서 제외되어야 한다
 TEST(ShellTest, MultiLine_StringWithBraces_NotCountedAsScope) {
     EXPECT_EQ(runScript(
-        "Func f() {\n"
+        "func f() {\n"
         "    return \"{\";\n"
         "}\n"
         "print f();"

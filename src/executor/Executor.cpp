@@ -245,8 +245,11 @@ LiteralValue Executor::visitCallExpr(CallExpr& e) {
     }
 
     // ── 배열 생성 내장 함수 ──────────────────────────────────────
-    if (name == "Array")
+    if (name == "array")
         return callBuiltinArray(e);
+    if (name == "Array")
+        throw std::runtime_error(
+            "[line " + std::to_string(e.line) + "] Unknown function 'Array'. Use 'array' to create arrays.");
 
     // ── 미정의 ───────────────────────────────────────────────────
     if (env_->contains(name))
@@ -291,12 +294,12 @@ static std::size_t requireIndex(const LiteralValue& v, std::size_t size, int lin
 LiteralValue Executor::callBuiltinArray(CallExpr& e) {
     if (e.arguments.size() != 1)
         throw std::runtime_error(
-            "[line " + std::to_string(e.paren.line) + "] Array() expects exactly 1 argument.");
+            "[line " + std::to_string(e.paren.line) + "] array() expects exactly 1 argument.");
     LiteralValue sizeVal = evaluate(*e.arguments[0]);
     auto* d = std::get_if<double>(&sizeVal);
     if (!d || *d < 0.0 || *d != std::floor(*d))
         throw std::runtime_error(
-            "[line " + std::to_string(e.paren.line) + "] Array size must be a non-negative integer.");
+            "[line " + std::to_string(e.paren.line) + "] array size must be a non-negative integer.");
     return std::make_shared<LiteralArray>(static_cast<std::size_t>(*d));
 }
 

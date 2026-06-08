@@ -26,16 +26,31 @@ StmtPtr Parser::statement() {
 
     if (check(TokenType::IDENTIFIER)) {
         const std::string& lex = peek().lexeme;
+
+        // Type annotations
         bool isTypeName = (lex == "int"   || lex == "float"  || lex == "double" ||
                            lex == "string"|| lex == "bool"   || lex == "char"   ||
                            lex == "long"  || lex == "short"  || lex == "byte"   || lex == "void");
         if (isTypeName
             && current_ + 1 < static_cast<int>(tokens_.size())
             && tokens_[current_ + 1].type == TokenType::IDENTIFIER)
-        {
-            Token t = peek();
-            throw error(t, "Type annotations are not supported. Use 'var' instead of '" + t.lexeme + "'.");
-        }
+            throw error(peek(), "Type annotations are not supported. Use 'var' instead of '" + lex + "'.");
+
+        // Wrong keyword aliases
+        if (lex == "Func")
+            throw error(peek(), "Unknown keyword 'Func'. Use 'func' to declare functions.");
+        if (lex == "Array")
+            throw error(peek(), "Unknown keyword 'Array'. Use 'array' to create arrays.");
+        if (lex == "function" || lex == "def" || lex == "fn")
+            throw error(peek(), "Unknown keyword '" + lex + "'. Use 'func' to declare functions.");
+        if (lex == "let" || lex == "const")
+            throw error(peek(), "Unknown keyword '" + lex + "'. Use 'var' to declare variables.");
+        if (lex == "while" || lex == "do" || lex == "loop")
+            throw error(peek(), "Unknown keyword '" + lex + "'. Use 'for' for loops.");
+        if (lex == "println" || lex == "printf" || lex == "cout" || lex == "echo")
+            throw error(peek(), "Unknown keyword '" + lex + "'. Use 'print' to output values.");
+        if (lex == "elif" || lex == "elsif")
+            throw error(peek(), "Unknown keyword '" + lex + "'. Use 'else if' for chained conditions.");
     }
 
     return expressionStatement();
