@@ -73,6 +73,7 @@ StmtPtr Parser::returnStatement() {
 }
 
 StmtPtr Parser::forStatement() {
+    int forLine = previous().line;  // line of the 'for' keyword (for debug stepping)
     consume(TokenType::LEFT_PAREN, "Expected '(' after 'for'.");
 
     StmtPtr initializer;
@@ -96,12 +97,14 @@ StmtPtr Parser::forStatement() {
 
     StmtPtr body = statement();
 
-    return std::make_unique<ForStmt>(
+    auto stmt = std::make_unique<ForStmt>(
         std::move(initializer),
         std::move(condition),
         std::move(increment),
         std::move(body)
     );
+    stmt->line = forLine;
+    return stmt;
 }
 
 StmtPtr Parser::ifStatement() {

@@ -335,3 +335,33 @@ TEST(ShellTest, Scope_ShadowedVarRestoredAfterBlock) {
         "print x;"
     ), "2\n1\n");
 }
+
+// ════════════════════════════════════════════════════
+// Wave 11 — exit / quit 로 세션 종료
+// ════════════════════════════════════════════════════
+
+// "exit" 입력 시 이후 줄은 실행되지 않는다
+TEST(ShellTest, Exit_TerminatesSession) {
+    EXPECT_EQ(runScript(
+        "print 1;\n"
+        "exit\n"
+        "print 2;"
+    ), "1\n");
+}
+
+// "quit" 도 동일하게 세션을 종료한다
+TEST(ShellTest, Quit_TerminatesSession) {
+    EXPECT_EQ(runScript(
+        "print 1;\n"
+        "quit\n"
+        "print 2;"
+    ), "1\n");
+}
+
+// 멀티라인 블록 안의 내용은 exit 로 오인되지 않는다
+TEST(ShellTest, ExitInsideBlock_NotTreatedAsCommand) {
+    Shell shell;
+    // 'exit' 가 변수명으로 쓰이면 일반 식별자로 처리된다 (종료 명령 아님)
+    shell.runLine("var exit = 5;");
+    EXPECT_EQ(shell.runLine("print exit;"), "5\n");
+}

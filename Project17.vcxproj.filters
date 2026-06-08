@@ -83,6 +83,9 @@
     <ClInclude Include="src\shell\Shell.h">
       <Filter>Shell</Filter>
     </ClInclude>
+    <ClInclude Include="src\shell\Debugger.h">
+      <Filter>Shell</Filter>
+    </ClInclude>
     <ClInclude Include="src\optimizer\IOptimizer.h">
       <Filter>Optimizer</Filter>
     </ClInclude>
@@ -128,6 +131,9 @@
     <ClCompile Include="src\shell\Shell.cpp">
       <Filter>Shell</Filter>
     </ClCompile>
+    <ClCompile Include="src\shell\Debugger.cpp">
+      <Filter>Shell</Filter>
+    </ClCompile>
     <ClCompile Include="test\Shell_test.cpp">
       <Filter>Test</Filter>
     </ClCompile>
@@ -152,6 +158,12 @@
       <Filter>Test</Filter>
     </ClCompile>
     <ClCompile Include="test\StaticBinding_test.cpp">
+      <Filter>Test</Filter>
+    </ClCompile>
+    <ClCompile Include="test\FileMode_test.cpp">
+      <Filter>Test</Filter>
+    </ClCompile>
+    <ClCompile Include="test\Debug_test.cpp">
       <Filter>Test</Filter>
     </ClCompile>
   </ItemGroup>

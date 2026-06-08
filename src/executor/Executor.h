@@ -80,11 +80,41 @@ struct ReturnException {
     LiteralValue value;
 };
 
+// ── Debug stepping support (factory "debug" mode) ─────────────────────
+// The Executor notifies an observer before every stoppable statement.
+// "depth" is the current block-nesting level (0 = top level), used by the
+// debugger to implement step-over ("next").
+struct DebugObserver {
+    virtual ~DebugObserver() = default;
+    virtual void beforeStatement(const Stmt& stmt, int depth) = 0;
+};
+
+// A single variable visible at a pause point, for the debugger's
+// "inspect" / "watches" commands.
+struct DebugVar {
+    bool         isGlobal;
+    std::string  name;
+    LiteralValue value;
+};
+
 // ── Executor ─────────────────────────────────────────────────────────
 class Executor : public IExecutor, private ExprVisitor, private StmtVisitor {
 public:
     void execute(std::vector<std::unique_ptr<Stmt>> stmts,
                  std::ostream& out) override;
+
+    // ── Debug support ────────────────────────────────────────────────
+    // Install (or clear with nullptr) an observer notified before each
+    // stoppable statement. Used by the factory "debug" mode.
+    void setDebugObserver(DebugObserver* observer) { observer_ = observer; }
+
+    // Look up a variable by name through the active scope chain
+    // (nearest scope first). Returns false if undefined.
+    bool debugLookup(const std::string& name, LiteralValue& out) const;
+
+    // Snapshot of every variable visible at the current pause point:
+    // local scopes (nearest first) followed by the global scope.
+    std::vector<DebugVar> debugSnapshot() const;
 
 private:
     Environment  global_;
@@ -92,6 +122,9 @@ private:
     std::ostream* out_ = nullptr;
     std::unordered_map<std::string, FunctionEntry> functions_;
     std::vector<std::vector<std::unique_ptr<Stmt>>> ownedStmts_;
+
+    DebugObserver* observer_  = nullptr;  // null = normal execution
+    int            execDepth_ = 0;        // current block-nesting depth
 
     LiteralValue evaluate(Expr& e);
     void         run(Stmt& s);

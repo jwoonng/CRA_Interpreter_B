@@ -29,10 +29,22 @@ public:
     // Optimizer 체인에 패스 추가 (호출 순서대로 실행)
     void addOptimizer(std::unique_ptr<IOptimizer> optimizer);
 
-    // 대화형 REPL: in 에서 한 줄씩 읽어 out 에 결과 출력
+    // Interactive REPL (prompt mode): read one line at a time from in,
+    // execute it, and print results to out.
     void run(std::istream& in, std::ostream& out);
 
-    // 테스트용: 한 줄을 실행하고 출력 결과를 문자열로 반환
+    // File mode: read the whole source file and run it once.
+    // Returns 0 on success, 1 on error (file open failure or execution error).
+    // On error the message (runtime errors include the line number) is printed
+    // and execution stops immediately.
+    int runFile(const std::string& path, std::ostream& out);
+
+    // Debug mode: run the source file pausing at each statement.
+    // Debugger commands are read from cmdIn; all output goes to out.
+    // Returns 0 on success, 1 on error.
+    int runDebug(const std::string& path, std::istream& cmdIn, std::ostream& out);
+
+    // Test helper: execute a single line and return its output as a string.
     std::string runLine(const std::string& line);
 
 private:

@@ -14,7 +14,14 @@ void Executor::execute(std::vector<std::unique_ptr<Stmt>> stmts,
 }
 
 LiteralValue Executor::evaluate(Expr& e) { return e.accept(*this); }
-void         Executor::run(Stmt& s)      { s.accept(*this); }
+
+void Executor::run(Stmt& s) {
+    // Blocks are transparent containers — pause on their inner statements,
+    // not on the block itself, to keep stepping at a meaningful granularity.
+    if (observer_ && dynamic_cast<BlockStmt*>(&s) == nullptr)
+        observer_->beforeStatement(s, execDepth_);
+    s.accept(*this);
+}
 
 // ── 내부 헬퍼 ───────────────────────────────────────────────────
 static std::pair<double, double> numericOperands(const LiteralValue& l,
@@ -38,6 +45,14 @@ struct ScopeGuard {
     Environment*& ref;
     Environment*  prev;
     ~ScopeGuard() { ref = prev; }
+};
+
+// RAII depth counter for debug step-over support; restores on scope exit
+// even when control leaves via an exception (e.g. ReturnException).
+struct DepthGuard {
+    int& depth;
+    explicit DepthGuard(int& d) : depth(d) { ++depth; }
+    ~DepthGuard() { --depth; }
 };
 
 static std::string formatDouble(double d) {
@@ -159,6 +174,7 @@ void Executor::visitExpressionStmt(ExpressionStmt& s) {
 void Executor::visitBlockStmt(BlockStmt& s) {
     Environment local(env_);
     ScopeGuard g{env_, std::exchange(env_, &local)};
+    DepthGuard d{execDepth_};
     for (auto& stmt : s.statements) run(*stmt);
 }
 
@@ -209,6 +225,7 @@ LiteralValue Executor::visitCallExpr(CallExpr& e) {
             callEnv.define(params[i].lexeme, argVals[i]);
 
         ScopeGuard g{env_, std::exchange(env_, &callEnv)};
+        DepthGuard d{execDepth_};
         LiteralValue result;
         try {
             for (const auto& stmt : fn.decl->body)
@@ -234,7 +251,10 @@ LiteralValue Executor::visitCallExpr(CallExpr& e) {
 void Executor::visitForStmt(ForStmt& s) {
     Environment forScope(env_);
     ScopeGuard g{env_, std::exchange(env_, &forScope)};
-    if (s.initializer) run(*s.initializer);
+    DepthGuard d{execDepth_};
+    // The initializer shares the 'for' header line; run it without a debug
+    // stop so stepping doesn't pause twice on the same line.
+    if (s.initializer) s.initializer->accept(*this);
     while (true) {
         if (s.condition && !isTruthy(evaluate(*s.condition))) break;
         run(*s.body);
@@ -285,4 +305,25 @@ LiteralValue Executor::visitIndexAssignExpr(IndexAssignExpr& e) {
     LiteralValue val = evaluate(*e.value);
     arr->elements[i] = val;
     return val;
+}
+
+// ── Debug introspection ─────────────────────────────────────────────
+bool Executor::debugLookup(const std::string& name, LiteralValue& out) const {
+    for (const Environment* e = env_; e != nullptr; e = e->enclosing) {
+        auto it = e->values.find(name);
+        if (it != e->values.end()) { out = it->second; return true; }
+    }
+    return false;
+}
+
+std::vector<DebugVar> Executor::debugSnapshot() const {
+    std::vector<DebugVar> vars;
+    // Local scopes, nearest first (everything above the global scope).
+    for (const Environment* e = env_; e != nullptr && e != &global_; e = e->enclosing)
+        for (const auto& [name, value] : e->values)
+            vars.push_back({false, name, value});
+    // Global scope last.
+    for (const auto& [name, value] : global_.values)
+        vars.push_back({true, name, value});
+    return vars;
 }
