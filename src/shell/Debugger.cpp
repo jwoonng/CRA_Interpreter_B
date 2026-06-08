@@ -188,7 +188,9 @@ void Debugger::cmdBreak(const std::string& args) {
     while (iss >> token) {
         any = true;
         try {
-            int line = std::stoi(token);
+            std::size_t pos;
+            int line = std::stoi(token, &pos);
+            if (pos != token.size()) throw std::invalid_argument("trailing chars");
             breakpoints_.insert(line);
             out_ << "[DEBUG] breakpoint set at line " << line << "\n";
         } catch (...) {
@@ -205,7 +207,9 @@ void Debugger::cmdRemove(const std::string& args) {
     while (iss >> token) {
         any = true;
         try {
-            int line = std::stoi(token);
+            std::size_t pos;
+            int line = std::stoi(token, &pos);
+            if (pos != token.size()) throw std::invalid_argument("trailing chars");
             if (breakpoints_.erase(line))
                 out_ << "[DEBUG] breakpoint removed at line " << line << "\n";
             else
