@@ -988,9 +988,8 @@ TEST_F(ParserTest, ForMissingRightParenThrows) {
     );
 }
 
-TEST(ParserTest, UnmatchedClosingBraceThrows) {
+TEST_F(ParserTest, UnmatchedClosingBraceThrows) {
     // }  — 열린 스코프 없이 } 단독 사용
-    Parser parser;
     EXPECT_THROW(
         parser.parse({
             tok(TokenType::RIGHT_BRACE, "}"),
@@ -1000,9 +999,8 @@ TEST(ParserTest, UnmatchedClosingBraceThrows) {
     );
 }
 
-TEST(ParserTest, UnmatchedClosingBraceErrorMessage) {
+TEST_F(ParserTest, UnmatchedClosingBraceErrorMessage) {
     // 에러 메시지에 "}" 관련 내용이 포함되어야 함
-    Parser parser;
     try {
         parser.parse({
             tok(TokenType::RIGHT_BRACE, "}", {}, 3),

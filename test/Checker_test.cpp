@@ -403,28 +403,26 @@ TEST_F(CheckerTest, CheckErrorIsRuntimeError) {
 // Wave 7 — 글로벌 변수 중복 선언
 // ════════════════════════════════════════════════════
 
-TEST(CheckerTest, GlobalDuplicateVarThrows) {
+TEST_F(CheckerTest, GlobalDuplicateVarThrows) {
     // var x = 1; var x = 2;  — 글로벌 레벨 중복 선언
-    Checker checker;
     std::vector<std::unique_ptr<Stmt>> stmts;
     stmts.push_back(std::make_unique<VarDeclareStmt>(
-        ident("x", 1), std::make_unique<LiteralExpr>(1.0, 1)
+        id("x", 1), std::make_unique<LiteralExpr>(1.0, 1)
     ));
     stmts.push_back(std::make_unique<VarDeclareStmt>(
-        ident("x", 2), std::make_unique<LiteralExpr>(2.0, 2)
+        id("x", 2), std::make_unique<LiteralExpr>(2.0, 2)
     ));
     EXPECT_THROW(checker.check(stmts), CheckError);
 }
 
-TEST(CheckerTest, GlobalDuplicateVarErrorMessage) {
+TEST_F(CheckerTest, GlobalDuplicateVarErrorMessage) {
     // 에러 메시지에 변수명과 줄번호가 포함되어야 함
-    Checker checker;
     std::vector<std::unique_ptr<Stmt>> stmts;
     stmts.push_back(std::make_unique<VarDeclareStmt>(
-        ident("x", 1), std::make_unique<LiteralExpr>(1.0, 1)
+        id("x", 1), std::make_unique<LiteralExpr>(1.0, 1)
     ));
     stmts.push_back(std::make_unique<VarDeclareStmt>(
-        ident("x", 3), std::make_unique<LiteralExpr>(2.0, 3)
+        id("x", 3), std::make_unique<LiteralExpr>(2.0, 3)
     ));
     try {
         checker.check(stmts);
@@ -437,29 +435,27 @@ TEST(CheckerTest, GlobalDuplicateVarErrorMessage) {
     }
 }
 
-TEST(CheckerTest, GlobalUniqueVarNoThrow) {
+TEST_F(CheckerTest, GlobalUniqueVarNoThrow) {
     // var x = 1; var y = 2;  — 이름이 다르면 정상
-    Checker checker;
     std::vector<std::unique_ptr<Stmt>> stmts;
     stmts.push_back(std::make_unique<VarDeclareStmt>(
-        ident("x", 1), std::make_unique<LiteralExpr>(1.0, 1)
+        id("x", 1), std::make_unique<LiteralExpr>(1.0, 1)
     ));
     stmts.push_back(std::make_unique<VarDeclareStmt>(
-        ident("y", 2), std::make_unique<LiteralExpr>(2.0, 2)
+        id("y", 2), std::make_unique<LiteralExpr>(2.0, 2)
     ));
     EXPECT_NO_THROW(checker.check(stmts));
 }
 
-TEST(CheckerTest, LocalShadowsGlobalNoThrow) {
+TEST_F(CheckerTest, LocalShadowsGlobalNoThrow) {
     // var x = 1; { var x = 2; }  — 로컬에서 글로벌 이름 재사용은 허용
-    Checker checker;
     std::vector<std::unique_ptr<Stmt>> stmts;
     stmts.push_back(std::make_unique<VarDeclareStmt>(
-        ident("x", 1), std::make_unique<LiteralExpr>(1.0, 1)
+        id("x", 1), std::make_unique<LiteralExpr>(1.0, 1)
     ));
     std::vector<StmtPtr> innerStmts;
     innerStmts.push_back(std::make_unique<VarDeclareStmt>(
-        ident("x", 2), std::make_unique<LiteralExpr>(2.0, 2)
+        id("x", 2), std::make_unique<LiteralExpr>(2.0, 2)
     ));
     stmts.push_back(std::make_unique<BlockStmt>(std::move(innerStmts)));
     EXPECT_NO_THROW(checker.check(stmts));
