@@ -18,11 +18,13 @@ struct CheckError : std::runtime_error {
 class Checker : public IChecker, public ExprVisitor, public StmtVisitor {
 public:
     void check(const std::vector<std::unique_ptr<Stmt>>& stmts) override;
+    void rollbackLastCheck() override;
 
 private:
     // false = declared(uninitialized), true = initialized
     std::vector<std::unordered_map<std::string, bool>> scopes_;
-    std::unordered_map<std::string, int> globalScope_;  // name → line
+    std::unordered_map<std::string, int> globalScope_;         // name → line
+    std::unordered_map<std::string, int> globalScopeSnapshot_; // check() 직전 상태
     int functionDepth_ = 0;
 
     void beginScope();

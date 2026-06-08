@@ -190,7 +190,12 @@ void Shell::processLine(const std::string& line, std::ostream& out) {
         checker_->check(stmts);
         for (auto& opt : optimizers_)
             stmts = opt->optimize(std::move(stmts));
-        executor_->execute(std::move(stmts), out);
+        try {
+            executor_->execute(std::move(stmts), out);
+        } catch (...) {
+            checker_->rollbackLastCheck();
+            throw;
+        }
     } catch (const std::exception& e) {
         out << e.what() << "\n";
     }
