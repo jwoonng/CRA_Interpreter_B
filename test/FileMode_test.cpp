@@ -71,8 +71,8 @@ TEST(FileModeTest, RuntimeError_ReportsLineAndStops) {
 
 TEST(FileModeTest, FunctionAndArray_WorkFromFile) {
     std::string path = writeTempScript(
-        "Func add(a, b) { return a + b; }\n"
-        "var arr = Array(2);\n"
+        "func add(a, b) { return a + b; }\n"
+        "var arr = array(2);\n"
         "arr[0] = add(3, 4);\n"
         "print arr[0];\n");
     Shell shell;

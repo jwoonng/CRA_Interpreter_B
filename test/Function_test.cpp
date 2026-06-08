@@ -115,7 +115,7 @@ TEST(FunctionParserTest, FuncDecl_NoParams) {
     // Func foo() {}
     Parser p;
     auto stmts = p.parse({
-        tok(TokenType::FUN, "Func"), id("foo"),
+        tok(TokenType::FUN, "func"), id("foo"),
         tok(TokenType::LEFT_PAREN,  "("), tok(TokenType::RIGHT_PAREN, ")"),
         tok(TokenType::LEFT_BRACE,  "{"), tok(TokenType::RIGHT_BRACE, "}"),
         eof()
@@ -132,7 +132,7 @@ TEST(FunctionParserTest, FuncDecl_WithTwoParams) {
     // Func add(a, b) {}
     Parser p;
     auto stmts = p.parse({
-        tok(TokenType::FUN, "Func"), id("add"),
+        tok(TokenType::FUN, "func"), id("add"),
         tok(TokenType::LEFT_PAREN,  "("),
         id("a"), tok(TokenType::COMMA, ","), id("b"),
         tok(TokenType::RIGHT_PAREN, ")"),
@@ -150,7 +150,7 @@ TEST(FunctionParserTest, FuncDecl_WithBody) {
     // Func foo() { print 1; }
     Parser p;
     auto stmts = p.parse({
-        tok(TokenType::FUN, "Func"), id("foo"),
+        tok(TokenType::FUN, "func"), id("foo"),
         tok(TokenType::LEFT_PAREN, "("), tok(TokenType::RIGHT_PAREN, ")"),
         tok(TokenType::LEFT_BRACE, "{"),
             tok(TokenType::PRINT, "print"), num(1), tok(TokenType::SEMICOLON, ";"),
@@ -257,7 +257,7 @@ TEST(FunctionParserTest, FuncMissingName_Throws) {
     // Func () {}
     Parser p;
     EXPECT_THROW(p.parse({
-        tok(TokenType::FUN, "Func"),
+        tok(TokenType::FUN, "func"),
         tok(TokenType::LEFT_PAREN, "("), tok(TokenType::RIGHT_PAREN, ")"),
         tok(TokenType::LEFT_BRACE, "{"), tok(TokenType::RIGHT_BRACE, "}"),
         eof()
@@ -268,7 +268,7 @@ TEST(FunctionParserTest, FuncMissingLeftParen_Throws) {
     // Func foo) {}
     Parser p;
     EXPECT_THROW(p.parse({
-        tok(TokenType::FUN, "Func"), id("foo"),
+        tok(TokenType::FUN, "func"), id("foo"),
         tok(TokenType::RIGHT_PAREN, ")"),
         tok(TokenType::LEFT_BRACE, "{"), tok(TokenType::RIGHT_BRACE, "}"),
         eof()
@@ -279,7 +279,7 @@ TEST(FunctionParserTest, FuncMissingRightParen_Throws) {
     // Func foo( {}
     Parser p;
     EXPECT_THROW(p.parse({
-        tok(TokenType::FUN, "Func"), id("foo"),
+        tok(TokenType::FUN, "func"), id("foo"),
         tok(TokenType::LEFT_PAREN, "("),
         tok(TokenType::LEFT_BRACE, "{"), tok(TokenType::RIGHT_BRACE, "}"),
         eof()
@@ -290,7 +290,7 @@ TEST(FunctionParserTest, FuncMissingLeftBrace_Throws) {
     // Func foo()  (no brace)
     Parser p;
     EXPECT_THROW(p.parse({
-        tok(TokenType::FUN, "Func"), id("foo"),
+        tok(TokenType::FUN, "func"), id("foo"),
         tok(TokenType::LEFT_PAREN, "("), tok(TokenType::RIGHT_PAREN, ")"),
         eof()
     }), std::exception);

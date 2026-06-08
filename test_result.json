@@ -1,0 +1,2791 @@
+{
+  "tests": 320,
+  "failures": 0,
+  "disabled": 0,
+  "errors": 0,
+  "timestamp": "2026-06-08T10:22:18Z",
+  "time": "0.103s",
+  "name": "AllTests",
+  "testsuites": [
+    {
+      "name": "StaticBindingOptimizerFixture",
+      "tests": 7,
+      "failures": 0,
+      "disabled": 0,
+      "errors": 0,
+      "timestamp": "2026-06-08T10:22:18Z",
+      "time": "0s",
+      "testsuite": [
+        {
+          "name": "SetsDistanceZeroForSameScope",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "StaticBindingOptimizerFixture"
+        },
+        {
+          "name": "SetsDistanceOneForOuterScope",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "StaticBindingOptimizerFixture"
+        },
+        {
+          "name": "GlobalVariableDistanceRemainsMinusOne",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "StaticBindingOptimizerFixture"
+        },
+        {
+          "name": "AssignExprDistanceSetForOuterScope",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "StaticBindingOptimizerFixture"
+        },
+        {
+          "name": "FunctionParam_DistanceZero",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "StaticBindingOptimizerFixture"
+        },
+        {
+          "name": "FunctionLocalVar_DistanceZero",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "StaticBindingOptimizerFixture"
+        },
+        {
+          "name": "ForLoopVar_DistanceZero",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "StaticBindingOptimizerFixture"
+        }
+      ]
+    },
+    {
+      "name": "StaticBindingMockFixture",
+      "tests": 3,
+      "failures": 0,
+      "disabled": 0,
+      "errors": 0,
+      "timestamp": "2026-06-08T10:22:18Z",
+      "time": "0.001s",
+      "testsuite": [
+        {
+          "name": "LocalVarRef_DistanceSetToZero_ImpliesGetAt",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "StaticBindingMockFixture"
+        },
+        {
+          "name": "AllLocalVarRefs_HaveNonNegativeDistance",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "StaticBindingMockFixture"
+        },
+        {
+          "name": "WithoutOptimizer_DistanceIsMinusOne_ImpliesGet",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "StaticBindingMockFixture"
+        }
+      ]
+    },
+    {
+      "name": "StaticBindingIntegrationFixture",
+      "tests": 7,
+      "failures": 0,
+      "disabled": 0,
+      "errors": 0,
+      "timestamp": "2026-06-08T10:22:18Z",
+      "time": "0.002s",
+      "testsuite": [
+        {
+          "name": "NestedScopeVariableRead_ReturnsCorrectValue",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "StaticBindingIntegrationFixture"
+        },
+        {
+          "name": "GlobalVarAssignedInNestedScope_ReflectsChange",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "StaticBindingIntegrationFixture"
+        },
+        {
+          "name": "LocalShadowsGlobal_OuterUnaffected",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "StaticBindingIntegrationFixture"
+        },
+        {
+          "name": "FunctionWithParam_ReturnsCorrectValue",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "StaticBindingIntegrationFixture"
+        },
+        {
+          "name": "RecursiveFunction_ReturnsCorrectValue",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "StaticBindingIntegrationFixture"
+        },
+        {
+          "name": "Scope_InnerAccessesOuter_OuterCannotAccessInner",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "StaticBindingIntegrationFixture"
+        },
+        {
+          "name": "Scope_ShadowedVar_OptimizerSetsCorrectDistance",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "StaticBindingIntegrationFixture"
+        }
+      ]
+    },
+    {
+      "name": "TokenizerTest",
+      "tests": 19,
+      "failures": 0,
+      "disabled": 0,
+      "errors": 0,
+      "timestamp": "2026-06-08T10:22:18Z",
+      "time": "0.001s",
+      "testsuite": [
+        {
+          "name": "VarDeclarationTokens",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "TokenizerTest"
+        },
+        {
+          "name": "KeywordRecognition",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "TokenizerTest"
+        },
+        {
+          "name": "NumberLiteralFormat",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "TokenizerTest"
+        },
+        {
+          "name": "StringLiteral",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "TokenizerTest"
+        },
+        {
+          "name": "BoolLiteral",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "TokenizerTest"
+        },
+        {
+          "name": "OperatorTokens",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "TokenizerTest"
+        },
+        {
+          "name": "PercentToken",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "TokenizerTest"
+        },
+        {
+          "name": "ModuloExpression",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "TokenizerTest"
+        },
+        {
+          "name": "EmptySource",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "TokenizerTest"
+        },
+        {
+          "name": "UnknownCharacterThrows",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "TokenizerTest"
+        },
+        {
+          "name": "UnsupportedOperator_Increment_Throws",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "TokenizerTest"
+        },
+        {
+          "name": "UnsupportedOperator_Decrement_Throws",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "TokenizerTest"
+        },
+        {
+          "name": "UnsupportedOperator_PlusAssign_Throws",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "TokenizerTest"
+        },
+        {
+          "name": "UnsupportedOperator_MinusAssign_Throws",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "TokenizerTest"
+        },
+        {
+          "name": "UnsupportedOperator_StarAssign_Throws",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "TokenizerTest"
+        },
+        {
+          "name": "UnsupportedOperator_SlashAssign_Throws",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "TokenizerTest"
+        },
+        {
+          "name": "UnsupportedOperator_ErrorMessageContainsOperator",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "TokenizerTest"
+        },
+        {
+          "name": "LineComment",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "TokenizerTest"
+        },
+        {
+          "name": "WhitespaceIgnored",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "TokenizerTest"
+        }
+      ]
+    },
+    {
+      "name": "ParserTest",
+      "tests": 53,
+      "failures": 0,
+      "disabled": 0,
+      "errors": 0,
+      "timestamp": "2026-06-08T10:22:18Z",
+      "time": "0.004s",
+      "testsuite": [
+        {
+          "name": "NumberLiteral",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "StringLiteral",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "BoolTrueLiteral",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "BoolFalseLiteral",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "UnaryMinus",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "UnaryBang",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "Addition",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "Subtraction",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "Multiplication",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "Division",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "Modulo",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "MultiplicationBeforeAddition",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "GroupingOverridesPrecedence",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "ModuloBeforeAddition",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "EqualEqual",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "BangEqual",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "LessThan",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "LogicalAnd",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "LogicalOr",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "VarDeclNoInitializer",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "VarDeclWithInitializer",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "VariableReference",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "AssignExpression",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "PrintLiteralStatement",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "PrintExpressionStatement",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "EmptyBlock",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "BlockWithTwoStatements",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "IfStatement",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "IfElseStatement",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "ForStatement",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "ForStatementNoInit",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "MultipleStatements",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "MissingSemicolonThrows",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "UnclosedParenThrows",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "UnclosedBraceThrows",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "LogicalAndPrecedenceOverOr",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "ComparisonPrecedenceOverEquality",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "GreaterThan",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "GreaterEqual",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "LessEqual",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "SubtractionLeftAssociative",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "AssignmentRightAssociative",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "ForStatementAllClausesEmpty",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "ForStatementConditionOnly",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "ForStatementIncrementOnly",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "ForStatementInitOnly",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "ForStatementInitAndCond",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "ForStatementInitAndIncr",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "VarMissingIdentifierThrows",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "IfMissingLeftParenThrows",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "IfMissingRightParenThrows",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "ForMissingLeftParenThrows",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        },
+        {
+          "name": "ForMissingRightParenThrows",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ParserTest"
+        }
+      ]
+    },
+    {
+      "name": "CheckerTest",
+      "tests": 27,
+      "failures": 0,
+      "disabled": 0,
+      "errors": 0,
+      "timestamp": "2026-06-08T10:22:18Z",
+      "time": "0.001s",
+      "testsuite": [
+        {
+          "name": "EmptyProgramNoThrow",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "CheckerTest"
+        },
+        {
+          "name": "GlobalVarDeclNoThrow",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "CheckerTest"
+        },
+        {
+          "name": "GlobalVarDeclWithoutInitializerNoThrow",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "CheckerTest"
+        },
+        {
+          "name": "LiteralExprStmtNoThrow",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "CheckerTest"
+        },
+        {
+          "name": "LocalVarDeclInBlockNoThrow",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "CheckerTest"
+        },
+        {
+          "name": "ShadowingInNestedBlockAllowed",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "CheckerTest"
+        },
+        {
+          "name": "DuplicateVarInSameScopeThrows",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "CheckerTest"
+        },
+        {
+          "name": "DuplicateVarErrorContainsLineAndName",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "CheckerTest"
+        },
+        {
+          "name": "OuterVarAccessibleInInnerBlockNoThrow",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "CheckerTest"
+        },
+        {
+          "name": "SelfReferenceInInitializerThrows",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "CheckerTest"
+        },
+        {
+          "name": "SelfReferenceErrorContainsLineAndName",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "CheckerTest"
+        },
+        {
+          "name": "BinaryExprWithDeclaredVarsNoThrow",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "CheckerTest"
+        },
+        {
+          "name": "UnaryMinusExprNoThrow",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "CheckerTest"
+        },
+        {
+          "name": "UnaryBangExprNoThrow",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "CheckerTest"
+        },
+        {
+          "name": "GroupingExprNoThrow",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "CheckerTest"
+        },
+        {
+          "name": "LogicalAndExprNoThrow",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "CheckerTest"
+        },
+        {
+          "name": "LogicalOrExprNoThrow",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "CheckerTest"
+        },
+        {
+          "name": "AssignExprNoThrow",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "CheckerTest"
+        },
+        {
+          "name": "PrintLiteralNoThrow",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "CheckerTest"
+        },
+        {
+          "name": "PrintVarInBlockNoThrow",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "CheckerTest"
+        },
+        {
+          "name": "IfStmtNoThrow",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "CheckerTest"
+        },
+        {
+          "name": "IfElseStmtNoThrow",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "CheckerTest"
+        },
+        {
+          "name": "IfConditionWithBinaryExprNoThrow",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "CheckerTest"
+        },
+        {
+          "name": "ForStmtNoThrow",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "CheckerTest"
+        },
+        {
+          "name": "ForStmtNullInitAndCondNoThrow",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "CheckerTest"
+        },
+        {
+          "name": "ForStmtVarSelfRefInInitThrows",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "CheckerTest"
+        },
+        {
+          "name": "CheckErrorIsRuntimeError",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "CheckerTest"
+        }
+      ]
+    },
+    {
+      "name": "ExecutorTest",
+      "tests": 36,
+      "failures": 0,
+      "disabled": 0,
+      "errors": 0,
+      "timestamp": "2026-06-08T10:22:18Z",
+      "time": "0.002s",
+      "testsuite": [
+        {
+          "name": "PrintLiteral",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ExecutorTest"
+        },
+        {
+          "name": "ArithmeticPrecedence",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ExecutorTest"
+        },
+        {
+          "name": "VarDeclAndUse",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ExecutorTest"
+        },
+        {
+          "name": "BlockScopeAndShadowing",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ExecutorTest"
+        },
+        {
+          "name": "IfTrue",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ExecutorTest"
+        },
+        {
+          "name": "IfFalseElse",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ExecutorTest"
+        },
+        {
+          "name": "ForLoop",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ExecutorTest"
+        },
+        {
+          "name": "Subtraction",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ExecutorTest"
+        },
+        {
+          "name": "Division",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ExecutorTest"
+        },
+        {
+          "name": "Modulo",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ExecutorTest"
+        },
+        {
+          "name": "ModuloByZeroThrows",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ExecutorTest"
+        },
+        {
+          "name": "EqualEqual_True",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ExecutorTest"
+        },
+        {
+          "name": "EqualEqual_False",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ExecutorTest"
+        },
+        {
+          "name": "BangEqual",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ExecutorTest"
+        },
+        {
+          "name": "Greater",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ExecutorTest"
+        },
+        {
+          "name": "GreaterEqual",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ExecutorTest"
+        },
+        {
+          "name": "Less",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ExecutorTest"
+        },
+        {
+          "name": "LessEqual",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ExecutorTest"
+        },
+        {
+          "name": "StringConcatenation",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ExecutorTest"
+        },
+        {
+          "name": "UndefinedVariableThrows",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ExecutorTest"
+        },
+        {
+          "name": "DivisionByZeroThrows",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ExecutorTest"
+        },
+        {
+          "name": "TypeMismatchThrows",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ExecutorTest"
+        },
+        {
+          "name": "UnaryNot_True",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ExecutorTest"
+        },
+        {
+          "name": "UnaryNot_False",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ExecutorTest"
+        },
+        {
+          "name": "UnaryNot_Falsy",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ExecutorTest"
+        },
+        {
+          "name": "UnaryMinus",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ExecutorTest"
+        },
+        {
+          "name": "UnaryMinus_Variable",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ExecutorTest"
+        },
+        {
+          "name": "UnaryMinus_TypeMismatch",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ExecutorTest"
+        },
+        {
+          "name": "Grouping_Simple",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ExecutorTest"
+        },
+        {
+          "name": "Grouping_Precedence",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ExecutorTest"
+        },
+        {
+          "name": "LogicalOr_TrueOrFalse",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ExecutorTest"
+        },
+        {
+          "name": "LogicalOr_FalseOrFalse",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ExecutorTest"
+        },
+        {
+          "name": "LogicalAnd_TrueAndTrue",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ExecutorTest"
+        },
+        {
+          "name": "LogicalAnd_TrueAndFalse",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ExecutorTest"
+        },
+        {
+          "name": "LogicalOr_ShortCircuit",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ExecutorTest"
+        },
+        {
+          "name": "LogicalAnd_ShortCircuit",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ExecutorTest"
+        }
+      ]
+    },
+    {
+      "name": "ShellTest",
+      "tests": 37,
+      "failures": 0,
+      "disabled": 0,
+      "errors": 0,
+      "timestamp": "2026-06-08T10:22:18Z",
+      "time": "0.009s",
+      "testsuite": [
+        {
+          "name": "EmptyLineProducesNoOutput",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellTest"
+        },
+        {
+          "name": "PrintStringLiteral",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellTest"
+        },
+        {
+          "name": "PrintAddition",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellTest"
+        },
+        {
+          "name": "PrintSubtraction",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellTest"
+        },
+        {
+          "name": "PrintMultiplication",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellTest"
+        },
+        {
+          "name": "PrintDivision",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellTest"
+        },
+        {
+          "name": "PrintEqualEqual",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellTest"
+        },
+        {
+          "name": "PrintBangEqual",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellTest"
+        },
+        {
+          "name": "PrintLogicalAnd",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellTest"
+        },
+        {
+          "name": "PrintLogicalOr",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellTest"
+        },
+        {
+          "name": "VarDeclAndPrint",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellTest"
+        },
+        {
+          "name": "MultipleVarsIndependent",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellTest"
+        },
+        {
+          "name": "RuntimeErrorDivisionByZero",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellTest"
+        },
+        {
+          "name": "ErrorDoesNotCrashShell",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellTest"
+        },
+        {
+          "name": "Func_DefinedAndCalledOnSeparateLines",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellTest"
+        },
+        {
+          "name": "Func_ReturnValueStoredInVar_AcrossLines",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellTest"
+        },
+        {
+          "name": "Func_RecursiveFactorial_AcrossLines",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellTest"
+        },
+        {
+          "name": "Func_CallingAnotherFunc_AcrossLines",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellTest"
+        },
+        {
+          "name": "Func_AccessesGlobalVar",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellTest"
+        },
+        {
+          "name": "Func_ModifiesGlobalVar",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellTest"
+        },
+        {
+          "name": "CheckerState_GhostScopeCleared_AfterBlockError",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellTest"
+        },
+        {
+          "name": "CheckerState_FunctionDepthResetAfterBodyError",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellTest"
+        },
+        {
+          "name": "Array_PersistsAndWritable_AcrossLines",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellTest"
+        },
+        {
+          "name": "Array_MultipleElements_AcrossLines",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellTest"
+        },
+        {
+          "name": "MultiLine_Func_BasicCall",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellTest"
+        },
+        {
+          "name": "MultiLine_Func_ReturnValueStoredInVar",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellTest"
+        },
+        {
+          "name": "MultiLine_For_Accumulator",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellTest"
+        },
+        {
+          "name": "MultiLine_NestedBlocks",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellTest"
+        },
+        {
+          "name": "MultiLine_Func_Recursive",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellTest"
+        },
+        {
+          "name": "MultiLine_Func_WithForLoop",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellTest"
+        },
+        {
+          "name": "MultiLine_StringWithBraces_NotCountedAsScope",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellTest"
+        },
+        {
+          "name": "Scope_InnerCanAccessOuterVar",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellTest"
+        },
+        {
+          "name": "Scope_OuterCannotAccessInnerVar",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellTest"
+        },
+        {
+          "name": "Scope_ShadowedVarRestoredAfterBlock",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellTest"
+        },
+        {
+          "name": "Exit_TerminatesSession",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellTest"
+        },
+        {
+          "name": "Quit_TerminatesSession",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellTest"
+        },
+        {
+          "name": "ExitInsideBlock_NotTreatedAsCommand",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellTest"
+        }
+      ]
+    },
+    {
+      "name": "ScriptTest",
+      "tests": 36,
+      "failures": 0,
+      "disabled": 0,
+      "errors": 0,
+      "timestamp": "2026-06-08T10:22:18Z",
+      "time": "0.009s",
+      "testsuite": [
+        {
+          "name": "ArithmeticPrecedenceMulBeforeAdd",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ScriptTest"
+        },
+        {
+          "name": "GroupingOverridesPrecedence",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ScriptTest"
+        },
+        {
+          "name": "SubtractionLeftAssociative",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ScriptTest"
+        },
+        {
+          "name": "DivisionLeftAssociative",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ScriptTest"
+        },
+        {
+          "name": "UnaryMinusWithAddition",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ScriptTest"
+        },
+        {
+          "name": "ComparisonLessThanTrue",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ScriptTest"
+        },
+        {
+          "name": "ComparisonGreaterEqualTrue",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ScriptTest"
+        },
+        {
+          "name": "ComparisonLessEqualTrue",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ScriptTest"
+        },
+        {
+          "name": "ComparisonGreaterThanFalse",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ScriptTest"
+        },
+        {
+          "name": "StringConcatenation",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ScriptTest"
+        },
+        {
+          "name": "NumberFormatIntegerNoDecimal",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ScriptTest"
+        },
+        {
+          "name": "NumberFormatWholeFloatNoDecimal",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ScriptTest"
+        },
+        {
+          "name": "NumberFormatDecimalPreserved",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ScriptTest"
+        },
+        {
+          "name": "BoolLiteralTrue",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ScriptTest"
+        },
+        {
+          "name": "BoolLiteralFalse",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ScriptTest"
+        },
+        {
+          "name": "VarDeclareAndUse",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ScriptTest"
+        },
+        {
+          "name": "VarReassignment",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ScriptTest"
+        },
+        {
+          "name": "BlockScopeVariableShadowing",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ScriptTest"
+        },
+        {
+          "name": "BlockScopeModifyOuterVar",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ScriptTest"
+        },
+        {
+          "name": "NestedScopeAccessOuterVars",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ScriptTest"
+        },
+        {
+          "name": "IfTrue",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ScriptTest"
+        },
+        {
+          "name": "IfFalseElse",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ScriptTest"
+        },
+        {
+          "name": "DanglingElseBoundToInnerIf",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ScriptTest"
+        },
+        {
+          "name": "ForLoopZeroToTwo",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ScriptTest"
+        },
+        {
+          "name": "ParseErrorMissingSemicolon",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ScriptTest"
+        },
+        {
+          "name": "ParseErrorUnclosedParen",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ScriptTest"
+        },
+        {
+          "name": "ParseErrorInvalidAssignmentTarget",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ScriptTest"
+        },
+        {
+          "name": "ParseErrorBadTokenInExpression",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ScriptTest"
+        },
+        {
+          "name": "CheckerErrorSelfReferenceInInitializer",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ScriptTest"
+        },
+        {
+          "name": "CheckerErrorDuplicateVarInSameScope",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ScriptTest"
+        },
+        {
+          "name": "RuntimeErrorUndefinedVariable",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ScriptTest"
+        },
+        {
+          "name": "RuntimeErrorTypeMismatchPlusNumberString",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ScriptTest"
+        },
+        {
+          "name": "RuntimeErrorUnaryMinusOnString",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ScriptTest"
+        },
+        {
+          "name": "ShellContinuesAfterParseError",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ScriptTest"
+        },
+        {
+          "name": "ShellContinuesAfterRuntimeError",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ScriptTest"
+        },
+        {
+          "name": "VarStatePersistsAfterError",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ScriptTest"
+        }
+      ]
+    },
+    {
+      "name": "FunctionParserTest",
+      "tests": 13,
+      "failures": 0,
+      "disabled": 0,
+      "errors": 0,
+      "timestamp": "2026-06-08T10:22:18Z",
+      "time": "0s",
+      "testsuite": [
+        {
+          "name": "FuncDecl_NoParams",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "FunctionParserTest"
+        },
+        {
+          "name": "FuncDecl_WithTwoParams",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "FunctionParserTest"
+        },
+        {
+          "name": "FuncDecl_WithBody",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "FunctionParserTest"
+        },
+        {
+          "name": "ReturnStmt_WithValue",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "FunctionParserTest"
+        },
+        {
+          "name": "ReturnStmt_WithoutValue",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "FunctionParserTest"
+        },
+        {
+          "name": "CallExpr_NoArgs",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "FunctionParserTest"
+        },
+        {
+          "name": "CallExpr_WithTwoArgs",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "FunctionParserTest"
+        },
+        {
+          "name": "CallExpr_ResultAssigned",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "FunctionParserTest"
+        },
+        {
+          "name": "FuncMissingName_Throws",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "FunctionParserTest"
+        },
+        {
+          "name": "FuncMissingLeftParen_Throws",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "FunctionParserTest"
+        },
+        {
+          "name": "FuncMissingRightParen_Throws",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "FunctionParserTest"
+        },
+        {
+          "name": "FuncMissingLeftBrace_Throws",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "FunctionParserTest"
+        },
+        {
+          "name": "CallMissingRightParen_Throws",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "FunctionParserTest"
+        }
+      ]
+    },
+    {
+      "name": "FunctionExecutorTest",
+      "tests": 12,
+      "failures": 0,
+      "disabled": 0,
+      "errors": 0,
+      "timestamp": "2026-06-08T10:22:18Z",
+      "time": "0.001s",
+      "testsuite": [
+        {
+          "name": "FuncCall_PrintsFromBody",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "FunctionExecutorTest"
+        },
+        {
+          "name": "FuncCall_ReturnsValue",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "FunctionExecutorTest"
+        },
+        {
+          "name": "FuncCall_ReturnsNilWhenNoReturn",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "FunctionExecutorTest"
+        },
+        {
+          "name": "FuncCall_ExplicitReturnNil",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "FunctionExecutorTest"
+        },
+        {
+          "name": "FuncCall_WithParameters",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "FunctionExecutorTest"
+        },
+        {
+          "name": "FuncCall_ParamsAreLocal",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "FunctionExecutorTest"
+        },
+        {
+          "name": "FuncCall_Recursive_Factorial",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "FunctionExecutorTest"
+        },
+        {
+          "name": "FuncCall_TooManyArgs_Throws",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "FunctionExecutorTest"
+        },
+        {
+          "name": "FuncCall_TooFewArgs_Throws",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "FunctionExecutorTest"
+        },
+        {
+          "name": "FuncCall_NonCallableVariable_Throws",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "FunctionExecutorTest"
+        },
+        {
+          "name": "FuncCall_UndefinedFunction_Throws",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "FunctionExecutorTest"
+        },
+        {
+          "name": "FuncDecl_DuplicateName_LastDefinitionWins",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "FunctionExecutorTest"
+        }
+      ]
+    },
+    {
+      "name": "FunctionCheckerTest",
+      "tests": 7,
+      "failures": 0,
+      "disabled": 0,
+      "errors": 0,
+      "timestamp": "2026-06-08T10:22:18Z",
+      "time": "0s",
+      "testsuite": [
+        {
+          "name": "FuncDecl_NoThrow",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "FunctionCheckerTest"
+        },
+        {
+          "name": "ReturnInsideFunction_NoThrow",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "FunctionCheckerTest"
+        },
+        {
+          "name": "ReturnInsideNestedBlock_NoThrow",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "FunctionCheckerTest"
+        },
+        {
+          "name": "ReturnOutsideFunction_Throws",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "FunctionCheckerTest"
+        },
+        {
+          "name": "ReturnInsideBlock_OutsideFunction_Throws",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "FunctionCheckerTest"
+        },
+        {
+          "name": "DuplicateParams_Throws",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "FunctionCheckerTest"
+        },
+        {
+          "name": "DuplicateParams_ErrorContainsName",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "FunctionCheckerTest"
+        }
+      ]
+    },
+    {
+      "name": "ArrayTokenizerTest",
+      "tests": 4,
+      "failures": 0,
+      "disabled": 0,
+      "errors": 0,
+      "timestamp": "2026-06-08T10:22:18Z",
+      "time": "0s",
+      "testsuite": [
+        {
+          "name": "LeftBracket",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ArrayTokenizerTest"
+        },
+        {
+          "name": "RightBracket",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ArrayTokenizerTest"
+        },
+        {
+          "name": "IndexAccess_TokenStream",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ArrayTokenizerTest"
+        },
+        {
+          "name": "IndexAssign_FullTokenStream",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ArrayTokenizerTest"
+        }
+      ]
+    },
+    {
+      "name": "ArrayParserTest",
+      "tests": 8,
+      "failures": 0,
+      "disabled": 0,
+      "errors": 0,
+      "timestamp": "2026-06-08T10:22:18Z",
+      "time": "0.001s",
+      "testsuite": [
+        {
+          "name": "IndexRead_SimpleInteger",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ArrayParserTest"
+        },
+        {
+          "name": "IndexRead_ExpressionIndex",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ArrayParserTest"
+        },
+        {
+          "name": "ArrayCall_ExprStatement",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ArrayParserTest"
+        },
+        {
+          "name": "ArrayCall_VarDecl",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ArrayParserTest"
+        },
+        {
+          "name": "IndexAssign_Simple",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ArrayParserTest"
+        },
+        {
+          "name": "IndexAssign_ExpressionIndex",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ArrayParserTest"
+        },
+        {
+          "name": "IndexMissingExpression_Throws",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ArrayParserTest"
+        },
+        {
+          "name": "IndexMissingRightBracket_Throws",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ArrayParserTest"
+        }
+      ]
+    },
+    {
+      "name": "ArrayExecutorTest",
+      "tests": 16,
+      "failures": 0,
+      "disabled": 0,
+      "errors": 0,
+      "timestamp": "2026-06-08T10:22:18Z",
+      "time": "0.002s",
+      "testsuite": [
+        {
+          "name": "ArrayCreate_SizeThree_NoThrow",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ArrayExecutorTest"
+        },
+        {
+          "name": "ArrayCreate_SizeZero_NoThrow",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ArrayExecutorTest"
+        },
+        {
+          "name": "ArrayCreate_InitialElementsAreNil",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ArrayExecutorTest"
+        },
+        {
+          "name": "IndexWrite_ThenRead",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ArrayExecutorTest"
+        },
+        {
+          "name": "IndexWrite_MultipleElements",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ArrayExecutorTest"
+        },
+        {
+          "name": "IndexWrite_DynamicIndex",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ArrayExecutorTest"
+        },
+        {
+          "name": "IndexAssign_ReturnsAssignedValue",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ArrayExecutorTest"
+        },
+        {
+          "name": "IndexWrite_StringValue",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ArrayExecutorTest"
+        },
+        {
+          "name": "Array_ReferenceSemantics",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ArrayExecutorTest"
+        },
+        {
+          "name": "IndexRead_OutOfRange_Throws",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ArrayExecutorTest"
+        },
+        {
+          "name": "IndexRead_NegativeIndex_Throws",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ArrayExecutorTest"
+        },
+        {
+          "name": "IndexRead_StringIndex_Throws",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ArrayExecutorTest"
+        },
+        {
+          "name": "IndexRead_NonArray_Throws",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ArrayExecutorTest"
+        },
+        {
+          "name": "ArrayCreate_StringSize_Throws",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ArrayExecutorTest"
+        },
+        {
+          "name": "ArrayCreate_FloatSize_Throws",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ArrayExecutorTest"
+        },
+        {
+          "name": "ArrayCreate_NoArgs_Throws",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ArrayExecutorTest"
+        }
+      ]
+    },
+    {
+      "name": "ArrayCheckerTest",
+      "tests": 2,
+      "failures": 0,
+      "disabled": 0,
+      "errors": 0,
+      "timestamp": "2026-06-08T10:22:18Z",
+      "time": "0s",
+      "testsuite": [
+        {
+          "name": "ValidArrayUsage_NoThrow",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ArrayCheckerTest"
+        },
+        {
+          "name": "IndexWithVariable_NoThrow",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ArrayCheckerTest"
+        }
+      ]
+    },
+    {
+      "name": "ConstantFoldingOptimizerTest",
+      "tests": 7,
+      "failures": 0,
+      "disabled": 0,
+      "errors": 0,
+      "timestamp": "2026-06-08T10:22:18Z",
+      "time": "0s",
+      "testsuite": [
+        {
+          "name": "NoOptimization_EvaluatesNTimes",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ConstantFoldingOptimizerTest"
+        },
+        {
+          "name": "WithOptimization_NotEvaluatedAtRuntime",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ConstantFoldingOptimizerTest"
+        },
+        {
+          "name": "LoopNoOptimization_EvaluatesNTimesPerIteration",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ConstantFoldingOptimizerTest"
+        },
+        {
+          "name": "LoopWithOptimization_FoldedToZeroEvaluations",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ConstantFoldingOptimizerTest"
+        },
+        {
+          "name": "Modulo_FoldedToZeroEvaluations",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ConstantFoldingOptimizerTest"
+        },
+        {
+          "name": "UnaryMinus_FoldedToLiteral",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ConstantFoldingOptimizerTest"
+        },
+        {
+          "name": "DivisionByZero_KeepsOriginalAndThrowsAtRuntime",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ConstantFoldingOptimizerTest"
+        }
+      ]
+    },
+    {
+      "name": "ShellConstantFoldingOptimizerTest",
+      "tests": 12,
+      "failures": 0,
+      "disabled": 0,
+      "errors": 0,
+      "timestamp": "2026-06-08T10:22:18Z",
+      "time": "0.006s",
+      "testsuite": [
+        {
+          "name": "SingleConstant_ReducedToZero",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellConstantFoldingOptimizerTest"
+        },
+        {
+          "name": "NestedConstant_AllReducedToZero",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellConstantFoldingOptimizerTest"
+        },
+        {
+          "name": "ConstantInitializer_ReducedToZero",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellConstantFoldingOptimizerTest"
+        },
+        {
+          "name": "IfCondition_ConstantReduced",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellConstantFoldingOptimizerTest"
+        },
+        {
+          "name": "MixedExpr_ConstantSubtreeRemoved",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellConstantFoldingOptimizerTest"
+        },
+        {
+          "name": "VariableExpr_CountUnchanged",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellConstantFoldingOptimizerTest"
+        },
+        {
+          "name": "LoopBody_ConstantExprFolded",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellConstantFoldingOptimizerTest"
+        },
+        {
+          "name": "Modulo_ConstantFolded",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellConstantFoldingOptimizerTest"
+        },
+        {
+          "name": "LargeLoop_RuntimeEvaluationCount_Verified",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0.003s",
+          "classname": "ShellConstantFoldingOptimizerTest"
+        },
+        {
+          "name": "StringConcatenation_ConstantFolded",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellConstantFoldingOptimizerTest"
+        },
+        {
+          "name": "ComparisonOperator_ConstantFolded",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellConstantFoldingOptimizerTest"
+        },
+        {
+          "name": "FunctionBody_ConstantFolded",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "ShellConstantFoldingOptimizerTest"
+        }
+      ]
+    },
+    {
+      "name": "FileModeTest",
+      "tests": 5,
+      "failures": 0,
+      "disabled": 0,
+      "errors": 0,
+      "timestamp": "2026-06-08T10:22:18Z",
+      "time": "0.018s",
+      "testsuite": [
+        {
+          "name": "MissingFile_ReturnsErrorCode",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "FileModeTest"
+        },
+        {
+          "name": "SimpleProgram_ProducesOutput",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0.003s",
+          "classname": "FileModeTest"
+        },
+        {
+          "name": "MultipleStatements_RunInOrder",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0.005s",
+          "classname": "FileModeTest"
+        },
+        {
+          "name": "RuntimeError_ReportsLineAndStops",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0.003s",
+          "classname": "FileModeTest"
+        },
+        {
+          "name": "FunctionAndArray_WorkFromFile",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0.005s",
+          "classname": "FileModeTest"
+        }
+      ]
+    },
+    {
+      "name": "DebugModeTest",
+      "tests": 9,
+      "failures": 0,
+      "disabled": 0,
+      "errors": 0,
+      "timestamp": "2026-06-08T10:22:18Z",
+      "time": "0.035s",
+      "testsuite": [
+        {
+          "name": "MissingFile_ReturnsErrorCode",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0s",
+          "classname": "DebugModeTest"
+        },
+        {
+          "name": "StopsAtFirstStatementOnLoad",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0.003s",
+          "classname": "DebugModeTest"
+        },
+        {
+          "name": "StepWalksStatementByStatement",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0.004s",
+          "classname": "DebugModeTest"
+        },
+        {
+          "name": "BreakpointThenContinue",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0.005s",
+          "classname": "DebugModeTest"
+        },
+        {
+          "name": "BreakpointsListAndRemove",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0.003s",
+          "classname": "DebugModeTest"
+        },
+        {
+          "name": "WatchReportsValueAtEachStop",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0.003s",
+          "classname": "DebugModeTest"
+        },
+        {
+          "name": "UnwatchStopsReporting",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0.004s",
+          "classname": "DebugModeTest"
+        },
+        {
+          "name": "InspectShowsLocalAndGlobalScopes",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0.004s",
+          "classname": "DebugModeTest"
+        },
+        {
+          "name": "NextStepsOverBlockBody",
+          "status": "RUN",
+          "result": "COMPLETED",
+          "timestamp": "2026-06-08T10:22:18Z",
+          "time": "0.004s",
+          "classname": "DebugModeTest"
+        }
+      ]
+    }
+  ]
+}

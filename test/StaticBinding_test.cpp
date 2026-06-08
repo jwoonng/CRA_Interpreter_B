@@ -146,7 +146,7 @@ TEST_F(StaticBindingOptimizerFixture, FunctionParam_DistanceZero) {
     EXPECT_EQ(rawB->distance, 0);
 }
 
-// Func f() { var x = 1; return x; }  →  x.distance == 0
+// func f() { var x = 1; return x; }  →  x.distance == 0
 TEST_F(StaticBindingOptimizerFixture, FunctionLocalVar_DistanceZero) {
     auto xTok  = identTok("x");
     auto xExpr = std::make_unique<VariableExpr>(xTok);
@@ -351,16 +351,16 @@ TEST_F(StaticBindingIntegrationFixture, LocalShadowsGlobal_OuterUnaffected) {
     EXPECT_EQ(shell_.runLine("print x;"), "10\n");
 }
 
-// Func f(x) { return x + 1; } print f(5);  →  "6\n"
+// func f(x) { return x + 1; } print f(5);  →  "6\n"
 // 함수 선언과 호출을 같은 runLine 으로 실행 — FunctionEntry raw ptr 수명 보장
 TEST_F(StaticBindingIntegrationFixture, FunctionWithParam_ReturnsCorrectValue) {
-    EXPECT_EQ(shell_.runLine("Func f(x) { return x + 1; } print f(5);"), "6\n");
+    EXPECT_EQ(shell_.runLine("func f(x) { return x + 1; } print f(5);"), "6\n");
 }
 
-// Func fact(n) { if (n <= 1) return 1; return n * fact(n - 1); } print fact(5);  →  "120\n"
+// func fact(n) { if (n <= 1) return 1; return n * fact(n - 1); } print fact(5);  →  "120\n"
 TEST_F(StaticBindingIntegrationFixture, RecursiveFunction_ReturnsCorrectValue) {
     EXPECT_EQ(shell_.runLine(
-        "Func fact(n) { if (n <= 1) return 1; return n * fact(n - 1); } print fact(5);"),
+        "func fact(n) { if (n <= 1) return 1; return n * fact(n - 1); } print fact(5);"),
         "120\n");
 }
 
