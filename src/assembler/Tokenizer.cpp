@@ -15,7 +15,7 @@ const std::unordered_map<std::string, TokenType> Tokenizer::Scanner::KEYWORDS = 
     {"and",    TokenType::AND},
     {"or",     TokenType::OR},
     {"print",  TokenType::PRINT},
-    {"Func",   TokenType::FUN},
+    {"func",   TokenType::FUN},
     {"return", TokenType::RETURN},
 };
 

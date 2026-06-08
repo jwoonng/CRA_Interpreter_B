@@ -194,10 +194,10 @@ TEST(ShellConstantFoldingOptimizerTest, ComparisonOperator_ConstantFolded) {
     EXPECT_EQ(evalCountFor("print 3 > 2;", true),  0);
 }
 
-// Func f() { return 2 + 3; } print f();
+// func f() { return 2 + 3; } print f();
 //   최적화 전: return 내 2+3 런타임 1회 평가
 //   최적화 후: return 내 LiteralExpr(5)로 교체 → 0회
 TEST(ShellConstantFoldingOptimizerTest, FunctionBody_ConstantFolded) {
-    EXPECT_EQ(evalCountFor("Func f() { return 2 + 3; } print f();", false), 1);
-    EXPECT_EQ(evalCountFor("Func f() { return 2 + 3; } print f();", true),  0);
+    EXPECT_EQ(evalCountFor("func f() { return 2 + 3; } print f();", false), 1);
+    EXPECT_EQ(evalCountFor("func f() { return 2 + 3; } print f();", true),  0);
 }

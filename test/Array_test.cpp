@@ -53,7 +53,7 @@ ExprPtr makeArrayCall(LiteralValue sizeLit, int line = 1) {
     std::vector<ExprPtr> args;
     args.push_back(std::make_unique<LiteralExpr>(std::move(sizeLit), line));
     return std::make_unique<CallExpr>(
-        varExpr("Array", line),
+        varExpr("array", line),
         tok(TokenType::RIGHT_PAREN, ")", {}, line),
         std::move(args));
 }
@@ -195,7 +195,7 @@ TEST(ArrayParserTest, ArrayCall_ExprStatement) {
     // Array(3);
     Parser p;
     auto stmts = p.parse({
-        id("Array"),
+        id("array"),
         tok(TokenType::LEFT_PAREN, "("), num(3), tok(TokenType::RIGHT_PAREN, ")"),
         tok(TokenType::SEMICOLON, ";"), eof()
     });
@@ -207,7 +207,7 @@ TEST(ArrayParserTest, ArrayCall_ExprStatement) {
     ASSERT_EQ(call->arguments.size(), 1u);
     auto* callee = as<VariableExpr>(call->callee.get());
     ASSERT_NE(callee, nullptr);
-    EXPECT_EQ(callee->name.lexeme, "Array");
+    EXPECT_EQ(callee->name.lexeme, "array");
 }
 
 TEST(ArrayParserTest, ArrayCall_VarDecl) {
@@ -215,7 +215,7 @@ TEST(ArrayParserTest, ArrayCall_VarDecl) {
     Parser p;
     auto stmts = p.parse({
         tok(TokenType::VAR, "var"), id("arr"), tok(TokenType::EQUAL, "="),
-        id("Array"),
+        id("array"),
         tok(TokenType::LEFT_PAREN, "("), num(5), tok(TokenType::RIGHT_PAREN, ")"),
         tok(TokenType::SEMICOLON, ";"), eof()
     });
@@ -422,7 +422,7 @@ TEST_F(ArrayExecutorTest, ArrayCreate_FloatSize_Throws) {
 TEST_F(ArrayExecutorTest, ArrayCreate_NoArgs_Throws) {
     std::vector<ExprPtr> noArgs;
     stmts.push_back(exprStmt(std::make_unique<CallExpr>(
-        varExpr("Array"),
+        varExpr("array"),
         tok(TokenType::RIGHT_PAREN, ")"),
         std::move(noArgs))));
     EXPECT_THROW(runStmts(), std::runtime_error);
