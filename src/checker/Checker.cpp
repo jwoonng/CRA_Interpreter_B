@@ -1,7 +1,12 @@
 ﻿#include "Checker.h"
 
 void Checker::check(const std::vector<std::unique_ptr<Stmt>>& stmts) {
+    globalScopeSnapshot_ = globalScope_;
     for (auto& s : stmts) checkStmt(*s);
+}
+
+void Checker::rollbackLastCheck() {
+    globalScope_ = globalScopeSnapshot_;
 }
 
 void Checker::beginScope() { scopes_.push_back({}); }
