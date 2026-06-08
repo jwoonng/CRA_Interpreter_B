@@ -63,76 +63,130 @@ Executor    AST 실행 → 출력
 
 ---
 
-## 지원 문법
+## 언어 레퍼런스
+
+> 각 항목을 클릭하면 문법·예시·에러 메시지를 확인할 수 있습니다.
+
+### ✅ 지원하는 키워드 · 기능
+
+---
 
 <details>
-<summary><b>전체 문법 레퍼런스 펼치기</b></summary>
-
-### 변수
+<summary><b><code>var</code></b> — 변수 선언 · 대입</summary>
 
 ```js
 var x = 10;
 var name = "Alice";
 var flag = true;
-var empty;        // 값 없이 선언 → nil
+var empty;          // 값 없이 선언 → nil
 ```
 
-변수 값은 언제든 바꿀 수 있습니다.
+선언 후 언제든 값을 바꿀 수 있습니다.
 
 ```js
 x = x + 1;
+print x;   // 11
 ```
 
----
+**출력 형식**
 
-### 출력
-
-```js
-print x;
-print "안녕하세요, " + name;
-print 1 + 2;
-```
-
-| 저장된 값 | 출력 |
-|:---------:|:----:|
-| `10` (정수) | `10` |
-| `3.14` | `3.14` |
+| 값 | 출력 |
+|:--:|:----:|
+| 정수 `10` | `10` |
+| 실수 `3.14` | `3.14` |
 | `true` / `false` | `true` / `false` |
-| 선언만 하고 값 없음 | `nil` |
+| 값 없음 | `nil` |
 | `"hello"` | `hello` |
 
+**에러**
+
+| 상황 | 메시지 |
+|------|--------|
+| 같은 블록 내 이름 중복 | `Variable 'x' is already declared in this block.` |
+| 전역에서 이름 중복 | `Variable 'x' is already declared in global scope (first declared at line N).` |
+| 초기화식에서 자기 자신 참조 | `Cannot read local variable 'x' in its own initializer.` |
+| 선언하지 않은 변수 사용 | `Undefined variable 'x'.` |
+
+</details>
+
 ---
 
-### 연산자
+<details>
+<summary><b><code>print</code></b> — 값 출력</summary>
 
 ```js
-// 산술
-print 10 + 3;    // 13
-print 10 / 3;    // 3.33333...
-print 10 * 2;    // 20
-print 10 - 4;    // 6
-print 10 % 3;    // 1  (나머지, 실수 가능: 2.5 % 1.2 → 0.1)
-
-// 문자열 이어붙이기
-print "Hello" + ", " + "World";  // Hello, World
-
-// 비교 (결과는 true / false)
-print 5 > 3;     // true
-print 3 >= 3;    // true
-print 1 != 2;    // true
-print 1 == 1;    // true
-
-// 논리
-print true and false;  // false
-print true or false;   // true
-print !true;           // false
+print 42;
+print "hello";
+print x + 1;
+print true;
+print arr;          // 배열이면 [e0, e1, ...] 형식으로 출력
 ```
 
-> **참/거짓 판별**: `false`, `0`, `nil` 만 거짓입니다. 빈 문자열 `""` 도 참입니다.
+세미콜론(`;`)으로 문장을 끝냅니다. 한 번에 하나의 값만 출력할 수 있습니다.
+
+**에러**
+
+| 상황 | 메시지 |
+|------|--------|
+| 세미콜론 누락 | `Expected ';' after value.` |
+
+</details>
 
 ---
 
-### 조건문
+<details>
+<summary><b>산술 · 문자열 · 비교 · 논리 연산자</b></summary>
+
+**산술**
+
+| 연산자 | 설명 | 예시 | 결과 |
+|:------:|------|------|:----:|
+| `+` | 덧셈 / 문자열 이어붙이기 | `3 + 4` | `7` |
+| `-` | 뺄셈 | `10 - 3` | `7` |
+| `*` | 곱셈 | `3 * 4` | `12` |
+| `/` | 나눗셈 (실수) | `10 / 3` | `3.33333...` |
+| `%` | 나머지 (실수도 가능) | `10 % 3` | `1` |
+
+```js
+print "Hello" + ", " + "World";   // Hello, World
+print 2.5 % 1.2;                   // 0.1
+```
+
+**비교** — 결과는 `true` / `false`
+
+```js
+print 5 > 3;    // true
+print 3 >= 3;   // true
+print 1 < 2;    // true
+print 2 <= 1;   // false
+print 1 == 1;   // true
+print 1 != 2;   // true
+```
+
+**논리**
+
+```js
+print true and false;   // false  (단락 평가: 좌변이 false면 우변 평가 안 함)
+print true or false;    // true   (단락 평가: 좌변이 true면 우변 평가 안 함)
+print !true;            // false
+```
+
+> **Falsy 값**: `false`, `0`, `nil` 만 거짓입니다. 빈 문자열 `""` 도 참입니다.
+
+**에러**
+
+| 상황 | 메시지 |
+|------|--------|
+| 숫자 아닌 값에 `-` `*` `/` `%` | `Operands must be numbers.` |
+| `+` 에 숫자+문자열 혼용 | `Operands must be two numbers or two strings.` |
+| 0으로 나누기 / 0으로 나머지 | `Division by zero.` |
+
+</details>
+
+---
+
+<details>
+<summary><b><code>if</code> / <code>else if</code> / <code>else</code></b> — 조건문</summary>
 
 ```js
 var score = 85;
@@ -144,45 +198,69 @@ if (score >= 90) {
 } else {
     print "C";
 }
+// B
 ```
 
-`else if` 와 `else` 는 생략할 수 있습니다.
+`else if` 와 `else` 는 생략 가능합니다. `else if` 는 몇 개든 이어붙일 수 있습니다.
+
+**에러**
+
+| 상황 | 메시지 |
+|------|--------|
+| `(` 누락 | `Expected '(' after 'if'.` |
+| `)` 누락 | `Expected ')' after if condition.` |
+
+</details>
 
 ---
 
-### 반복문
+<details>
+<summary><b><code>for</code></b> — 반복문</summary>
 
 ```js
 for (var i = 0; i < 5; i = i + 1) {
     print i;
 }
-// 출력: 0  1  2  3  4
+// 0  1  2  3  4
 ```
 
 초기화 · 조건 · 증감식은 모두 생략 가능합니다.
 
 ```js
+// 조건만 있는 while-like 루프
 var i = 0;
 for (; i < 3; i = i + 1) {
     print i;
 }
+
+// 무한 루프 (주의: 탈출 수단 없음)
+for (;;) {
+    print "forever";
+}
 ```
+
+**에러**
+
+| 상황 | 메시지 |
+|------|--------|
+| `(` 누락 | `Expected '(' after 'for'.` |
+| 조건 뒤 `;` 누락 | `Expected ';' after for condition.` |
+| `)` 누락 | `Expected ')' after for clauses.` |
+
+</details>
 
 ---
 
-### 함수
+<details>
+<summary><b><code>func</code></b> — 함수 선언 · 호출 · 재귀</summary>
 
-**선언**
+**선언 · 호출**
 
 ```js
 func greet(name) {
     print "Hello, " + name;
 }
-```
 
-**호출**
-
-```js
 greet("Alice");   // Hello, Alice
 ```
 
@@ -210,26 +288,59 @@ func fact(n) {
 print fact(5);   // 120
 ```
 
+**에러**
+
+| 상황 | 메시지 |
+|------|--------|
+| `func` 뒤에 이름 없음 | `Expected function name.` |
+| 파라미터 이름 중복 | `Duplicate parameter name 'x' in function 'f'.` |
+| 인자 개수 불일치 | `Expected N arguments but got M.` |
+| 선언하지 않은 함수 호출 | `Undefined function 'f'.` |
+| 변수를 함수처럼 호출 | `'x' is not a function.` |
+
+</details>
+
 ---
 
-### 배열
+<details>
+<summary><b><code>return</code></b> — 함수 반환값</summary>
 
-`array(n)` 으로 n개짜리 배열을 만듭니다. 초기값은 모두 `nil` 입니다.
+```js
+func sign(x) {
+    if (x > 0) return 1;
+    if (x < 0) return -1;
+    return 0;
+}
+
+print sign(-5);   // -1
+```
+
+함수 바깥에서 `return` 을 쓰면 에러입니다.
+
+**에러**
+
+| 상황 | 메시지 |
+|------|--------|
+| 함수 밖에서 사용 | `Cannot use 'return' outside of a function.` |
+| 세미콜론 누락 | `Expected ';' after return value.` |
+
+</details>
+
+---
+
+<details>
+<summary><b><code>array(n)</code></b> — 배열 생성 · 읽기 · 쓰기</summary>
 
 ```js
 var arr = array(3);   // [nil, nil, nil]
-```
 
-**읽기 / 쓰기 / 전체 출력**
-
-```js
 arr[0] = 10;
 arr[1] = 20;
 arr[2] = 30;
 
-print arr[0];             // 10
-print arr[1] + arr[2];    // 50
-print arr;                // [10, 20, 30]
+print arr[0];          // 10
+print arr[1] + arr[2]; // 50
+print arr;             // [10, 20, 30]
 ```
 
 인덱스에 변수나 식을 쓸 수 있습니다.
@@ -240,27 +351,80 @@ arr[i] = 99;
 print arr[i - 1];   // 10
 ```
 
-**배열을 함수에 넘기기**
-
-배열은 참조로 전달되므로 함수 안에서 수정하면 밖에서도 반영됩니다.
+배열은 **참조로 전달**됩니다. 함수 안에서 수정하면 밖에서도 반영됩니다.
 
 ```js
 func fill(a, val) {
     a[0] = val;
     a[1] = val;
-    a[2] = val;
 }
 
-var arr = array(3);
+var arr = array(2);
 fill(arr, 7);
 print arr[0];   // 7
 ```
 
+**에러**
+
+| 상황 | 메시지 |
+|------|--------|
+| `array()` 인자 개수 오류 | `Array() expects exactly 1 argument.` |
+| 크기에 음수·소수·문자열 사용 | `Array size must be a non-negative integer.` |
+| 배열 아닌 값에 `[ ]` 사용 | `Value is not an array.` |
+| 인덱스에 정수 아닌 값 | `Array index must be an integer.` |
+| 범위를 벗어난 인덱스 | `Array index out of range.` |
+
+</details>
+
 ---
 
-### 블록과 스코프
+<details>
+<summary><b><code>true</code> / <code>false</code></b> — 불리언 리터럴</summary>
 
-중괄호 `{}` 안에서 선언한 변수는 블록 밖에서 보이지 않습니다.
+```js
+var flag = true;
+var done = false;
+
+if (flag) {
+    print "on";
+}
+
+print !done;   // true
+```
+
+비교 연산의 결과도 `true` / `false` 입니다.
+
+```js
+var isAdult = age >= 18;
+print isAdult;   // true 또는 false
+```
+
+</details>
+
+---
+
+<details>
+<summary><b><code>//</code></b> — 줄 주석</summary>
+
+```js
+// 이 줄 전체는 무시됩니다
+var x = 10;   // 인라인 주석도 가능
+
+for (var i = 0; i < 3; i = i + 1) {   // i: 0, 1, 2
+    print i;
+}
+```
+
+`//` 이후부터 줄 끝까지 무시됩니다. 블록 주석(`/* */`)은 지원하지 않습니다.
+
+</details>
+
+---
+
+<details>
+<summary><b><code>{ }</code></b> — 블록 · 스코프</summary>
+
+중괄호 블록 안에서 선언한 변수는 블록 밖에서 보이지 않습니다. 같은 이름의 변수를 바깥 스코프와 독립적으로 선언할 수 있습니다(shadowing).
 
 ```js
 var x = 1;
@@ -271,176 +435,331 @@ var x = 1;
 print x;       // 1  (블록 밖, 원래 값)
 ```
 
----
-
-### 주석
-
-```js
-// 이 줄은 실행되지 않습니다
-var x = 10;   // 인라인 주석도 가능
-```
-
----
-
-### 예시 모음
-
-**피보나치 수열**
-
-```js
-func fib(n) {
-    if (n <= 1) return n;
-    return fib(n - 1) + fib(n - 2);
-}
-
-for (var i = 0; i < 8; i = i + 1) {
-    print fib(i);
-}
-// 0  1  1  2  3  5  8  13
-```
-
-**1부터 10까지 합산**
-
-```js
-var sum = 0;
-for (var i = 1; i <= 10; i = i + 1) {
-    sum = sum + i;
-}
-print sum;   // 55
-```
-
-**배열 합산**
-
-```js
-var arr = array(5);
-for (var i = 0; i < 5; i = i + 1) {
-    arr[i] = i + 1;
-}
-
-var sum = 0;
-for (var i = 0; i < 5; i = i + 1) {
-    sum = sum + arr[i];
-}
-print sum;   // 15
-```
-
-**문자열 반복**
-
-```js
-func repeat(s, n) {
-    var result = "";
-    for (var i = 0; i < n; i = i + 1) {
-        result = result + s;
-    }
-    return result;
-}
-
-print repeat("ha", 3);   // hahaha
-```
-
-**최댓값 구하기**
-
-```js
-func max(a, b) {
-    if (a > b) return a;
-    return b;
-}
-
-print max(7, 13);   // 13
-```
-
----
-
-### ✅ 되는 것 · ❌ 안 되는 것
-
-```mermaid
-flowchart LR
-    subgraph YES ["✅ 되는 것"]
-        direction TB
-        y1["var 변수 선언·재대입"]
-        y2["산술 · 문자열 · 논리 연산 (+ % 포함)"]
-        y3["if / else if / else"]
-        y4["for 반복문"]
-        y5["중첩 블록 · 스코프"]
-        y6["func 함수 선언·호출"]
-        y7["재귀 함수"]
-        y8["return 값 반환"]
-        y9["// 줄 주석"]
-        y10["array(n) 배열 생성·읽기·쓰기·전체 출력"]
-    end
-
-    subgraph NO ["❌ 안 되는 것"]
-        direction TB
-        n1["함수를 변수에 저장"]
-        n2["while 문"]
-        n3["break / continue"]
-        n4["++ / -- 연산자"]
-        n5["+= 복합 대입"]
-        n6["/* */ 블록 주석"]
-        n7["파일 입출력"]
-        n8["클래스 / 구조체"]
-    end
-
-    style YES fill:#f0fff4,stroke:#27ae60
-    style NO fill:#fff5f5,stroke:#e53e3e
-```
-
----
-
-### ⚠️ 오류 메시지
-
-오류가 나면 다음 메시지를 확인하세요.
-
-<details>
-<summary><b>문법 오류 (입력 직후 표시)</b></summary>
-
-| 메시지 | 원인 |
-|--------|------|
-| `Unexpected character: X` | 지원하지 않는 문자 입력 |
-| `Unsupported operator '++'. Use 'x = x + 1'.` | `++` 증감 연산자 사용 |
-| `Unsupported operator '--'. Use 'x = x - 1'.` | `--` 감소 연산자 사용 |
-| `Unsupported operator '+='. Use 'x = x + value'.` | `+=` 복합 대입 사용 |
-| `Unsupported operator '-='. Use 'x = x - value'.` | `-=` 복합 대입 사용 |
-| `Unsupported operator '*='. Use 'x = x * value'.` | `*=` 복합 대입 사용 |
-| `Unsupported operator '/='. Use 'x = x / value'.` | `/=` 복합 대입 사용 |
-| `Unterminated string` | 닫는 `"` 없이 문자열 끝남 |
-| `Expected ')'` / `Expected '('` | 괄호 누락 |
-| `Expected ';'` | 세미콜론 누락 |
-| `Invalid assignment target.` | 대입 불가 대상에 `=` 사용 |
-| `Expected function name.` | `func` 다음에 이름 없음 |
+함수 · `if` · `for` 의 중괄호도 동일하게 독립 스코프를 만듭니다.
 
 </details>
 
-<details>
-<summary><b>선언 오류 (실행 전 검사)</b></summary>
+---
 
-| 메시지 | 원인 |
-|--------|------|
-| `변수 'X'이(가) 이미 이 블록에서 선언되었습니다.` | 같은 블록 안에서 같은 이름으로 `var` 두 번 |
-| `자신의 초기화식에서 지역변수 'X'을(를) 읽을 수 없습니다.` | `var x = x + 1;` 처럼 자기 자신 참조 |
-| `Cannot use 'return' outside of a function.` | 함수 밖에서 `return` 사용 |
-| `Duplicate parameter name 'X' in function 'F'.` | 파라미터 이름 중복 |
+### ❌ 지원하지 않는 것 — 흔한 실수
+
+---
+
+<details>
+<summary><b><code>while</code> / <code>do</code> / <code>loop</code></b> — 사용 불가</summary>
+
+```js
+// ❌ 에러
+while (x < 10) { ... }
+```
+
+```
+[line 1] Unknown keyword 'while'. Use 'for' for loops.
+```
+
+**대신 `for` 를 사용하세요.**
+
+```js
+// ✅
+for (; x < 10; ) {
+    ...
+    x = x + 1;
+}
+```
 
 </details>
 
-<details>
-<summary><b>런타임 오류 (실행 중 발생)</b></summary>
+---
 
-| 메시지 | 원인 |
-|--------|------|
-| `Undefined variable 'X'.` | 선언하지 않은 변수 사용 |
-| `Division by zero.` | `0` 으로 나누기 |
-| `Operands must be numbers.` | 숫자가 아닌 값에 산술 연산 |
-| `Operands must be two numbers or two strings.` | `+` 에 숫자+문자열 혼용 |
-| `'X' is not a function.` | 변수를 함수처럼 호출 |
-| `Undefined function 'X'.` | 선언하지 않은 함수 호출 |
-| `Expected N arguments but got M.` | 인자 개수 불일치 |
-| `Value is not an array.` | 배열이 아닌 변수에 `[ ]` 사용 |
-| `Array index must be an integer.` | 인덱스에 정수가 아닌 값 사용 |
-| `Array index out of range.` | 배열 크기를 벗어난 인덱스 |
-| `array() expects exactly 1 argument.` | `array()` 인자 개수 오류 |
-| `array size must be a non-negative integer.` | `array` 크기에 음수·소수·문자열 등 사용 |
+<details>
+<summary><b><code>++</code> / <code>--</code></b> — 증감 연산자 사용 불가</summary>
+
+```js
+// ❌ 에러
+i++;
+i--;
+```
+
+```
+[line 1] Unsupported operator '++'. Use 'x = x + 1'.
+[line 1] Unsupported operator '--'. Use 'x = x - 1'.
+```
+
+**대신 명시적 대입을 사용하세요.**
+
+```js
+// ✅
+i = i + 1;
+i = i - 1;
+```
 
 </details>
+
+---
+
+<details>
+<summary><b><code>+=</code> / <code>-=</code> / <code>*=</code> / <code>/=</code></b> — 복합 대입 사용 불가</summary>
+
+```js
+// ❌ 에러
+x += 5;
+x -= 3;
+x *= 2;
+x /= 4;
+```
+
+```
+[line 1] Unsupported operator '+='. Use 'x = x + value'.
+```
+
+**대신 명시적 대입을 사용하세요.**
+
+```js
+// ✅
+x = x + 5;
+x = x - 3;
+x = x * 2;
+x = x / 4;
+```
+
+</details>
+
+---
+
+<details>
+<summary><b><code>let</code> / <code>const</code></b> — 변수 선언 키워드 오류</summary>
+
+```js
+// ❌ 에러
+let x = 10;
+const y = 20;
+```
+
+```
+[line 1] Unknown keyword 'let'. Use 'var' to declare variables.
+[line 1] Unknown keyword 'const'. Use 'var' to declare variables.
+```
+
+**대신 `var` 를 사용하세요.**
+
+```js
+// ✅
+var x = 10;
+var y = 20;
+```
+
+> 이 언어에는 상수(const) 개념이 없습니다. `var` 로 선언한 변수는 항상 재대입 가능합니다.
+
+</details>
+
+---
+
+<details>
+<summary><b><code>Func</code> / <code>function</code> / <code>def</code> / <code>fn</code></b> — 함수 선언 키워드 오류</summary>
+
+```js
+// ❌ 에러
+Func add(a, b) { return a + b; }
+function add(a, b) { return a + b; }
+def add(a, b): return a + b
+fn add(a, b) { return a + b; }
+```
+
+```
+[line 1] Unknown keyword 'Func'. Use 'func' to declare functions.
+[line 1] Unknown keyword 'function'. Use 'func' to declare functions.
+```
+
+**대신 소문자 `func` 를 사용하세요.**
+
+```js
+// ✅
+func add(a, b) {
+    return a + b;
+}
+```
+
+</details>
+
+---
+
+<details>
+<summary><b><code>Return</code> / <code>VAR</code> / <code>FOR</code> 등 대소문자 혼용</b> — 키워드는 반드시 소문자</summary>
+
+모든 키워드는 **소문자**입니다. 대소문자가 섞이면 즉시 에러가 표시됩니다.
+
+```js
+// ❌ 에러
+Return a + b;
+VAR x = 5;
+FOR (var i = 0; ...)
+```
+
+```
+[line 1] Keywords must be lowercase. Use 'return' instead of 'Return'.
+[line 1] Keywords must be lowercase. Use 'var' instead of 'VAR'.
+[line 1] Keywords must be lowercase. Use 'for' instead of 'FOR'.
+```
+
+**올바른 키워드 목록**
+
+`var` `if` `else` `for` `true` `false` `and` `or` `print` `func` `return`
+
+</details>
+
+---
+
+<details>
+<summary><b><code>println</code> / <code>printf</code> / <code>cout</code> / <code>echo</code></b> — 출력 키워드 오류</summary>
+
+```js
+// ❌ 에러
+println x;
+printf("%d", x);
+cout << x;
+echo x;
+```
+
+```
+[line 1] Unknown keyword 'println'. Use 'print' to output values.
+```
+
+**대신 `print` 를 사용하세요.**
+
+```js
+// ✅
+print x;
+```
+
+</details>
+
+---
+
+<details>
+<summary><b><code>elif</code> / <code>elsif</code></b> — 조건 연결 키워드 오류</summary>
+
+```js
+// ❌ 에러
+if (x > 0) {
+    print "positive";
+} elif (x < 0) {
+    print "negative";
+}
+```
+
+```
+[line 3] Unknown keyword 'elif'. Use 'else if' for chained conditions.
+```
+
+**대신 `else if` 를 사용하세요.**
+
+```js
+// ✅
+if (x > 0) {
+    print "positive";
+} else if (x < 0) {
+    print "negative";
+} else {
+    print "zero";
+}
+```
+
+</details>
+
+---
+
+<details>
+<summary><b><code>int x</code> / <code>float x</code> 타입 선언</b> — 타입 어노테이션 사용 불가</summary>
+
+```js
+// ❌ 에러
+int x = 10;
+float y = 3.14;
+string name = "Alice";
+```
+
+```
+[line 1] Type annotations are not supported. Use 'var' instead of 'int'.
+```
+
+**대신 `var` 를 사용하세요.** 타입은 값에 따라 자동으로 결정됩니다.
+
+```js
+// ✅
+var x = 10;
+var y = 3.14;
+var name = "Alice";
+```
+
+</details>
+
+---
+
+<details>
+<summary><b><code>/* */</code> 블록 주석</b> — 지원하지 않음</summary>
+
+```js
+// ❌ 동작하지 않음
+/* 이 안은 주석이 아닙니다 */
+var x = /* 값 */ 10;
+```
+
+블록 주석을 인식하지 않아 `*` 등이 문법 오류를 일으킵니다.
+
+**대신 `//` 줄 주석을 사용하세요.**
+
+```js
+// ✅
+// 여러 줄에 걸친 설명은
+// 각 줄마다 // 를 붙입니다
+var x = 10;   // 인라인 주석
+```
+
+</details>
+
+---
+
+<details>
+<summary><b><code>break</code> / <code>continue</code></b> — 지원하지 않음</summary>
+
+```js
+// ❌ 동작하지 않음
+for (var i = 0; i < 10; i = i + 1) {
+    if (i == 5) break;
+}
+```
+
+`break` 와 `continue` 는 구현되어 있지 않습니다. 루프를 일찍 끝내야 한다면 조건식을 활용하세요.
+
+```js
+// ✅ 조건식으로 대체
+var done = false;
+for (var i = 0; i < 10 and !done; i = i + 1) {
+    if (i == 5) done = true;
+    if (!done) print i;
+}
+```
+
+</details>
+
+---
+
+<details>
+<summary><b>함수를 변수에 저장</b> — 1급 함수 지원하지 않음</summary>
+
+```js
+// ❌ 동작하지 않음
+var fn = add;
+var fn = func(a, b) { return a + b; };
+```
+
+함수는 변수에 저장하거나 인자로 넘길 수 없습니다. 이름으로 직접 호출하는 방식만 지원합니다.
+
+```js
+// ✅ 이름으로 직접 호출
+func add(a, b) { return a + b; }
+print add(3, 7);   // 10
+```
 
 </details>
 
@@ -717,8 +1036,8 @@ checkExpr(e)     → e.accept(*this) 래퍼
 
 | 상황 | 오류 메시지 |
 |------|------------|
-| 같은 블록 내 변수 중복 선언 | `"변수 'X'이(가) 이미 이 블록에서 선언되었습니다."` |
-| 초기화식에서 자기 자신 참조 (`var x = x;`) | `"자신의 초기화식에서 지역변수 'X'을(를) 읽을 수 없습니다."` |
+| 같은 블록 내 변수 중복 선언 | `"Variable 'X' is already declared in this block."` |
+| 초기화식에서 자기 자신 참조 (`var x = x;`) | `"Cannot read local variable 'X' in its own initializer."` |
 
 #### 검출하지 않는 항목
 

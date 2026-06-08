@@ -492,3 +492,115 @@ TEST(ShellTest, CallGroupingCallee_PrintsError) {
     std::string out = shell.runLine("var r = (foo)();");
     EXPECT_NE(out.find("Call target must be a named function"), std::string::npos);
 }
+
+// ════════════════════════════════════════════════════
+// Wave 16 — REPL 선행 검사: strict 미선언 변수 감지
+// ════════════════════════════════════════════════════
+
+// 함수 블록 안의 미선언 변수는 즉시 에러를 출력한다
+TEST(ShellTest, StrictChecker_UndeclaredVar_InsideFunc_GivesEarlyError) {
+    std::string out = runScript(
+        "func add(a, b) {\n"
+        "    var d = e + 3;\n"
+        "    return a + b;\n"
+        "}\n"
+        "print add(3, 4);"
+    );
+    EXPECT_NE(out.find("Undefined variable"), std::string::npos);
+    EXPECT_NE(out.find("e"), std::string::npos);
+}
+
+// 에러가 발생한 줄만 스킵되고 블록(함수)은 계속 유효하다
+TEST(ShellTest, StrictChecker_BlockContinuesAfterUndeclaredVar) {
+    std::string out = runScript(
+        "func add(a, b) {\n"
+        "    var d = e + 3;\n"
+        "    return a + b;\n"
+        "}\n"
+        "print add(3, 4);"
+    );
+    EXPECT_NE(out.find("7\n"), std::string::npos);
+}
+
+// processLine으로 선언된 글로벌 변수는 함수 내에서 에러 없이 통과한다
+TEST(ShellTest, StrictChecker_DeclaredGlobalVar_InsideFunc_NoError) {
+    std::string out = runScript(
+        "var g = 100;\n"
+        "func add(a, b) {\n"
+        "    return a + b + g;\n"
+        "}\n"
+        "print add(3, 4);"
+    );
+    EXPECT_EQ(out, "107\n");
+}
+
+// 이전에 선언된 함수를 다른 함수 안에서 호출해도 false positive가 없다
+TEST(ShellTest, StrictChecker_FuncCallInsideFunc_NoFalsePositive) {
+    std::string out = runScript(
+        "func double(x) {\n"
+        "    return x * 2;\n"
+        "}\n"
+        "func quadruple(x) {\n"
+        "    return double(double(x));\n"
+        "}\n"
+        "print quadruple(5);"
+    );
+    EXPECT_EQ(out, "20\n");
+}
+
+// ════════════════════════════════════════════════════
+// Wave 17 — Parser 에러 메시지 개선
+// ════════════════════════════════════════════════════
+
+// Return (capital R) → lowercase 안내 메시지
+TEST(ShellTest, Parser_CapitalizedReturn_SuggestsLowercase) {
+    Shell shell;
+    std::string out = shell.runLine("func f() { Return 1; }");
+    EXPECT_NE(out.find("lowercase"), std::string::npos);
+    EXPECT_NE(out.find("return"), std::string::npos);
+}
+
+// Return (capital R) — REPL 블록 내 선행 검사에서도 즉시 감지된다
+TEST(ShellTest, Parser_CapitalizedReturn_InsideBlock_EarlyError) {
+    std::string out = runScript(
+        "func add(a, b) {\n"
+        "    Return a + b;\n"
+        "    return a + b;\n"
+        "}\n"
+        "print add(3, 4);"
+    );
+    EXPECT_NE(out.find("lowercase"), std::string::npos);
+    EXPECT_NE(out.find("7\n"), std::string::npos);
+}
+
+// VAR (all caps) → lowercase 안내 메시지
+TEST(ShellTest, Parser_AllCapsVAR_SuggestsLowercase) {
+    Shell shell;
+    std::string out = shell.runLine("VAR x = 5;");
+    EXPECT_NE(out.find("lowercase"), std::string::npos);
+    EXPECT_NE(out.find("var"), std::string::npos);
+}
+
+// FOR (all caps) → lowercase 안내 메시지
+TEST(ShellTest, Parser_AllCapsFOR_SuggestsLowercase) {
+    Shell shell;
+    std::string out = shell.runLine("FOR (var i = 0; i < 3; i = i + 1) {}");
+    EXPECT_NE(out.find("lowercase"), std::string::npos);
+    EXPECT_NE(out.find("for"), std::string::npos);
+}
+
+// var x = ; → Unexpected token ';'
+TEST(ShellTest, Parser_UnexpectedSemicolon_GivesDescriptiveError) {
+    Shell shell;
+    std::string out = shell.runLine("var x = ;");
+    EXPECT_NE(out.find("Unexpected token"), std::string::npos);
+    EXPECT_NE(out.find(";"), std::string::npos);
+}
+
+// print ); → Unexpected token ')'
+TEST(ShellTest, Parser_UnexpectedCloseParen_GivesDescriptiveError) {
+    Shell shell;
+    std::string out = shell.runLine("print );");
+    EXPECT_NE(out.find("Unexpected token"), std::string::npos);
+    EXPECT_NE(out.find(")"), std::string::npos);
+}
