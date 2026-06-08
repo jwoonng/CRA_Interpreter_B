@@ -271,6 +271,29 @@ TEST(DebugModeTest, Watches_ExplicitCommand_UndefinedVar_ShowsUndefined) {
     EXPECT_TRUE(contains(out, "[WATCH] notDefined = <undefined>"));
 }
 
+// watches 명령으로 배열 변수를 명시적으로 조회했을 때 브래킷 표기 확인
+TEST(DebugModeTest, WatchesCommand_Array_ShowsBracketNotation) {
+    std::string out = runDebug(
+        "var arr = array(2);\n"
+        "arr[0] = 10;\n"
+        "arr[1] = 20;\n"
+        "print arr;\n",
+        // arr[1]=20 실행 후 print 앞에서 멈춤 → watches 로 현재값 조회
+        "watch arr\nstep\nstep\nstep\nwatches\ncontinue\n");
+    EXPECT_TRUE(contains(out, "[WATCH] arr = [10, 20]"));
+}
+
+// watch 등록 직후 (배열 선언만 된 상태) watches 조회 → [nil, nil]
+TEST(DebugModeTest, WatchesCommand_Array_BeforeAssign_ShowsNil) {
+    std::string out = runDebug(
+        "var arr = array(2);\n"
+        "arr[0] = 1;\n"
+        "print arr;\n",
+        // var arr 실행 직후 (arr[0] 대입 전) watches 조회
+        "watch arr\nstep\nwatches\ncontinue\n");
+    EXPECT_TRUE(contains(out, "[WATCH] arr = [nil, nil]"));
+}
+
 // runDebug 에서 optimizer 루프가 실행되는 경로 커버 (Shell.cpp line 158)
 TEST(DebugModeTest, RunDebug_WithOptimizer_ProducesCorrectOutput) {
     Shell shell;
