@@ -1,5 +1,5 @@
 #pragma once
-#include "src/executor/Executor.h"
+#include "src/executor/IExecutor.h"
 #include <istream>
 #include <ostream>
 #include <set>
@@ -26,7 +26,7 @@
 //   inspect               print every variable in the current scope chain
 class Debugger : public DebugObserver {
 public:
-    Debugger(Executor& executor,
+    Debugger(IExecutor& executor,
              std::vector<std::string> sourceLines,
              std::istream& in,
              std::ostream& out);
@@ -36,7 +36,7 @@ public:
 private:
     enum class Mode { Step, Next, Run };
 
-    Executor&                executor_;
+    IExecutor&               executor_;
     std::vector<std::string> sourceLines_;
     std::istream&            in_;
     std::ostream&            out_;

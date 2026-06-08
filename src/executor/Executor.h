@@ -80,22 +80,8 @@ struct ReturnException {
     LiteralValue value;
 };
 
-// ── Debug stepping support (factory "debug" mode) ─────────────────────
-// The Executor notifies an observer before every stoppable statement.
-// "depth" is the current block-nesting level (0 = top level), used by the
-// debugger to implement step-over ("next").
-struct DebugObserver {
-    virtual ~DebugObserver() = default;
-    virtual void beforeStatement(const Stmt& stmt, int depth) = 0;
-};
-
-// A single variable visible at a pause point, for the debugger's
-// "inspect" / "watches" commands.
-struct DebugVar {
-    bool         isGlobal;
-    std::string  name;
-    LiteralValue value;
-};
+// DebugObserver / DebugVar are declared in IExecutor.h so that the debug
+// hooks can live on the IExecutor interface (no concrete-type downcast).
 
 // ── Executor ─────────────────────────────────────────────────────────
 class Executor : public IExecutor, private ExprVisitor, private StmtVisitor {
@@ -103,18 +89,18 @@ public:
     void execute(std::vector<std::unique_ptr<Stmt>> stmts,
                  std::ostream& out) override;
 
-    // ── Debug support ────────────────────────────────────────────────
+    // ── Debug support (IExecutor overrides) ──────────────────────────
     // Install (or clear with nullptr) an observer notified before each
     // stoppable statement. Used by the factory "debug" mode.
-    void setDebugObserver(DebugObserver* observer) { observer_ = observer; }
+    void setDebugObserver(DebugObserver* observer) override { observer_ = observer; }
 
     // Look up a variable by name through the active scope chain
     // (nearest scope first). Returns false if undefined.
-    bool debugLookup(const std::string& name, LiteralValue& out) const;
+    bool debugLookup(const std::string& name, LiteralValue& out) const override;
 
     // Snapshot of every variable visible at the current pause point:
     // local scopes (nearest first) followed by the global scope.
-    std::vector<DebugVar> debugSnapshot() const;
+    std::vector<DebugVar> debugSnapshot() const override;
 
 private:
     Environment  global_;

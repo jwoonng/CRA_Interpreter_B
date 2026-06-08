@@ -48,7 +48,7 @@ std::string trim(const std::string& s) {
 }  // namespace
 
 // ── construction ──────────────────────────────────────────────────────
-Debugger::Debugger(Executor& executor,
+Debugger::Debugger(IExecutor& executor,
                    std::vector<std::string> sourceLines,
                    std::istream& in,
                    std::ostream& out)

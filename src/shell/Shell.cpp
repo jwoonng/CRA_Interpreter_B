@@ -150,13 +150,6 @@ int Shell::runDebug(const std::string& path, std::istream& cmdIn, std::ostream& 
         while (std::getline(ss, ln)) lines.push_back(ln);
     }
 
-    // Debug mode drives the built-in Executor's stepping hook.
-    auto* concrete = dynamic_cast<Executor*>(executor_.get());
-    if (!concrete) {
-        out << "Error: debug mode requires the built-in executor.\n";
-        return 1;
-    }
-
     try {
         auto tokens = tokenizer_->tokenize(source);
         auto stmts  = parser_->parse(tokens);
@@ -165,15 +158,17 @@ int Shell::runDebug(const std::string& path, std::istream& cmdIn, std::ostream& 
             stmts = opt->optimize(std::move(stmts));
 
         out << "[DEBUG] loaded source: " << path << "\n";
-        Debugger debugger(*concrete, std::move(lines), cmdIn, out);
-        concrete->setDebugObserver(&debugger);
+        // Debug stepping is driven through the IExecutor interface — the
+        // built-in Executor overrides the hooks; other executors no-op.
+        Debugger debugger(*executor_, std::move(lines), cmdIn, out);
+        executor_->setDebugObserver(&debugger);
         try {
             executor_->execute(std::move(stmts), out);
         } catch (...) {
-            concrete->setDebugObserver(nullptr);
+            executor_->setDebugObserver(nullptr);
             throw;
         }
-        concrete->setDebugObserver(nullptr);
+        executor_->setDebugObserver(nullptr);
         out << "[DEBUG] execution finished\n";
     } catch (const std::exception& e) {
         out << e.what() << "\n";
