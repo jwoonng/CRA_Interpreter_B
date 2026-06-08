@@ -13,16 +13,66 @@
 
 ## ▶️ 실행 방법
 
-`Project17.exe` 를 더블클릭하거나 터미널에서 실행하면 바로 시작됩니다.
+`factory.exe` 를 터미널에서 실행합니다. 세 가지 모드를 지원합니다.
+
+| 모드 | 명령 | 설명 |
+|------|------|------|
+| **대화형 (REPL)** | `factory` | 한 줄씩 즉시 실행 |
+| **파일 실행** | `factory run <경로>` | 소스 파일 전체를 실행 |
+| **디버그** | `factory debug <경로>` | 소스 파일을 단계별로 실행 |
+
+### 대화형 모드 (REPL)
 
 ```
 > _
 ```
 
 `>` 프롬프트가 뜨면 코드를 입력하세요. **Enter** 로 즉시 실행됩니다.  
-종료하려면 `Ctrl + C` 또는 창을 닫으세요.
+종료하려면 `quit` 또는 `exit` 를 입력하세요.
 
 > 입력한 변수·함수는 종료 전까지 계속 유지됩니다.
+
+중괄호 `{` 로 블록을 열면 `...` 프롬프트로 전환되고,  
+`}` 로 닫힐 때 블록 전체가 한꺼번에 실행됩니다.
+
+```
+> func add(a, b) {
+...     return a + b;
+... }
+> print add(3, 7);
+10
+```
+
+> **REPL 선행 검사**: 블록을 입력하는 도중, 선언된 적 없는 변수를 사용하면  
+> 해당 줄을 입력하는 즉시 에러가 표시됩니다. 에러가 발생한 줄만 스킵되고  
+> 나머지 블록은 유지됩니다.
+
+### 파일 실행 모드
+
+```
+factory run hello.cb
+```
+
+### 디버그 모드
+
+소스 파일을 불러온 뒤 한 줄씩 실행하며 변수 상태를 확인할 수 있습니다.
+
+```
+factory debug hello.cb
+```
+
+| 명령 | 설명 |
+|------|------|
+| `step` / `next` | 다음 문장으로 이동 |
+| `continue` | 다음 중단점까지 실행 |
+| `break <줄>` | 줄 번호에 중단점 설정 |
+| `breakpoints` | 중단점 목록 확인 |
+| `remove <줄>` | 중단점 제거 |
+| `watch <변수>` | 변수 감시 등록 |
+| `unwatch <변수>` | 감시 해제 |
+| `watches` | 감시 목록 확인 |
+| `inspect <변수>` | 변수 현재 값 출력 |
+| `quit` / `exit` | 디버그 종료 |
 
 ---
 
@@ -135,7 +185,7 @@ for (; i < 3; i = i + 1) {
 **선언**
 
 ```js
-Func greet(name) {
+func greet(name) {
     print "Hello, " + name;
 }
 ```
@@ -149,7 +199,7 @@ greet("Alice");   // Hello, Alice
 **반환값**
 
 ```js
-Func add(a, b) {
+func add(a, b) {
     return a + b;
 }
 
@@ -162,7 +212,7 @@ print result;   // 10
 **재귀**
 
 ```js
-Func fact(n) {
+func fact(n) {
     if (n <= 1) return 1;
     return n * fact(n - 1);
 }
@@ -174,10 +224,10 @@ print fact(5);   // 120
 
 ### 배열
 
-`Array(n)` 으로 n개짜리 배열을 만듭니다. 초기값은 모두 `nil` 입니다.
+`array(n)` 으로 n개짜리 배열을 만듭니다. 초기값은 모두 `nil` 입니다.
 
 ```js
-var arr = Array(3);   // [nil, nil, nil]
+var arr = array(3);   // [nil, nil, nil]
 ```
 
 **읽기 / 쓰기**
@@ -204,13 +254,13 @@ print arr[i - 1];   // 10
 배열은 참조로 전달되므로 함수 안에서 수정하면 밖에서도 반영됩니다.
 
 ```js
-Func fill(a, val) {
+func fill(a, val) {
     a[0] = val;
     a[1] = val;
     a[2] = val;
 }
 
-var arr = Array(3);
+var arr = array(3);
 fill(arr, 7);
 print arr[0];   // 7
 ```
@@ -246,7 +296,7 @@ var x = 10;   // 인라인 주석도 가능
 ### 피보나치 수열
 
 ```js
-Func fib(n) {
+func fib(n) {
     if (n <= 1) return n;
     return fib(n - 1) + fib(n - 2);
 }
@@ -270,7 +320,7 @@ print sum;   // 55
 ### 문자열 반복
 
 ```js
-Func repeat(s, n) {
+func repeat(s, n) {
     var result = "";
     for (var i = 0; i < n; i = i + 1) {
         result = result + s;
@@ -284,7 +334,7 @@ print repeat("ha", 3);   // hahaha
 ### 최댓값 구하기
 
 ```js
-Func max(a, b) {
+func max(a, b) {
     if (a > b) return a;
     return b;
 }
@@ -295,7 +345,7 @@ print max(7, 13);   // 13
 ### 배열 합산
 
 ```js
-var arr = Array(5);
+var arr = array(5);
 for (var i = 0; i < 5; i = i + 1) {
     arr[i] = i + 1;
 }
@@ -320,11 +370,11 @@ flowchart LR
         y3["if / else if / else"]
         y4["for 반복문"]
         y5["중첩 블록 · 스코프"]
-        y6["Func 함수 선언·호출"]
+        y6["func 함수 선언·호출"]
         y7["재귀 함수"]
         y8["return 값 반환"]
         y9["// 줄 주석"]
-        y10["Array(n) 배열 생성·읽기·쓰기"]
+        y10["array(n) 배열 생성·읽기·쓰기"]
     end
 
     subgraph NO ["❌ 안 되는 것"]
@@ -362,10 +412,20 @@ flowchart LR
 | `Unsupported operator '*='. Use 'x = x * value'.` | `*=` 복합 대입 사용 |
 | `Unsupported operator '/='. Use 'x = x / value'.` | `/=` 복합 대입 사용 |
 | `Unterminated string` | 닫는 `"` 없이 문자열 끝남 |
+| `Keywords must be lowercase. Use 'X' instead of 'Y'.` | `Return`, `VAR`, `FOR` 등 대소문자 혼용 keyword 사용 |
+| `Type annotations are not supported. Use 'var' instead of 'X'.` | `int x = 1;` 처럼 타입 선언 사용 |
+| `Unknown keyword 'X'. Use 'func' to declare functions.` | `Func`, `function`, `def`, `fn` 등 잘못된 함수 키워드 사용 |
+| `Unknown keyword 'X'. Use 'var' to declare variables.` | `let`, `const` 등 잘못된 변수 키워드 사용 |
+| `Unknown keyword 'X'. Use 'for' for loops.` | `while`, `do` 등 잘못된 반복 키워드 사용 |
+| `Unknown keyword 'X'. Use 'print' to output values.` | `println`, `cout` 등 잘못된 출력 키워드 사용 |
+| `Unknown keyword 'X'. Use 'else if' for chained conditions.` | `elif`, `elsif` 사용 |
+| `Unexpected token 'X'.` | 예상치 못한 토큰 (예: `var x = ;`) |
+| `Unexpected end of input.` | 표현식이 완성되기 전에 입력이 끝남 |
+| `Unexpected '}': no matching '{' found.` | 짝 없는 `}` 입력 |
 | `Expected ')'` / `Expected '('` | 괄호 누락 |
 | `Expected ';'` | 세미콜론 누락 |
 | `Invalid assignment target.` | 대입 불가 대상에 `=` 사용 |
-| `Expected function name.` | `Func` 다음에 이름 없음 |
+| `Expected function name.` | `func` 다음에 이름 없음 |
 
 </details>
 
@@ -374,10 +434,12 @@ flowchart LR
 
 | 메시지 | 원인 |
 |--------|------|
-| `변수 'X'이(가) 이미 이 블록에서 선언되었습니다.` | 같은 블록 안에서 같은 이름으로 `var` 두 번 |
-| `자신의 초기화식에서 지역변수 'X'을(를) 읽을 수 없습니다.` | `var x = x + 1;` 처럼 자기 자신 참조 |
+| `Variable 'X' is already declared in this block.` | 같은 블록 안에서 같은 이름으로 `var` 두 번 |
+| `Variable 'X' is already declared in global scope (first declared at line N).` | 전역 스코프에서 같은 이름으로 `var` 두 번 |
+| `Cannot read local variable 'X' in its own initializer.` | `var x = x + 1;` 처럼 자기 자신 참조 |
 | `Cannot use 'return' outside of a function.` | 함수 밖에서 `return` 사용 |
 | `Duplicate parameter name 'X' in function 'F'.` | 파라미터 이름 중복 |
+| `Undefined variable 'X'.` | REPL 블록 입력 중 미선언 변수 참조 (선행 검사) |
 
 </details>
 
@@ -396,7 +458,7 @@ flowchart LR
 | `Value is not an array.` | 배열이 아닌 변수에 `[ ]` 사용 |
 | `Array index must be an integer.` | 인덱스에 정수가 아닌 값 사용 |
 | `Array index out of range.` | 배열 크기를 벗어난 인덱스 |
-| `Array() expects exactly 1 argument.` | `Array()` 인자 개수 오류 |
-| `Array size must be a non-negative integer.` | `Array` 크기에 음수·소수·문자열 등 사용 |
+| `Array() expects exactly 1 argument.` | `array()` 인자 개수 오류 |
+| `Array size must be a non-negative integer.` | `array` 크기에 음수·소수·문자열 등 사용 |
 
 </details>
