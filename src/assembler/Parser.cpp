@@ -14,6 +14,15 @@ std::vector<std::unique_ptr<Stmt>> Parser::parse(const std::vector<Token>& token
     return stmts;
 }
 
+std::unique_ptr<Stmt> Parser::parseOne(const std::vector<Token>& tokens, int& pos) {
+    tokens_  = tokens;
+    current_ = pos;
+    if (isAtEnd()) return nullptr;
+    auto stmt = statement();
+    pos = current_;
+    return stmt;
+}
+
 // ══════════════════════════════════════════════════════════════
 // 문장
 // ══════════════════════════════════════════════════════════════

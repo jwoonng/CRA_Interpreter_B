@@ -7,6 +7,7 @@
 class Parser : public IParser {
 public:
     std::vector<std::unique_ptr<Stmt>> parse(const std::vector<Token>& tokens) override;
+    std::unique_ptr<Stmt>              parseOne(const std::vector<Token>& tokens, int& pos) override;
 
 private:
     std::span<const Token> tokens_;

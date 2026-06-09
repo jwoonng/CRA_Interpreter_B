@@ -210,17 +210,46 @@ int Shell::runFile(const std::string& path, std::ostream& out) {
         out << "Error: cannot open file '" << path << "'\n";
         return 1;
     }
+
+    std::vector<Token> tokens;
     try {
-        auto tokens = tokenizer_->tokenize(source);
-        auto stmts  = parser_->parse(tokens);
-        checker_->check(stmts);
-        for (auto& opt : optimizers_)
-            stmts = opt->optimize(std::move(stmts));
-        executor_->execute(std::move(stmts), out);
+        tokens = tokenizer_->tokenize(source);
     } catch (const std::exception& e) {
-        // Runtime/parse error messages use the "[line N] ..." format — stop now.
         out << e.what() << "\n";
         return 1;
+    }
+
+    int pos = 0;
+    while (true) {
+        std::unique_ptr<Stmt> stmtPtr;
+        try {
+            stmtPtr = parser_->parseOne(tokens, pos);
+        } catch (const std::exception& e) {
+            out << e.what() << "\n";
+            return 1;
+        }
+        if (!stmtPtr) break;
+
+        std::vector<std::unique_ptr<Stmt>> single;
+        single.push_back(std::move(stmtPtr));
+
+        try {
+            checker_->check(single);
+        } catch (const std::exception& e) {
+            out << e.what() << "\n";
+            return 1;
+        }
+
+        for (auto& opt : optimizers_)
+            single = opt->optimize(std::move(single));
+
+        try {
+            executor_->execute(std::move(single), out);
+        } catch (const std::exception& e) {
+            checker_->rollbackLastCheck();
+            out << e.what() << "\n";
+            return 1;
+        }
     }
     return 0;
 }
@@ -241,33 +270,63 @@ int Shell::runDebug(const std::string& path, std::istream& cmdIn, std::ostream& 
         while (std::getline(ss, ln)) lines.push_back(ln);
     }
 
+    std::vector<Token> tokens;
     try {
-        auto tokens = tokenizer_->tokenize(source);
-        auto stmts  = parser_->parse(tokens);
-        checker_->check(stmts);
-        for (auto& opt : optimizers_)
-            stmts = opt->optimize(std::move(stmts));
-
-        out << "[DEBUG] loaded source: " << path << "\n";
-        // Debug stepping is driven through the IExecutor interface — the
-        // built-in Executor overrides the hooks; other executors no-op.
-        Debugger debugger(*executor_, std::move(lines), cmdIn, out);
-        executor_->setDebugObserver(&debugger);
-        try {
-            executor_->execute(std::move(stmts), out);
-        } catch (const DebugQuitRequest&) {
-            executor_->setDebugObserver(nullptr);
-            return 0;
-        } catch (...) {
-            executor_->setDebugObserver(nullptr);
-            throw;
-        }
-        executor_->setDebugObserver(nullptr);
-        out << "[DEBUG] execution finished\n";
+        tokens = tokenizer_->tokenize(source);
     } catch (const std::exception& e) {
         out << e.what() << "\n";
         return 1;
     }
+
+    out << "[DEBUG] loaded source: " << path << "\n";
+    Debugger debugger(*executor_, std::move(lines), cmdIn, out);
+    executor_->setDebugObserver(&debugger);
+
+    int pos = 0;
+    while (true) {
+        std::unique_ptr<Stmt> stmtPtr;
+        try {
+            stmtPtr = parser_->parseOne(tokens, pos);
+        } catch (const std::exception& e) {
+            executor_->setDebugObserver(nullptr);
+            out << e.what() << "\n";
+            return 1;
+        }
+        if (!stmtPtr) break;
+
+        std::vector<std::unique_ptr<Stmt>> single;
+        single.push_back(std::move(stmtPtr));
+
+        try {
+            checker_->check(single);
+        } catch (const std::exception& e) {
+            executor_->setDebugObserver(nullptr);
+            out << e.what() << "\n";
+            return 1;
+        }
+
+        for (auto& opt : optimizers_)
+            single = opt->optimize(std::move(single));
+
+        try {
+            executor_->execute(std::move(single), out);
+        } catch (const DebugQuitRequest&) {
+            executor_->setDebugObserver(nullptr);
+            return 0;
+        } catch (const std::exception& e) {
+            checker_->rollbackLastCheck();
+            executor_->setDebugObserver(nullptr);
+            out << e.what() << "\n";
+            return 1;
+        } catch (...) {
+            checker_->rollbackLastCheck();
+            executor_->setDebugObserver(nullptr);
+            throw;
+        }
+    }
+
+    executor_->setDebugObserver(nullptr);
+    out << "[DEBUG] execution finished\n";
     return 0;
 }
 
