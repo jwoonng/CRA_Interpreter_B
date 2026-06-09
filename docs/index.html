@@ -593,6 +593,8 @@ hr { border: none; border-top: 1px solid #eee; margin: 32px 0; }
 </div>
 
 <p><code>else if</code>와 <code>else</code>는 생략할 수 있으며, <code>else if</code>는 몇 개든 이어붙일 수 있습니다.</p>
+<div class="warning"><strong>주의</strong>열린 중괄호 <code>{</code>는 반드시 키워드와 <strong>같은 줄</strong>에 작성해야 합니다. 새 줄에 <code>{</code>를 쓰면 오류가 발생합니다.<br>
+<code style="color:#c0392b">if (x &gt; 0)<br>&nbsp;&nbsp;&nbsp;&nbsp;{ ... }  // 오류</code>&nbsp;&nbsp;→&nbsp;&nbsp;<code style="color:#27ae60">if (x &gt; 0) { ... }  // 정상</code></div>
 
 <div class="repl-block">
   <span class="p">&gt; </span><span class="kw">var</span> score = <span class="num">85</span>;<br>
@@ -623,6 +625,8 @@ hr { border: none; border-top: 1px solid #eee; margin: 32px 0; }
 </div>
 
 <p>초기화, 조건, 증감식은 모두 생략할 수 있습니다.</p>
+<div class="warning"><strong>주의</strong>열린 중괄호 <code>{</code>는 반드시 <code>for (...)</code>와 <strong>같은 줄</strong>에 작성해야 합니다. 새 줄에 <code>{</code>를 쓰면 오류가 발생합니다.<br>
+<code style="color:#c0392b">for (...)<br>&nbsp;&nbsp;&nbsp;&nbsp;{ ... }  // 오류</code>&nbsp;&nbsp;→&nbsp;&nbsp;<code style="color:#27ae60">for (...) { ... }  // 정상</code></div>
 
 <div class="repl-block">
   <span class="p">&gt; </span><span class="kw">for</span> (<span class="kw">var</span> i = <span class="num">0</span>; i &lt; <span class="num">5</span>; i = i + <span class="num">1</span>) {<br>
@@ -657,6 +661,9 @@ hr { border: none; border-top: 1px solid #eee; margin: 32px 0; }
   &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span> <span class="meta">&lt;값&gt;</span>;<br>
   }
 </div>
+
+<div class="warning"><strong>주의</strong>열린 중괄호 <code>{</code>는 반드시 <code>func 이름(...)</code>과 <strong>같은 줄</strong>에 작성해야 합니다. 새 줄에 <code>{</code>를 쓰면 오류가 발생합니다.<br>
+<code style="color:#c0392b">func add(a, b)<br>&nbsp;&nbsp;&nbsp;&nbsp;{ ... }  // 오류</code>&nbsp;&nbsp;→&nbsp;&nbsp;<code style="color:#27ae60">func add(a, b) { ... }  // 정상</code></div>
 
 <h4>선언과 호출</h4>
 <div class="repl-block">
