@@ -1,26 +1,27 @@
-// ============================================================
-//   CodeFab Interpreter -- Syntax Guide (Debug Mode Demo)
-//
-//   Recommended debug commands:
-//     step           -- enter blocks / functions          (alias: s)
-//     next           -- skip over blocks / functions      (alias: n)
-//     continue       -- run to next breakpoint            (alias: c)
-//     quit / exit    -- end the debug session
-//     break <line> [line2 ...]   -- set one or more breakpoints
-//     remove <line> [line2 ...]  -- remove one or more breakpoints
-//     breakpoints                -- list all active breakpoints
-//     watch <name> [name2 ...]   -- track variables at every stop  (also: arr[idx])
-//     unwatch <name> [name2 ...]  -- stop watching variables
-//     watches        -- print current values of all watched variables
-//     inspect        -- dump all variables in scope
-// ============================================================
-
-// ── 1. Variable Declaration & Assignment ─────────────────
-//   var <name> = <value>;
-//   var <name>;            => nil by default
-//   <name> = <expression>; => reassign
+print "[debug] break 19 41 64 90 97 112 136 144 197 214 222 258 284 302 314 -> breakpoints -> c";
 print "";
-print "1. Variable Declaration & Assignment";
+print "============================================================";
+print "  CodeFab Interpreter -- Syntax Guide (Debug Mode Demo)";
+print "============================================================";
+print "  Recommended debug commands:";
+print "    step           -- enter blocks / functions          (alias: s)";
+print "    next           -- skip over blocks / functions      (alias: n)";
+print "    continue       -- run to next breakpoint            (alias: c)";
+print "    quit / exit    -- end the debug session";
+print "    break <line> [line2 ...]   -- set one or more breakpoints";
+print "    remove <line> [line2 ...]  -- remove one or more breakpoints";
+print "    breakpoints                -- list all active breakpoints";
+print "    watch <name> [name2 ...]   -- track variables at every stop  (also: arr[idx])";
+print "    unwatch <name> [name2 ...]  -- stop watching variables";
+print "    watches        -- print current values of all watched variables";
+print "    inspect        -- dump all variables in scope";
+print "============================================================";
+print "[debug] c";
+print " 1. Variable Declaration & Assignment";
+print "  var <name> = <value>;";
+print "  var <name>;            => nil by default";
+print "  <name> = <expression>; => reassign";
+print "============================================================";
 
 var x = 10;
 var y = 3;
@@ -37,12 +38,12 @@ print label;
 print active;
 print empty;
 
-// ── 2. Arithmetic & Modulo ────────────────────────────────
-//   + - * /   => number operations
-//   %         => remainder (works with decimals too)
-//   -expr     => negate
-print "";
-print "2. Arithmetic & Modulo";
+print "[debug] c";
+print " 2. Arithmetic & Modulo";
+print "  + - * /   => number operations";
+print "  %         => remainder (works with decimals too)";
+print "  -expr     => negate";
+print "============================================================";
 
 var dividend = 17;
 var divisor  = 5;
@@ -60,12 +61,12 @@ print quotient;
 print remainder;
 print negated;
 
-// ── 3. Comparison & Logical ───────────────────────────────
-//   == != > >= < <=  => boolean result
-//   and or !         => logical (short-circuit)
-//   falsy: false, 0, nil   truthy: everything else
-print "";
-print "3. Comparison & Logical";
+print "[debug] c";
+print " 3. Comparison & Logical";
+print "  == != > >= < <=  => boolean result";
+print "  and or !         => logical (short-circuit)";
+print "  falsy: false, 0, nil   truthy: everything else";
+print "============================================================";
 
 var a = 10;
 var b = 3;
@@ -86,12 +87,12 @@ print both;
 print either;
 print negEq;
 
-// ── 4. Conditionals ───────────────────────────────────────
-//   if (<cond>) { ... }
-//   if (<cond>) { ... } else { ... }
-//   if (<cond>) { ... } else if (<cond>) { ... }
-print "";
-print "4. Conditionals";
+print "[debug] c -> s -> s -> s -> s -> s -> s";
+print " 4. Conditionals";
+print "  if (<cond>) { ... }";
+print "  if (<cond>) { ... } else { ... }";
+print "  if (<cond>) { ... } else if (<cond>) { ... }";
+print "============================================================";
 
 var temperature = 22;
 var weather = "unknown";
@@ -108,11 +109,11 @@ if (temperature >= 30) {
 
 print weather;
 
-// ── 5. For Loop ───────────────────────────────────────────
-//   for (<init>; <cond>; <increment>) { <body> }
-//   tip: watch the loop variable to observe each iteration
-print "";
-print "5. For Loop";
+print "[debug] c";
+print " 5. For Loop";
+print "  for (<init>; <cond>; <increment>) { <body> }";
+print "  tip: watch the loop variable to observe each iteration";
+print "============================================================";
 
 var total = 0;
 var count = 5;
@@ -123,7 +124,7 @@ for (var i = 1; i <= count; i = i + 1) {
 
 print total;
 
-// accumulate into an array while looping
+print "-- accumulate into an array while looping";
 var nums = array(5);
 
 for (var i = 0; i < 5; i = i + 1) {
@@ -132,12 +133,13 @@ for (var i = 0; i < 5; i = i + 1) {
 
 print nums;
 
-// ── 6. Block Scope & Shadowing ────────────────────────────
-//   { } creates a new scope
-//   inner var shadows outer var; restored on exit
-//   tip: watch 'scope_val' to see shadowing
-print "";
-print "6. Block Scope & Shadowing";
+print "[debug] c";
+print " 6. Block Scope & Shadowing";
+print "  { } creates a new scope";
+print "  inner var shadows outer var; restored on exit";
+print "  tip: watch 'scope_val' to see shadowing";
+print "============================================================";
+print "[debug] watch scope_val -> s -> s -> s -> s -> s -> s -> s -> unwatch scope_val -> c";
 
 var scope_val = "outer";
 
@@ -157,13 +159,13 @@ print scope_val;
 
 print scope_val;
 
-// ── 7. Functions ──────────────────────────────────────────
-//   func <name>(<params>) { <body> }
-//   return <expr>;   exits and returns value
-//   no return / return; => returns nil
-//   tip: step INTO a call to watch params inside
-print "";
-print "7. Functions";
+print "[debug] c";
+print " 7. Functions";
+print "  func <name>(<params>) { <body> }";
+print "  return <expr>;   exits and returns value";
+print "  no return / return; => returns nil";
+print "  tip: step INTO a call to watch params inside";
+print "============================================================";
 
 func add(p, q) {
     var result = p + q;
@@ -192,11 +194,12 @@ print r3;
 print r4;
 print r5;
 
-// ── 8. Recursion ──────────────────────────────────────────
-//   a function that calls itself
-//   tip: use 'next' to skip recursion, 'step' to trace into it
-print "";
-print "8. Recursion";
+print "[debug] c";
+print " 8. Recursion";
+print "  a function that calls itself";
+print "  tip: use 'next' to skip recursion, 'step' to trace into it";
+print "============================================================";
+print "[debug] s -> s -> s -> n -> n -> c ";
 
 func factorial(n) {
     if (n <= 1) return 1;
@@ -216,15 +219,15 @@ print fact5;
 print fact7;
 print fib8;
 
-// ── 9. Arrays ─────────────────────────────────────────────
-//   var arr = array(n);   create (all nil)
-//   arr[i] = val;         write
-//   arr[i]               read
-//   print arr;            print whole array
-//   NOTE: arrays are reference types (shared)
-//   tip: watch 'scores' to see element-by-element fill
-print "";
-print "9. Arrays";
+print "[debug] c";
+print " 9. Arrays";
+print "  var arr = array(n);   create (all nil)";
+print "  arr[i] = val;         write";
+print "  arr[i]               read";
+print "  print arr;            print whole array";
+print "  NOTE: arrays are reference types (shared)";
+print "  tip: watch 'scores' to see element-by-element fill";
+print "============================================================";
 
 var scores = array(6);
 
@@ -246,17 +249,17 @@ for (var i = 1; i < 6; i = i + 1) {
 
 print best;
 
-// reference semantics: alias shares the same array
+print "-- reference semantics: alias shares the same array";
 var alias = scores;
 alias[0] = 100;
 
 print scores;
 
-// ── 10. String Concatenation ──────────────────────────────
-//   string + string  => concatenated string
-//   NOTE: both sides must be strings
-print "";
-print "10. String Concatenation";
+print "[debug] c";
+print " 10. String Concatenation";
+print "  string + string  => concatenated string";
+print "  NOTE: both sides must be strings";
+print "============================================================";
 
 var first = "Code";
 var second = "Fab";
@@ -278,13 +281,13 @@ func repeatStr(s, n) {
 var line = repeatStr("-", 24);
 print line;
 
-// ── 11. Short-circuit Evaluation ─────────────────────────
-//   'or'  returns first truthy, skips rest if found
-//   'and' returns first falsy, skips rest if found
-//   => right side is NOT evaluated when unnecessary
-//   tip: 1/0 never throws here because it is never reached
-print "";
-print "11. Short-circuit Evaluation";
+print "[debug] c";
+print " 11. Short-circuit Evaluation";
+print "  'or'  returns first truthy, skips rest if found";
+print "  'and' returns first falsy, skips rest if found";
+print "  => right side is NOT evaluated when unnecessary";
+print "  tip: 1/0 never throws here because it is never reached";
+print "============================================================";
 
 var sc1 = true  or  (1 / 0);
 var sc2 = false and (1 / 0);
@@ -296,11 +299,11 @@ print sc2;
 print sc3;
 print sc4;
 
-// ── 12. Global State via Functions ───────────────────────
-//   functions can read and write global variables
-//   tip: watch 'counter' while calling inc() / dec()
-print "";
-print "12. Global State via Functions";
+print "[debug] c -> watch counter -> n -> n -> n -> n -> n -> quit";
+print " 12. Global State via Functions";
+print "  functions can read and write global variables";
+print "  tip: watch 'counter' while calling inc() / dec()";
+print "============================================================";
 
 var counter = 0;
 
