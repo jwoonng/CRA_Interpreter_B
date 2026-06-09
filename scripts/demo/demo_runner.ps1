@@ -39,7 +39,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$exe      = Join-Path $PSScriptRoot "..\..\x64\Release\factory.exe"
+$exe      = Join-Path $PSScriptRoot "factory.exe"
 $filePath = Join-Path $PSScriptRoot $File
 
 if (-not (Test-Path $exe)) {
