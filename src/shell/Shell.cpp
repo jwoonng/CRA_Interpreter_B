@@ -4,6 +4,7 @@
 #include "src/assembler/Parser.h"
 #include "src/checker/Checker.h"
 #include "src/executor/Executor.h"
+#include "src/common/Stmt.h"
 #include <fstream>
 #include <sstream>
 #include <vector>
@@ -29,6 +30,16 @@ Shell::Shell(std::unique_ptr<ITokenizer> tokenizer,
 // ── Optimizer 체인 관리 ───────────────────────────────────────────
 void Shell::addOptimizer(std::unique_ptr<IOptimizer> optimizer) {
     optimizers_.push_back(std::move(optimizer));
+}
+
+// ── else 없는 if 체인 감지 ───────────────────────────────────────
+// IfStmt(→ else IfStmt)* 의 끝 노드에 elseBranch가 없으면 true.
+// else가 다음 줄에 올 수 있으므로 계속 누적해야 한다.
+static bool hasPendingElse(const Stmt* s) {
+    const auto* ifStmt = dynamic_cast<const IfStmt*>(s);
+    if (!ifStmt) return false;
+    if (!ifStmt->elseBranch) return true;
+    return hasPendingElse(ifStmt->elseBranch.get());
 }
 
 // ── 중괄호 깊이 계산 ─────────────────────────────────────────────
@@ -69,7 +80,8 @@ static std::string trimmed(const std::string& s) {
 void Shell::run(std::istream& in, std::ostream& out) {
     std::string line;
     std::string accumulated;
-    int depth = 0;
+    int  depth       = 0;
+    bool pendingElse = false;  // if 뒤 else/else if 대기 중
 
     // 현재 depth에 맞는 프롬프트 출력
     auto printPrompt = [&]() {
@@ -85,12 +97,22 @@ void Shell::run(std::istream& in, std::ostream& out) {
 
         // quit / exit — 어느 깊이에서든 블록 취소 후 종료
         if (t == "exit" || t == "quit") {
-            if (depth > 0) {
+            if (depth > 0 || pendingElse) {
                 accumulated.clear();
-                depth = 0;
+                depth       = 0;
+                pendingElse = false;
                 out << "[REPL] block discarded.\n";
             }
             break;
+        }
+
+        // pendingElse 상태에서 빈 줄 → 즉시 실행 (else 없이 확정)
+        if (pendingElse && t.empty()) {
+            processLine(accumulated, out);
+            accumulated.clear();
+            pendingElse = false;
+            out << "> ";
+            continue;
         }
 
         // 선행 검사 (tokenize → parse → Checker strict):
@@ -137,10 +159,25 @@ void Shell::run(std::istream& in, std::ostream& out) {
 
         if (depth <= 0) {
             depth = 0;
+            // else 없는 if 체인이면 다음 줄의 else/else if를 기다린다.
+            bool pending = false;
+            try {
+                auto toks  = tokenizer_->tokenize(accumulated);
+                auto stmts = parser_->parse(toks);
+                if (!stmts.empty())
+                    pending = hasPendingElse(stmts.back().get());
+            } catch (...) {}
+
+            pendingElse = pending;
+            if (pending) {
+                out << "... ";
+                continue;
+            }
             processLine(accumulated, out);
             accumulated.clear();
             out << "> ";
         } else {
+            pendingElse = false;  // { 블록 진입 시 pendingElse 해제
             out << "... " << std::string((depth - 1) * 2, ' ');
         }
     }
