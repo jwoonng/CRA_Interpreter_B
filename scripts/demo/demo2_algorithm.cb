@@ -1,0 +1,29 @@
+func bubble_sort(arr, n) {
+    for (var i = 0; i < n; i = i + 1) {
+        for (var j = 0; j < n - 1 - i; j = j + 1) {
+            if (arr[j] > arr[j + 1]) {
+                var tmp = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = tmp;
+            }
+        }
+    }
+}
+
+var n = 7;
+var data = array(n);
+data[0] = 64;
+data[1] = 34;
+data[2] = 25;
+data[3] = 12;
+data[4] = 22;
+data[5] = 11;
+data[6] = 90;
+
+print "Before:";
+print data;
+
+bubble_sort(data, n);
+
+print "After:";
+print data;
