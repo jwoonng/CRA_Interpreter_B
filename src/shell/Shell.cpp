@@ -4,6 +4,7 @@
 #include "src/assembler/Parser.h"
 #include "src/checker/Checker.h"
 #include "src/executor/Executor.h"
+#include "src/common/Stmt.h"
 #include <fstream>
 #include <sstream>
 #include <vector>
@@ -29,6 +30,16 @@ Shell::Shell(std::unique_ptr<ITokenizer> tokenizer,
 // ── Optimizer 체인 관리 ───────────────────────────────────────────
 void Shell::addOptimizer(std::unique_ptr<IOptimizer> optimizer) {
     optimizers_.push_back(std::move(optimizer));
+}
+
+// ── else 없는 if 체인 감지 ───────────────────────────────────────
+// IfStmt(→ else IfStmt)* 의 끝 노드에 elseBranch가 없으면 true.
+// else가 다음 줄에 올 수 있으므로 계속 누적해야 한다.
+static bool hasPendingElse(const Stmt* s) {
+    const auto* ifStmt = dynamic_cast<const IfStmt*>(s);
+    if (!ifStmt) return false;
+    if (!ifStmt->elseBranch) return true;
+    return hasPendingElse(ifStmt->elseBranch.get());
 }
 
 // ── 중괄호 깊이 계산 ─────────────────────────────────────────────
@@ -69,7 +80,8 @@ static std::string trimmed(const std::string& s) {
 void Shell::run(std::istream& in, std::ostream& out) {
     std::string line;
     std::string accumulated;
-    int depth = 0;
+    int  depth       = 0;
+    bool pendingElse = false;  // if 뒤 else/else if 대기 중
 
     // 현재 depth에 맞는 프롬프트 출력
     auto printPrompt = [&]() {
@@ -85,12 +97,22 @@ void Shell::run(std::istream& in, std::ostream& out) {
 
         // quit / exit — 어느 깊이에서든 블록 취소 후 종료
         if (t == "exit" || t == "quit") {
-            if (depth > 0) {
+            if (depth > 0 || pendingElse) {
                 accumulated.clear();
-                depth = 0;
+                depth       = 0;
+                pendingElse = false;
                 out << "[REPL] block discarded.\n";
             }
             break;
+        }
+
+        // pendingElse 상태에서 빈 줄 → 즉시 실행 (else 없이 확정)
+        if (pendingElse && t.empty()) {
+            processLine(accumulated, out);
+            accumulated.clear();
+            pendingElse = false;
+            out << "> ";
+            continue;
         }
 
         // 선행 검사 (tokenize → parse → Checker strict):
@@ -137,10 +159,25 @@ void Shell::run(std::istream& in, std::ostream& out) {
 
         if (depth <= 0) {
             depth = 0;
+            // else 없는 if 체인이면 다음 줄의 else/else if를 기다린다.
+            bool pending = false;
+            try {
+                auto toks  = tokenizer_->tokenize(accumulated);
+                auto stmts = parser_->parse(toks);
+                if (!stmts.empty())
+                    pending = hasPendingElse(stmts.back().get());
+            } catch (...) {}
+
+            pendingElse = pending;
+            if (pending) {
+                out << "... ";
+                continue;
+            }
             processLine(accumulated, out);
             accumulated.clear();
             out << "> ";
         } else {
+            pendingElse = false;  // { 블록 진입 시 pendingElse 해제
             out << "... " << std::string((depth - 1) * 2, ' ');
         }
     }
@@ -173,17 +210,47 @@ int Shell::runFile(const std::string& path, std::ostream& out) {
         out << "Error: cannot open file '" << path << "'\n";
         return 1;
     }
+
+    std::vector<Token> tokens;
     try {
-        auto tokens = tokenizer_->tokenize(source);
-        auto stmts  = parser_->parse(tokens);
-        checker_->check(stmts);
-        for (auto& opt : optimizers_)
-            stmts = opt->optimize(std::move(stmts));
-        executor_->execute(std::move(stmts), out);
+        tokens = tokenizer_->tokenize(source);
     } catch (const std::exception& e) {
-        // Runtime/parse error messages use the "[line N] ..." format — stop now.
         out << e.what() << "\n";
         return 1;
+    }
+
+    int pos = 0;
+    while (true) {
+        std::unique_ptr<Stmt> stmtPtr;
+        try {
+            stmtPtr = parser_->parseOne(tokens, pos);
+        } catch (const std::exception& e) {
+            out << e.what() << "\n";
+            return 1;
+        }
+        if (!stmtPtr) break;
+
+        std::vector<std::unique_ptr<Stmt>> single;
+        single.push_back(std::move(stmtPtr));
+
+        try {
+            checker_->check(single);
+        } catch (const std::exception& e) {
+            checker_->rollbackLastCheck();
+            out << e.what() << "\n";
+            return 1;
+        }
+
+        for (auto& opt : optimizers_)
+            single = opt->optimize(std::move(single));
+
+        try {
+            executor_->execute(std::move(single), out);
+        } catch (const std::exception& e) {
+            checker_->rollbackLastCheck();
+            out << e.what() << "\n";
+            return 1;
+        }
     }
     return 0;
 }
@@ -204,33 +271,64 @@ int Shell::runDebug(const std::string& path, std::istream& cmdIn, std::ostream& 
         while (std::getline(ss, ln)) lines.push_back(ln);
     }
 
+    std::vector<Token> tokens;
     try {
-        auto tokens = tokenizer_->tokenize(source);
-        auto stmts  = parser_->parse(tokens);
-        checker_->check(stmts);
-        for (auto& opt : optimizers_)
-            stmts = opt->optimize(std::move(stmts));
-
-        out << "[DEBUG] loaded source: " << path << "\n";
-        // Debug stepping is driven through the IExecutor interface — the
-        // built-in Executor overrides the hooks; other executors no-op.
-        Debugger debugger(*executor_, std::move(lines), cmdIn, out);
-        executor_->setDebugObserver(&debugger);
-        try {
-            executor_->execute(std::move(stmts), out);
-        } catch (const DebugQuitRequest&) {
-            executor_->setDebugObserver(nullptr);
-            return 0;
-        } catch (...) {
-            executor_->setDebugObserver(nullptr);
-            throw;
-        }
-        executor_->setDebugObserver(nullptr);
-        out << "[DEBUG] execution finished\n";
+        tokens = tokenizer_->tokenize(source);
     } catch (const std::exception& e) {
         out << e.what() << "\n";
         return 1;
     }
+
+    out << "[DEBUG] loaded source: " << path << "\n";
+    Debugger debugger(*executor_, std::move(lines), cmdIn, out);
+    executor_->setDebugObserver(&debugger);
+
+    int pos = 0;
+    while (true) {
+        std::unique_ptr<Stmt> stmtPtr;
+        try {
+            stmtPtr = parser_->parseOne(tokens, pos);
+        } catch (const std::exception& e) {
+            executor_->setDebugObserver(nullptr);
+            out << e.what() << "\n";
+            return 1;
+        }
+        if (!stmtPtr) break;
+
+        std::vector<std::unique_ptr<Stmt>> single;
+        single.push_back(std::move(stmtPtr));
+
+        try {
+            checker_->check(single);
+        } catch (const std::exception& e) {
+            checker_->rollbackLastCheck();
+            executor_->setDebugObserver(nullptr);
+            out << e.what() << "\n";
+            return 1;
+        }
+
+        for (auto& opt : optimizers_)
+            single = opt->optimize(std::move(single));
+
+        try {
+            executor_->execute(std::move(single), out);
+        } catch (const DebugQuitRequest&) {
+            executor_->setDebugObserver(nullptr);
+            return 0;
+        } catch (const std::exception& e) {
+            checker_->rollbackLastCheck();
+            executor_->setDebugObserver(nullptr);
+            out << e.what() << "\n";
+            return 1;
+        } catch (...) {
+            checker_->rollbackLastCheck();
+            executor_->setDebugObserver(nullptr);
+            throw;
+        }
+    }
+
+    executor_->setDebugObserver(nullptr);
+    out << "[DEBUG] execution finished\n";
     return 0;
 }
 
