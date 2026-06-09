@@ -1,8 +1,15 @@
-var a = 10;
-var b = 20;
-var c = a + b;
-var d = c * 2;
-print a;
-print b;
-print c;
-print d;
+var base = 1;
+var x = 3;
+func square(n) {
+    return n * n;
+}
+func add(a, b) {
+    var result = square(a) + b;
+    return result;
+}
+var sum = add(x, base);
+print sum;
+for (var i = 1; i <= 3; i = i + 1) {
+    print sum * i;
+}
+print "done";
