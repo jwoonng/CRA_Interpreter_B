@@ -236,6 +236,7 @@ int Shell::runFile(const std::string& path, std::ostream& out) {
         try {
             checker_->check(single);
         } catch (const std::exception& e) {
+            checker_->rollbackLastCheck();
             out << e.what() << "\n";
             return 1;
         }
@@ -300,6 +301,7 @@ int Shell::runDebug(const std::string& path, std::istream& cmdIn, std::ostream& 
         try {
             checker_->check(single);
         } catch (const std::exception& e) {
+            checker_->rollbackLastCheck();
             executor_->setDebugObserver(nullptr);
             out << e.what() << "\n";
             return 1;
