@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CodeFab Language Reference</title>
+<style>
+/* ── Reset & Base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+  color: #333;
+  background: #fff;
+}
+
+/* ── Header ── */
+.site-header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  height: 52px;
+  background: #1a5276;
+  display: flex; align-items: center;
+  padding: 0 24px;
+  box-shadow: 0 2px 6px rgba(0,0,0,.3);
+}
+.site-header .logo {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: .4px;
+  text-decoration: none;
+}
+.site-header .version {
+  margin-left: 12px;
+  background: rgba(255,255,255,.18);
+  color: #d6eaf8;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+.header-right {
+  margin-left: auto;
+  color: #aed6f1;
+  font-size: 13px;
+}
+
+/* ── Layout ── */
+.layout {
+  display: flex;
+  padding-top: 52px;
+  min-height: 100vh;
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  position: fixed;
+  top: 52px; bottom: 0; left: 0;
+  overflow-y: auto;
+  background: #f8f9fa;
+  border-right: 1px solid #e0e0e0;
+  padding: 16px 0 40px;
+}
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-thumb { background: #c8d6e0; border-radius: 2px; }
+
+.nav-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  color: #888;
+  padding: 14px 20px 4px;
+}
+.nav-group { margin-bottom: 2px; }
+.nav-group-toggle {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 20px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #2c3e50;
+  cursor: pointer;
+  user-select: none;
+  border: none; background: none; width: 100%; text-align: left;
+}
+.nav-group-toggle:hover { background: #eef2f7; }
+.nav-group-toggle .arrow {
+  font-size: 10px; color: #999;
+  transition: transform .2s;
+}
+.nav-group-toggle.open .arrow { transform: rotate(90deg); }
+.nav-sub { display: none; }
+.nav-sub.open { display: block; }
+.nav-sub a {
+  display: block;
+  padding: 4px 20px 4px 32px;
+  font-size: 13px;
+  color: #555;
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  transition: all .15s;
+}
+.nav-sub a:hover { color: #1a5276; background: #e8f1f8; }
+.nav-sub a.active {
+  color: #1a5276;
+  font-weight: 600;
+  border-left-color: #1a5276;
+  background: #e8f1f8;
+}
+.nav-direct {
+  display: block;
+  padding: 6px 20px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #2c3e50;
+  text-decoration: none;
+  cursor: pointer;
+}
+.nav-direct:hover { background: #eef2f7; color: #1a5276; }
+.nav-direct.active { color: #1a5276; background: #e8f1f8; font-weight: 700; }
+
+/* ── Main Content ── */
+.content {
+  margin-left: 260px;
+  flex: 1;
+  max-width: 900px;
+  padding: 20px 56px 80px;
+}
+
+/* ── Sections ── */
+.doc-section {
+  display: none;
+}
+.doc-section.active {
+  display: block;
+}
+.doc-section > h2:first-child,
+.doc-section > h3:first-child {
+  margin-top: 0;
+}
+
+h1 { font-size: 28px; font-weight: 700; color: #1a252f; margin-bottom: 12px; }
+h2 { font-size: 22px; font-weight: 700; color: #1a3a5c; margin: 32px 0 12px;
+     padding-bottom: 6px; border-bottom: 2px solid #d5e8f5; }
+h3 { font-size: 17px; font-weight: 700; color: #1a5276; margin: 28px 0 10px; }
+h4 { font-size: 15px; font-weight: 700; color: #2c3e50; margin: 20px 0 8px; }
+
+p { margin-bottom: 12px; }
+p + p { margin-top: 4px; }
+
+/* ── Code ── */
+code {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 13px;
+  background: #f0f4f8;
+  color: #c0392b;
+  padding: 1px 5px;
+  border-radius: 3px;
+  border: 1px solid #e2eaf0;
+}
+pre {
+  background: #f7f9fb;
+  border: 1px solid #dde6ee;
+  border-left: 3px solid #2980b9;
+  border-radius: 4px;
+  padding: 14px 18px;
+  overflow-x: auto;
+  margin: 12px 0 16px;
+  line-height: 1.6;
+}
+pre code {
+  background: none; border: none; padding: 0; color: #1a1a1a;
+  font-size: 13.5px;
+}
+.output-block {
+  background: #1e2a35;
+  border: none;
+  border-left: 3px solid #27ae60;
+  border-radius: 4px;
+  padding: 12px 18px;
+  margin: -8px 0 16px;
+}
+.output-block code { background: none; border: none; padding: 0; color: #a8d8a8; font-size: 13px; }
+
+/* Syntax highlight */
+.kw  { color: #d63384; font-weight: 600; }   /* keywords */
+.str { color: #198754; }                       /* strings  */
+.num { color: #0d6efd; }                       /* numbers  */
+.cmt { color: #6c757d; font-style: italic; }  /* comments */
+.fn  { color: #6610f2; }                       /* func name */
+.prompt { color: #28a745; font-weight: bold; } /* > ... */
+
+/* ── REPL example ── */
+.repl-block {
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 14px 18px;
+  margin: 12px 0 16px;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 13.5px;
+  line-height: 1.8;
+  overflow-x: auto;
+}
+.repl-block .p  { color: #3fb950; font-weight: bold; } /* prompt > */
+.repl-block .pp { color: #e3b341; font-weight: bold; } /* prompt ... */
+.repl-block .o  { color: #e6edf3; }                    /* output */
+.repl-block .kw { color: #ff7b72; }
+.repl-block .str{ color: #a5d6ff; }
+.repl-block .num{ color: #79c0ff; }
+.repl-block .cmt{ color: #8b949e; font-style: italic; }
+
+/* ── Callouts ── */
+.note, .warning, .tip {
+  border-radius: 4px;
+  padding: 10px 14px;
+  margin: 14px 0;
+  font-size: 14px;
+  border-left: 4px solid;
+}
+.note    { background: #eaf4fb; border-color: #2980b9; }
+.warning { background: #fef9e7; border-color: #f39c12; }
+.tip     { background: #eafaf1; border-color: #27ae60; }
+.note strong, .warning strong, .tip strong { display: block; margin-bottom: 2px; font-size: 12px; letter-spacing: .5px; text-transform: uppercase; }
+.note strong    { color: #1a5276; }
+.warning strong { color: #9a7d0a; }
+.tip strong     { color: #1e8449; }
+
+/* ── Tables ── */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0 20px;
+  font-size: 14px;
+}
+th {
+  background: #eaf0f6;
+  color: #1a3a5c;
+  font-weight: 600;
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 2px solid #c8d9e8;
+}
+td {
+  padding: 7px 12px;
+  border-bottom: 1px solid #eaecee;
+  vertical-align: top;
+}
+tr:hover td { background: #f8fbfe; }
+td code { font-size: 12.5px; }
+
+/* ── Syntax box ── */
+.syntax-box {
+  background: #f2f8fd;
+  border: 1px dashed #93c6e0;
+  border-radius: 4px;
+  padding: 10px 16px;
+  margin: 10px 0 14px;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 13.5px;
+  color: #1a2a3a;
+}
+.syntax-box .meta { color: #777; font-style: italic; font-family: sans-serif; font-size: 13px; }
+
+/* ── Details (error ref) ── */
+details {
+  border: 1px solid #d5e8f5;
+  border-radius: 6px;
+  margin: 12px 0;
+}
+details summary {
+  background: #eaf4fb;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  color: #1a3a5c;
+  border-radius: 6px;
+  user-select: none;
+}
+details[open] summary { border-radius: 6px 6px 0 0; border-bottom: 1px solid #d5e8f5; }
+details .details-body { padding: 14px 18px; }
+
+/* ── Separator ── */
+hr { border: none; border-top: 1px solid #eee; margin: 32px 0; }
+
+/* ── Hero ── */
+.hero {
+  padding: 32px 0 24px;
+  border-bottom: 2px solid #d5e8f5;
+  margin-bottom: 32px;
+}
+.hero h1 { font-size: 32px; margin-bottom: 8px; }
+.hero .subtitle { font-size: 16px; color: #555; margin-bottom: 20px; }
+.hero .badges img { margin-right: 6px; }
+.quickstart-box {
+  background: #f2f8fd;
+  border: 1px solid #cce0ee;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-top: 20px;
+}
+.quickstart-box h3 { margin-top: 0; font-size: 14px; color: #1a5276; margin-bottom: 8px; }
+
+/* ── Page nav (prev / next) ── */
+.page-nav {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 48px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+.page-nav a {
+  font-size: 13px;
+  color: #2980b9;
+  text-decoration: none;
+  padding: 6px 12px;
+  border: 1px solid #c8dcea;
+  border-radius: 4px;
+}
+.page-nav a:hover { background: #eaf4fb; }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .content { margin-left: 0; padding: 24px 20px 60px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="site-header">
+  <a href="#" class="logo">CodeFab</a>
+  <span class="version">v1.0</span>
+  <span class="header-right">Language Reference</span>
+</header>
+
+<!-- Layout -->
+<div class="layout">
+
+<!-- Sidebar -->
+<nav class="sidebar" id="sidebar">
+
+  <div class="nav-section-title">시작하기</div>
+  <a class="nav-direct" data-page="quickstart" href="#quickstart">빠른 시작</a>
+
+  <div class="nav-section-title">실행</div>
+
+  <div class="nav-group">
+    <button class="nav-group-toggle open" onclick="toggleGroup(this)">
+      실행 모드 <span class="arrow">▶</span>
+    </button>
+    <div class="nav-sub open">
+      <a data-page="repl"       href="#repl">REPL — 대화형 모드</a>
+      <a data-page="file-mode"  href="#file-mode">파일 실행 모드</a>
+      <a data-page="debug-mode" href="#debug-mode">디버그 모드</a>
+    </div>
+  </div>
+
+  <div class="nav-section-title">언어 기초</div>
+
+  <div class="nav-group">
+    <button class="nav-group-toggle open" onclick="toggleGroup(this)">
+      언어 기초 <span class="arrow">▶</span>
+    </button>
+    <div class="nav-sub open">
+      <a data-page="vars"        href="#vars">변수와 값</a>
+      <a data-page="output"      href="#output">출력</a>
+      <a data-page="operators"   href="#operators">연산자</a>
+      <a data-page="conditionals" href="#conditionals">조건문</a>
+      <a data-page="loops"       href="#loops">반복문</a>
+      <a data-page="functions"   href="#functions">함수</a>
+      <a data-page="arrays"      href="#arrays">배열</a>
+      <a data-page="scope"       href="#scope">스코프와 블록</a>
+      <a data-page="comments"    href="#comments">주석</a>
+    </div>
+  </div>
+
+  <div class="nav-section-title">참조</div>
+  <div class="nav-group">
+    <button class="nav-group-toggle open" onclick="toggleGroup(this)">
+      오류 메시지 <span class="arrow">▶</span>
+    </button>
+    <div class="nav-sub open">
+      <a data-page="err-syntax"  href="#err-syntax">문법 오류</a>
+      <a data-page="err-decl"    href="#err-decl">선언 오류</a>
+      <a data-page="err-runtime" href="#err-runtime">런타임 오류</a>
+    </div>
+  </div>
+
+  <div class="nav-section-title">예제</div>
+  <div class="nav-group">
+    <button class="nav-group-toggle open" onclick="toggleGroup(this)">
+      예제 모음 <span class="arrow">▶</span>
+    </button>
+    <div class="nav-sub open">
+      <a data-page="ex-fib"    href="#ex-fib">피보나치 수열</a>
+      <a data-page="ex-sum"    href="#ex-sum">합산</a>
+      <a data-page="ex-sort"   href="#ex-sort">버블 소트</a>
+      <a data-page="ex-string" href="#ex-string">문자열 유틸</a>
+    </div>
+  </div>
+
+</nav>
+
+<!-- Main Content -->
+<main class="content" id="content">
+
+<!-- ─────────────────────────── QUICK START ─────────────────────────── -->
+<section class="doc-section active" id="quickstart">
+
+<div class="hero">
+  <h1>CodeFab Language Reference</h1>
+  <p class="subtitle">직접 만든 언어 CodeFab 의 완전한 사용 설명서</p>
+  <div class="badges">
+    <img src="https://img.shields.io/badge/언어-CodeFab-4a90d9?style=flat-square" alt="">
+    <img src="https://img.shields.io/badge/Platform-Windows-0078D6?style=flat-square&logo=windows&logoColor=white" alt="">
+    <img src="https://img.shields.io/badge/Build-C%2B%2B20-00599C?style=flat-square&logo=cplusplus&logoColor=white" alt="">
+  </div>
+  <div class="quickstart-box">
+    <h3>⚡ 30초 시작</h3>
+    <div class="repl-block">
+      <span style="color:#8b949e"># factory.exe 를 실행하면 바로 시작</span><br>
+      <span class="p">$ </span><span class="o">factory</span><br><br>
+      <span class="p">&gt; </span><span class="kw">print</span> <span class="str">"Hello, World!"</span>;<br>
+      <span class="o">Hello, World!</span><br>
+      <span class="p">&gt; </span><span class="kw">var</span> x = <span class="num">10</span>;<br>
+      <span class="p">&gt; </span><span class="kw">print</span> x * <span class="num">2</span>;<br>
+      <span class="o">20</span>
+    </div>
+  </div>
+</div>
+
+<h2>빠른 시작</h2>
+
+<p><code>factory.exe</code>를 터미널에서 실행합니다. 세 가지 모드를 지원합니다.</p>
+
+<table>
+  <tr><th>모드</th><th>명령</th><th>용도</th></tr>
+  <tr><td><strong>REPL</strong></td><td><code>factory</code></td><td>한 줄씩 즉시 실행 — 배우고 실험할 때 사용</td></tr>
+  <tr><td><strong>파일</strong></td><td><code>factory run &lt;경로&gt;</code></td><td>소스 파일 전체를 한 번에 실행</td></tr>
+  <tr><td><strong>디버그</strong></td><td><code>factory debug &lt;경로&gt;</code></td><td>한 문장씩 멈추며 변수 상태 확인</td></tr>
+</table>
+
+<div class="note"><strong>참고</strong>입력한 변수와 함수는 <code>quit</code> 또는 <code>exit</code>으로 종료하기 전까지 계속 유지됩니다.</div>
+<div class="page-nav"><span></span><a href="#vars" onclick="showPage('vars');return false;">다음: 변수와 값 →</a></div>
+</section>
+
+
+<!-- ═══════════════════════ 언어 기초 ═══════════════════════ -->
+
+<!-- ── 변수 ── -->
+<section class="doc-section" id="vars">
+<h2>변수와 값</h2>
+
+<p><code>var</code> 키워드로 변수를 선언합니다. 선언과 동시에 값을 할당하거나, 나중에 할당할 수 있습니다.</p>
+
+<h4>문법</h4>
+<div class="syntax-box">
+  <span class="kw">var</span> <span class="meta">&lt;이름&gt;</span>;<br>
+  <span class="kw">var</span> <span class="meta">&lt;이름&gt;</span> = <span class="meta">&lt;값&gt;</span>;<br>
+  <span class="meta">&lt;이름&gt;</span> = <span class="meta">&lt;새 값&gt;</span>;
+</div>
+
+<h4>예시</h4>
+<div class="repl-block">
+  <span class="p">&gt; </span><span class="kw">var</span> x = <span class="num">10</span>;<br>
+  <span class="p">&gt; </span><span class="kw">var</span> name = <span class="str">"Alice"</span>;<br>
+  <span class="p">&gt; </span><span class="kw">var</span> flag = <span class="kw">true</span>;<br>
+  <span class="p">&gt; </span><span class="kw">var</span> empty;<br>
+  <span class="p">&gt; </span><span class="kw">print</span> empty;<br>
+  <span class="o">nil</span><br>
+  <span class="p">&gt; </span>x = x + <span class="num">1</span>;<br>
+  <span class="p">&gt; </span><span class="kw">print</span> x;<br>
+  <span class="o">11</span>
+</div>
+
+<h4>값의 종류</h4>
+<table>
+  <tr><th>종류</th><th>예시</th><th>출력</th></tr>
+  <tr><td>정수</td><td><code>42</code></td><td><code>42</code></td></tr>
+  <tr><td>실수</td><td><code>3.14</code></td><td><code>3.14</code></td></tr>
+  <tr><td>문자열</td><td><code>"hello"</code></td><td><code>hello</code></td></tr>
+  <tr><td>불리언</td><td><code>true</code> / <code>false</code></td><td><code>true</code> / <code>false</code></td></tr>
+  <tr><td>없음</td><td><code>var x;</code></td><td><code>nil</code></td></tr>
+</table>
+
+<div class="note"><strong>참고</strong>타입을 앞에 쓰는 방식(<code>int x = 1;</code>)은 지원하지 않습니다. <code>var</code>를 사용하세요.</div>
+<div class="note"><strong>참고</strong>상수(<code>const</code>)는 지원하지 않습니다. <code>var</code>로 선언한 변수는 항상 재대입 가능합니다.</div>
+<div class="page-nav"><a href="#quickstart" onclick="showPage('quickstart');return false;">← 빠른 시작</a><a href="#output" onclick="showPage('output');return false;">다음: 출력 →</a></div>
+</section>
+
+
+<!-- ── 출력 ── -->
+<section class="doc-section" id="output">
+<h2>출력</h2>
+<p><code>print</code>로 값을 화면에 출력합니다. 문장 끝에 세미콜론(<code>;</code>)이 필요합니다.</p>
+
+<h4>문법</h4>
+<div class="syntax-box">
+  <span class="kw">print</span> <span class="meta">&lt;식&gt;</span>;
+</div>
+
+<div class="repl-block">
+  <span class="p">&gt; </span><span class="kw">print</span> <span class="num">42</span>;<br>
+  <span class="o">42</span><br>
+  <span class="p">&gt; </span><span class="kw">print</span> <span class="str">"안녕하세요"</span>;<br>
+  <span class="o">안녕하세요</span><br>
+  <span class="p">&gt; </span><span class="kw">print</span> <span class="num">1</span> + <span class="num">2</span>;<br>
+  <span class="o">3</span><br>
+  <span class="p">&gt; </span><span class="kw">var</span> arr = <span class="fn">array</span>(<span class="num">3</span>); arr[<span class="num">0</span>]=<span class="num">1</span>; arr[<span class="num">1</span>]=<span class="num">2</span>; arr[<span class="num">2</span>]=<span class="num">3</span>;<br>
+  <span class="p">&gt; </span><span class="kw">print</span> arr;<br>
+  <span class="o">[1, 2, 3]</span>
+</div>
+<div class="page-nav"><a href="#vars" onclick="showPage('vars');return false;">← 변수와 값</a><a href="#operators" onclick="showPage('operators');return false;">다음: 연산자 →</a></div>
+</section>
+
+
+<!-- ── 연산자 ── -->
+<section class="doc-section" id="operators">
+<h2>연산자</h2>
+
+<h3>산술 연산자</h3>
+<table>
+  <tr><th>연산자</th><th>설명</th><th>예시</th><th>결과</th></tr>
+  <tr><td><code>+</code></td><td>덧셈 / 문자열 연결</td><td><code>3 + 4</code></td><td><code>7</code></td></tr>
+  <tr><td><code>-</code></td><td>뺄셈</td><td><code>10 - 3</code></td><td><code>7</code></td></tr>
+  <tr><td><code>*</code></td><td>곱셈</td><td><code>3 * 4</code></td><td><code>12</code></td></tr>
+  <tr><td><code>/</code></td><td>나눗셈 (항상 실수)</td><td><code>10 / 4</code></td><td><code>2.5</code></td></tr>
+  <tr><td><code>%</code></td><td>나머지 (실수 가능)</td><td><code>10 % 3</code></td><td><code>1</code></td></tr>
+  <tr><td><code>-x</code></td><td>부호 반전</td><td><code>-x</code></td><td>—</td></tr>
+</table>
+
+<div class="repl-block">
+  <span class="p">&gt; </span><span class="kw">print</span> <span class="num">10</span> / <span class="num">3</span>;<br>
+  <span class="o">3.33333333333333</span><br>
+  <span class="p">&gt; </span><span class="kw">print</span> <span class="str">"Hello"</span> + <span class="str">", World"</span>;<br>
+  <span class="o">Hello, World</span>
+</div>
+
+<div class="warning"><strong>주의</strong><code>++</code>, <code>--</code>, <code>+=</code>, <code>-=</code> 등의 연산자는 지원하지 않습니다. <code>x = x + 1</code>처럼 명시적으로 작성하세요.</div>
+
+<h3>비교 연산자</h3>
+<p>비교 결과는 항상 <code>true</code> 또는 <code>false</code>입니다.</p>
+<table>
+  <tr><th>연산자</th><th>의미</th><th>예시</th><th>결과</th></tr>
+  <tr><td><code>==</code></td><td>같다</td><td><code>1 == 1</code></td><td><code>true</code></td></tr>
+  <tr><td><code>!=</code></td><td>다르다</td><td><code>1 != 2</code></td><td><code>true</code></td></tr>
+  <tr><td><code>&gt;</code></td><td>크다</td><td><code>5 &gt; 3</code></td><td><code>true</code></td></tr>
+  <tr><td><code>&gt;=</code></td><td>크거나 같다</td><td><code>3 &gt;= 3</code></td><td><code>true</code></td></tr>
+  <tr><td><code>&lt;</code></td><td>작다</td><td><code>2 &lt; 5</code></td><td><code>true</code></td></tr>
+  <tr><td><code>&lt;=</code></td><td>작거나 같다</td><td><code>3 &lt;= 3</code></td><td><code>true</code></td></tr>
+</table>
+
+<h3>논리 연산자</h3>
+<table>
+  <tr><th>연산자</th><th>의미</th><th>단락 평가</th></tr>
+  <tr><td><code>and</code></td><td>논리 곱</td><td>좌변이 거짓이면 우변 평가 생략</td></tr>
+  <tr><td><code>or</code></td><td>논리 합</td><td>좌변이 참이면 우변 평가 생략</td></tr>
+  <tr><td><code>!</code></td><td>논리 부정</td><td>—</td></tr>
+</table>
+
+<h4>참/거짓 판별 규칙</h4>
+<table>
+  <tr><th>값</th><th>판별</th></tr>
+  <tr><td><code>false</code></td><td>거짓</td></tr>
+  <tr><td><code>0</code></td><td>거짓</td></tr>
+  <tr><td><code>nil</code></td><td>거짓</td></tr>
+  <tr><td>그 외 모든 값 (빈 문자열 <code>""</code> 포함)</td><td><strong>참</strong></td></tr>
+</table>
+<div class="page-nav"><a href="#output" onclick="showPage('output');return false;">← 출력</a><a href="#conditionals" onclick="showPage('conditionals');return false;">다음: 조건문 →</a></div>
+</section>
+
+
+<!-- ── 조건문 ── -->
+<section class="doc-section" id="conditionals">
+<h2>조건문</h2>
+
+<h4>문법</h4>
+<div class="syntax-box">
+  <span class="kw">if</span> (<span class="meta">&lt;조건&gt;</span>) {<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;<span class="meta">&lt;참일 때&gt;</span><br>
+  } <span class="kw">else if</span> (<span class="meta">&lt;조건2&gt;</span>) {<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;<span class="meta">&lt;조건2가 참일 때&gt;</span><br>
+  } <span class="kw">else</span> {<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;<span class="meta">&lt;모두 아닐 때&gt;</span><br>
+  }
+</div>
+
+<p><code>else if</code>와 <code>else</code>는 생략할 수 있으며, <code>else if</code>는 몇 개든 이어붙일 수 있습니다.</p>
+
+<div class="repl-block">
+  <span class="p">&gt; </span><span class="kw">var</span> score = <span class="num">85</span>;<br>
+  <span class="p">&gt; </span><span class="kw">if</span> (score &gt;= <span class="num">90</span>) {<br>
+  <span class="pp">... </span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">print</span> <span class="str">"A"</span>;<br>
+  <span class="pp">... </span>} <span class="kw">else if</span> (score &gt;= <span class="num">80</span>) {<br>
+  <span class="pp">... </span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">print</span> <span class="str">"B"</span>;<br>
+  <span class="pp">... </span>} <span class="kw">else</span> {<br>
+  <span class="pp">... </span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">print</span> <span class="str">"C"</span>;<br>
+  <span class="pp">... </span>}<br>
+  <span class="o">B</span>
+</div>
+
+<div class="note"><strong>참고</strong><code>elif</code>, <code>elsif</code>는 지원하지 않습니다. <code>else if</code>를 사용하세요.</div>
+<div class="page-nav"><a href="#operators" onclick="showPage('operators');return false;">← 연산자</a><a href="#loops" onclick="showPage('loops');return false;">다음: 반복문 →</a></div>
+</section>
+
+
+<!-- ── 반복문 ── -->
+<section class="doc-section" id="loops">
+<h2>반복문</h2>
+
+<h4>문법</h4>
+<div class="syntax-box">
+  <span class="kw">for</span> (<span class="meta">&lt;초기화&gt;</span>; <span class="meta">&lt;조건&gt;</span>; <span class="meta">&lt;증감&gt;</span>) {<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;<span class="meta">&lt;반복할 코드&gt;</span><br>
+  }
+</div>
+
+<p>초기화, 조건, 증감식은 모두 생략할 수 있습니다.</p>
+
+<div class="repl-block">
+  <span class="p">&gt; </span><span class="kw">for</span> (<span class="kw">var</span> i = <span class="num">0</span>; i &lt; <span class="num">5</span>; i = i + <span class="num">1</span>) {<br>
+  <span class="pp">... </span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">print</span> i;<br>
+  <span class="pp">... </span>}<br>
+  <span class="o">0</span><br><span class="o">1</span><br><span class="o">2</span><br><span class="o">3</span><br><span class="o">4</span>
+</div>
+
+<h4>while 대체 패턴</h4>
+<div class="repl-block">
+  <span class="p">&gt; </span><span class="kw">var</span> i = <span class="num">0</span>;<br>
+  <span class="p">&gt; </span><span class="kw">for</span> (; i &lt; <span class="num">3</span>; i = i + <span class="num">1</span>) {<br>
+  <span class="pp">... </span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">print</span> i;<br>
+  <span class="pp">... </span>}<br>
+  <span class="o">0</span><br><span class="o">1</span><br><span class="o">2</span>
+</div>
+
+<div class="note"><strong>참고</strong><code>while</code>, <code>do</code>는 지원하지 않습니다. <code>for</code>를 사용하세요.</div>
+<div class="warning"><strong>주의</strong><code>break</code>와 <code>continue</code>는 지원하지 않습니다. 루프 조건을 변수로 제어하세요.</div>
+<div class="page-nav"><a href="#conditionals" onclick="showPage('conditionals');return false;">← 조건문</a><a href="#functions" onclick="showPage('functions');return false;">다음: 함수 →</a></div>
+</section>
+
+
+<!-- ── 함수 ── -->
+<section class="doc-section" id="functions">
+<h2>함수</h2>
+
+<h4>문법</h4>
+<div class="syntax-box">
+  <span class="kw">func</span> <span class="meta">&lt;이름&gt;</span>(<span class="meta">&lt;파라미터&gt;</span>, ...) {<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;<span class="meta">&lt;본문&gt;</span><br>
+  &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span> <span class="meta">&lt;값&gt;</span>;<br>
+  }
+</div>
+
+<h4>선언과 호출</h4>
+<div class="repl-block">
+  <span class="p">&gt; </span><span class="kw">func</span> <span class="fn">greet</span>(name) {<br>
+  <span class="pp">... </span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">print</span> <span class="str">"Hello, "</span> + name;<br>
+  <span class="pp">... </span>}<br>
+  <span class="p">&gt; </span><span class="fn">greet</span>(<span class="str">"Alice"</span>);<br>
+  <span class="o">Hello, Alice</span>
+</div>
+
+<h4>반환값</h4>
+<div class="repl-block">
+  <span class="p">&gt; </span><span class="kw">func</span> <span class="fn">add</span>(a, b) {<br>
+  <span class="pp">... </span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span> a + b;<br>
+  <span class="pp">... </span>}<br>
+  <span class="p">&gt; </span><span class="kw">print</span> <span class="fn">add</span>(<span class="num">3</span>, <span class="num">7</span>);<br>
+  <span class="o">10</span>
+</div>
+
+<h4>재귀 함수</h4>
+<div class="repl-block">
+  <span class="p">&gt; </span><span class="kw">func</span> <span class="fn">fact</span>(n) {<br>
+  <span class="pp">... </span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span> (n &lt;= <span class="num">1</span>) <span class="kw">return</span> <span class="num">1</span>;<br>
+  <span class="pp">... </span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span> n * <span class="fn">fact</span>(n - <span class="num">1</span>);<br>
+  <span class="pp">... </span>}<br>
+  <span class="p">&gt; </span><span class="kw">print</span> <span class="fn">fact</span>(<span class="num">5</span>);<br>
+  <span class="o">120</span>
+</div>
+
+<div class="note"><strong>참고</strong><code>return</code> 없이 끝나거나 <code>return;</code>이면 <code>nil</code>을 반환합니다.</div>
+<div class="note"><strong>참고</strong>함수를 변수에 저장하거나 인자로 전달할 수 없습니다. 이름으로 직접 호출만 가능합니다.</div>
+<div class="note"><strong>참고</strong><code>Func</code>, <code>function</code>, <code>def</code>, <code>fn</code> 등은 지원하지 않습니다. 반드시 소문자 <code>func</code>를 사용하세요.</div>
+<div class="page-nav"><a href="#loops" onclick="showPage('loops');return false;">← 반복문</a><a href="#arrays" onclick="showPage('arrays');return false;">다음: 배열 →</a></div>
+</section>
+
+
+<!-- ── 배열 ── -->
+<section class="doc-section" id="arrays">
+<h2>배열</h2>
+<p><code>array(n)</code>으로 크기 <code>n</code>의 배열을 생성합니다. 모든 원소의 초깃값은 <code>nil</code>이며, 인덱스는 <code>0</code>부터 시작합니다.</p>
+
+<h4>문법</h4>
+<div class="syntax-box">
+  <span class="kw">var</span> <span class="meta">&lt;이름&gt;</span> = <span class="fn">array</span>(<span class="meta">&lt;크기&gt;</span>);<br>
+  <span class="meta">&lt;이름&gt;</span>[<span class="meta">&lt;인덱스&gt;</span>] = <span class="meta">&lt;값&gt;</span>; &nbsp;<span style="color:#999">// 쓰기</span><br>
+  <span class="meta">&lt;이름&gt;</span>[<span class="meta">&lt;인덱스&gt;</span>] &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#999">// 읽기</span>
+</div>
+
+<h4>생성 · 읽기 · 쓰기</h4>
+<div class="repl-block">
+  <span class="p">&gt; </span><span class="kw">var</span> arr = <span class="fn">array</span>(<span class="num">3</span>);<br>
+  <span class="p">&gt; </span>arr[<span class="num">0</span>] = <span class="num">10</span>; arr[<span class="num">1</span>] = <span class="num">20</span>; arr[<span class="num">2</span>] = <span class="num">30</span>;<br>
+  <span class="p">&gt; </span><span class="kw">print</span> arr[<span class="num">0</span>];<br>
+  <span class="o">10</span><br>
+  <span class="p">&gt; </span><span class="kw">print</span> arr;<br>
+  <span class="o">[10, 20, 30]</span>
+</div>
+
+<h4>배열을 함수에 전달 (참조 전달)</h4>
+<p>배열은 참조로 전달되므로 함수 안에서 수정하면 밖에서도 반영됩니다.</p>
+<div class="repl-block">
+  <span class="p">&gt; </span><span class="kw">func</span> <span class="fn">fill</span>(a, val) {<br>
+  <span class="pp">... </span>&nbsp;&nbsp;&nbsp;&nbsp;a[<span class="num">0</span>] = val; a[<span class="num">1</span>] = val;<br>
+  <span class="pp">... </span>}<br>
+  <span class="p">&gt; </span><span class="kw">var</span> arr = <span class="fn">array</span>(<span class="num">2</span>);<br>
+  <span class="p">&gt; </span><span class="fn">fill</span>(arr, <span class="num">7</span>);<br>
+  <span class="p">&gt; </span><span class="kw">print</span> arr;<br>
+  <span class="o">[7, 7]</span>
+</div>
+<div class="page-nav"><a href="#functions" onclick="showPage('functions');return false;">← 함수</a><a href="#scope" onclick="showPage('scope');return false;">다음: 스코프와 블록 →</a></div>
+</section>
+
+
+<!-- ── 스코프 ── -->
+<section class="doc-section" id="scope">
+<h2>스코프와 블록</h2>
+<p>중괄호 <code>{}</code>는 새로운 스코프를 만듭니다. 블록 안에서 선언한 변수는 밖에서 보이지 않습니다.</p>
+
+<div class="repl-block">
+  <span class="p">&gt; </span><span class="kw">var</span> x = <span class="num">1</span>;<br>
+  <span class="p">&gt; </span>{<br>
+  <span class="pp">... </span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">var</span> x = <span class="num">2</span>;<br>
+  <span class="pp">... </span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">print</span> x;<br>
+  <span class="pp">... </span>}<br>
+  <span class="o">2</span><br>
+  <span class="p">&gt; </span><span class="kw">print</span> x;<br>
+  <span class="o">1</span>
+</div>
+
+<div class="note"><strong>참고</strong><code>if</code>, <code>for</code>, <code>func</code>의 중괄호도 동일하게 독립 스코프를 만듭니다.</div>
+<div class="page-nav"><a href="#arrays" onclick="showPage('arrays');return false;">← 배열</a><a href="#comments" onclick="showPage('comments');return false;">다음: 주석 →</a></div>
+</section>
+
+
+<!-- ── 주석 ── -->
+<section class="doc-section" id="comments">
+<h2>주석</h2>
+<p><code>//</code> 이후부터 줄 끝까지 무시됩니다.</p>
+<pre><code><span class="cmt">// 이 줄 전체는 실행되지 않습니다</span>
+<span class="kw">var</span> x = <span class="num">10</span>;   <span class="cmt">// 인라인 주석도 가능</span></code></pre>
+<div class="note"><strong>참고</strong><code>/* */</code> 블록 주석은 지원하지 않습니다.</div>
+<div class="page-nav"><a href="#scope" onclick="showPage('scope');return false;">← 스코프와 블록</a><a href="#repl" onclick="showPage('repl');return false;">다음: REPL →</a></div>
+</section>
+
+
+<!-- ═══════════════════════ 실행 모드 ═══════════════════════ -->
+
+<section class="doc-section" id="repl">
+<h2>REPL — 대화형 모드</h2>
+<p>인자 없이 실행하면 대화형 모드로 진입합니다.</p>
+<pre><code>factory</code></pre>
+
+<table>
+  <tr><th>프롬프트</th><th>상태</th></tr>
+  <tr><td><code>&gt; </code></td><td>새 문장 입력 대기</td></tr>
+  <tr><td><code>... </code></td><td>블록(<code>{</code>) 내부 입력 중</td></tr>
+</table>
+
+<h4>멀티라인 블록 입력</h4>
+<div class="repl-block">
+  <span class="p">&gt; </span><span class="kw">func</span> <span class="fn">double</span>(x) {<br>
+  <span class="pp">... </span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span> x * <span class="num">2</span>;<br>
+  <span class="pp">... </span>}<br>
+  <span class="p">&gt; </span><span class="kw">print</span> <span class="fn">double</span>(<span class="num">5</span>);<br>
+  <span class="o">10</span>
+</div>
+
+<h4>REPL 선행 검사</h4>
+<p>블록 입력 도중 선언된 적 없는 변수를 사용하면 해당 줄을 입력하는 즉시 에러가 표시됩니다. 에러가 난 줄만 스킵되고 나머지 블록은 유지됩니다.</p>
+<div class="repl-block">
+  <span class="p">&gt; </span><span class="kw">func</span> <span class="fn">add</span>(a, b) {<br>
+  <span class="pp">... </span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">var</span> d = e + <span class="num">3</span>;<br>
+  <span style="color:#ff6b6b">[line 2] Undefined variable 'e'.</span><br>
+  <span class="pp">... </span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span> a + b;<br>
+  <span class="pp">... </span>}<br>
+  <span class="p">&gt; </span><span class="kw">print</span> <span class="fn">add</span>(<span class="num">3</span>, <span class="num">4</span>);<br>
+  <span class="o">7</span>
+</div>
+
+<p><strong>종료:</strong> <code>quit</code> 또는 <code>exit</code>을 입력합니다.</p>
+<div class="page-nav"><a href="#comments" onclick="showPage('comments');return false;">← 주석</a><a href="#file-mode" onclick="showPage('file-mode');return false;">다음: 파일 실행 모드 →</a></div>
+</section>
+
+<section class="doc-section" id="file-mode">
+<h2>파일 실행 모드</h2>
+<pre><code>factory run &lt;파일 경로&gt;</code></pre>
+<p>소스 파일을 읽어 한 번에 실행합니다. 런타임 오류가 발생하면 오류 위치와 메시지를 출력하고 즉시 종료합니다.</p>
+<pre><code>factory run hello.cb</code></pre>
+<div class="output-block"><code>Hello, World!</code></div>
+
+<table>
+  <tr><th>상황</th><th>동작</th></tr>
+  <tr><td>파일 없음</td><td><code>Error: cannot open file 'hello.cb'</code> 출력 후 종료</td></tr>
+  <tr><td>런타임 오류</td><td><code>[line N] 메시지</code> 출력 후 즉시 종료</td></tr>
+</table>
+<div class="page-nav"><a href="#repl" onclick="showPage('repl');return false;">← REPL</a><a href="#debug-mode" onclick="showPage('debug-mode');return false;">다음: 디버그 모드 →</a></div>
+</section>
+
+<section class="doc-section" id="debug-mode">
+<h2>디버그 모드</h2>
+<pre><code>factory debug &lt;파일 경로&gt;</code></pre>
+<p>소스 파일을 한 문장씩 멈추며 실행합니다.</p>
+<pre><code>factory debug hello.cb</code></pre>
+<div class="output-block"><code>[DEBUG] loaded source: hello.cb
+[DEBUG] stopped at line 1 -> var a = 3;
+&gt;</code></div>
+
+<h3>실행 제어</h3>
+<table>
+  <tr><th>명령어</th><th>단축키</th><th>설명</th></tr>
+  <tr><td><code>step</code></td><td><code>s</code></td><td>현재 문장 실행 후 다음에서 정지 (블록 내부 진입)</td></tr>
+  <tr><td><code>next</code></td><td><code>n</code></td><td>현재 문장 실행 (블록·함수 내부 진입 없음)</td></tr>
+  <tr><td><code>continue</code></td><td><code>c</code></td><td>다음 중단점까지 실행</td></tr>
+  <tr><td><code>quit</code> / <code>exit</code></td><td>—</td><td>디버그 세션 종료</td></tr>
+</table>
+
+<h3>중단점</h3>
+<table>
+  <tr><th>명령어</th><th>설명</th></tr>
+  <tr><td><code>break &lt;줄&gt;</code></td><td>해당 줄에 중단점 설정</td></tr>
+  <tr><td><code>remove &lt;줄&gt;</code></td><td>중단점 제거</td></tr>
+  <tr><td><code>breakpoints</code></td><td>설정된 중단점 목록 출력</td></tr>
+</table>
+
+<h3>감시</h3>
+<table>
+  <tr><th>명령어</th><th>설명</th></tr>
+  <tr><td><code>watch &lt;변수&gt;</code></td><td>변수 감시 등록 — 정지할 때마다 값 자동 출력</td></tr>
+  <tr><td><code>watch &lt;변수&gt;[&lt;인덱스&gt;]</code></td><td>배열의 특정 원소 감시</td></tr>
+  <tr><td><code>unwatch &lt;변수&gt;</code></td><td>감시 해제</td></tr>
+  <tr><td><code>watches</code></td><td>감시 중인 변수와 현재 값 출력</td></tr>
+  <tr><td><code>inspect</code></td><td>현재 스코프의 모든 변수·타입 출력</td></tr>
+</table>
+
+<pre><code>&gt; watch a
+[WATCH] now watching 'a'
+&gt; step
+[DEBUG] stopped at line 3 -&gt; a = a + 1;
+[WATCH] a = 3
+&gt; inspect
+--- current scope variables ---
+[local] b = 10 (Number)
+[global] a = 3 (Number)</code></pre>
+<div class="page-nav"><a href="#file-mode" onclick="showPage('file-mode');return false;">← 파일 실행 모드</a><a href="#err-syntax" onclick="showPage('err-syntax');return false;">다음: 오류 메시지 →</a></div>
+</section>
+
+
+<!-- ═══════════════════════ 오류 참조 ═══════════════════════ -->
+
+<section class="doc-section" id="err-syntax">
+<h2>오류 메시지 참조</h2>
+<p>모든 오류는 <code>[line N] 메시지</code> 형식으로 출력됩니다.</p>
+
+<h3>문법 오류</h3>
+<p>입력 직후 표시됩니다.</p>
+
+<h4>지원하지 않는 문자 · 연산자</h4>
+<table>
+  <tr><th>메시지</th><th>원인</th><th>해결</th></tr>
+  <tr><td><code>Unexpected character: X</code></td><td>지원하지 않는 문자</td><td>해당 문자 제거</td></tr>
+  <tr><td><code>Unterminated string</code></td><td>닫는 <code>"</code> 없음</td><td><code>"</code> 닫기</td></tr>
+  <tr><td><code>Unsupported operator '++'...</code></td><td><code>++</code> 사용</td><td><code>x = x + 1</code></td></tr>
+  <tr><td><code>Unsupported operator '--'...</code></td><td><code>--</code> 사용</td><td><code>x = x - 1</code></td></tr>
+  <tr><td><code>Unsupported operator '+='...</code></td><td><code>+=</code> 사용</td><td><code>x = x + value</code></td></tr>
+</table>
+
+<h4>잘못된 키워드</h4>
+<table>
+  <tr><th>메시지</th><th>원인</th><th>해결</th></tr>
+  <tr><td><code>Keywords must be lowercase. Use 'X' instead of 'Y'.</code></td><td><code>Return</code>, <code>VAR</code> 등 대소문자 혼용</td><td>소문자로 작성</td></tr>
+  <tr><td><code>Type annotations are not supported...</code></td><td><code>int x = 1;</code></td><td><code>var x = 1;</code></td></tr>
+  <tr><td><code>Unknown keyword 'X'. Use 'func'...</code></td><td><code>Func</code>, <code>function</code>, <code>def</code></td><td><code>func</code></td></tr>
+  <tr><td><code>Unknown keyword 'X'. Use 'var'...</code></td><td><code>let</code>, <code>const</code></td><td><code>var</code></td></tr>
+  <tr><td><code>Unknown keyword 'X'. Use 'for'...</code></td><td><code>while</code>, <code>do</code></td><td><code>for</code></td></tr>
+  <tr><td><code>Unknown keyword 'X'. Use 'print'...</code></td><td><code>println</code>, <code>cout</code></td><td><code>print</code></td></tr>
+  <tr><td><code>Unknown keyword 'X'. Use 'else if'...</code></td><td><code>elif</code>, <code>elsif</code></td><td><code>else if</code></td></tr>
+</table>
+
+<h4>구문 오류</h4>
+<table>
+  <tr><th>메시지</th><th>원인</th></tr>
+  <tr><td><code>Unexpected token 'X'.</code></td><td>예상치 못한 토큰 (예: <code>var x = ;</code>)</td></tr>
+  <tr><td><code>Unexpected end of input.</code></td><td>표현식 완성 전에 입력 끝</td></tr>
+  <tr><td><code>Unexpected '}': no matching '{' found.</code></td><td>짝 없는 <code>}</code></td></tr>
+  <tr><td><code>Expected ';' after expression.</code></td><td>세미콜론 누락</td></tr>
+  <tr><td><code>Invalid assignment target.</code></td><td>대입 불가 대상에 <code>=</code> 사용</td></tr>
+  <tr><td><code>Expected function name.</code></td><td><code>func</code> 뒤에 이름 없음</td></tr>
+</table>
+<div class="page-nav"><a href="#debug-mode" onclick="showPage('debug-mode');return false;">← 디버그 모드</a><a href="#err-decl" onclick="showPage('err-decl');return false;">다음: 선언 오류 →</a></div>
+</section>
+
+<section class="doc-section" id="err-decl">
+<h2>선언 오류</h2>
+<p>실행 전 검사 단계에서 발생합니다.</p>
+<table>
+  <tr><th>메시지</th><th>원인</th></tr>
+  <tr><td><code>Variable 'X' is already declared in this block.</code></td><td>같은 블록에서 같은 이름으로 <code>var</code> 두 번</td></tr>
+  <tr><td><code>Variable 'X' is already declared in global scope (first declared at line N).</code></td><td>전역에서 같은 이름으로 <code>var</code> 두 번</td></tr>
+  <tr><td><code>Cannot read local variable 'X' in its own initializer.</code></td><td><code>var x = x + 1;</code>처럼 자기 자신 참조</td></tr>
+  <tr><td><code>Cannot use 'return' outside of a function.</code></td><td>함수 밖에서 <code>return</code> 사용</td></tr>
+  <tr><td><code>Duplicate parameter name 'X' in function 'F'.</code></td><td>함수 파라미터 이름 중복</td></tr>
+  <tr><td><code>Undefined variable 'X'.</code></td><td>REPL 블록 입력 중 미선언 변수 참조 (선행 검사)</td></tr>
+</table>
+<div class="page-nav"><a href="#err-syntax" onclick="showPage('err-syntax');return false;">← 문법 오류</a><a href="#err-runtime" onclick="showPage('err-runtime');return false;">다음: 런타임 오류 →</a></div>
+</section>
+
+<section class="doc-section" id="err-runtime">
+<h2>런타임 오류</h2>
+<p>실행 도중 발생합니다.</p>
+
+<h4>변수 · 함수</h4>
+<table>
+  <tr><th>메시지</th><th>원인</th></tr>
+  <tr><td><code>Undefined variable 'X'.</code></td><td>선언하지 않은 변수 사용</td></tr>
+  <tr><td><code>Undefined function 'X'.</code></td><td>선언하지 않은 함수 호출</td></tr>
+  <tr><td><code>'X' is not a function.</code></td><td>변수를 함수처럼 <code>()</code>로 호출</td></tr>
+  <tr><td><code>Expected N arguments but got M.</code></td><td>인자 개수 불일치</td></tr>
+</table>
+
+<h4>연산</h4>
+<table>
+  <tr><th>메시지</th><th>원인</th></tr>
+  <tr><td><code>Division by zero.</code></td><td><code>0</code>으로 나누기 또는 나머지</td></tr>
+  <tr><td><code>Operands must be numbers.</code></td><td>숫자가 아닌 값에 <code>-</code> <code>*</code> <code>/</code> <code>%</code> 사용</td></tr>
+  <tr><td><code>Operands must be two numbers or two strings.</code></td><td><code>+</code>에 숫자와 문자열 혼용</td></tr>
+  <tr><td><code>Operand must be a number.</code></td><td>단항 <code>-</code>에 숫자 아닌 값</td></tr>
+</table>
+
+<h4>배열</h4>
+<table>
+  <tr><th>메시지</th><th>원인</th></tr>
+  <tr><td><code>Array() expects exactly 1 argument.</code></td><td><code>array()</code>에 인자 0개 또는 2개 이상</td></tr>
+  <tr><td><code>Array size must be a non-negative integer.</code></td><td>크기에 음수·소수·문자열 사용</td></tr>
+  <tr><td><code>Value is not an array.</code></td><td>배열 아닌 값에 <code>[]</code> 사용</td></tr>
+  <tr><td><code>Array index must be an integer.</code></td><td>인덱스에 정수 아닌 값</td></tr>
+  <tr><td><code>Array index out of range.</code></td><td>배열 크기를 벗어난 인덱스</td></tr>
+</table>
+<div class="page-nav"><a href="#err-decl" onclick="showPage('err-decl');return false;">← 선언 오류</a><a href="#ex-fib" onclick="showPage('ex-fib');return false;">다음: 예제 →</a></div>
+</section>
+
+
+<!-- ═══════════════════════ 예제 ═══════════════════════ -->
+
+<section class="doc-section" id="ex-fib">
+<h2>예제 모음</h2>
+<h3>피보나치 수열</h3>
+<pre><code><span class="kw">func</span> <span class="fn">fib</span>(n) {
+    <span class="kw">if</span> (n &lt;= <span class="num">1</span>) <span class="kw">return</span> n;
+    <span class="kw">return</span> <span class="fn">fib</span>(n - <span class="num">1</span>) + <span class="fn">fib</span>(n - <span class="num">2</span>);
+}
+
+<span class="kw">for</span> (<span class="kw">var</span> i = <span class="num">0</span>; i &lt; <span class="num">8</span>; i = i + <span class="num">1</span>) {
+    <span class="kw">print</span> <span class="fn">fib</span>(i);
+}</code></pre>
+<div class="output-block"><code>0
+1
+1
+2
+3
+5
+8
+13</code></div>
+<div class="page-nav"><a href="#err-runtime" onclick="showPage('err-runtime');return false;">← 런타임 오류</a><a href="#ex-sum" onclick="showPage('ex-sum');return false;">다음: 합산 예제 →</a></div>
+</section>
+
+<section class="doc-section" id="ex-sum">
+<h3>1부터 N까지 합산</h3>
+<pre><code><span class="kw">func</span> <span class="fn">sumTo</span>(n) {
+    <span class="kw">var</span> sum = <span class="num">0</span>;
+    <span class="kw">for</span> (<span class="kw">var</span> i = <span class="num">1</span>; i &lt;= n; i = i + <span class="num">1</span>) {
+        sum = sum + i;
+    }
+    <span class="kw">return</span> sum;
+}
+
+<span class="kw">print</span> <span class="fn">sumTo</span>(<span class="num">10</span>);
+<span class="kw">print</span> <span class="fn">sumTo</span>(<span class="num">100</span>);</code></pre>
+<div class="output-block"><code>55
+5050</code></div>
+<div class="page-nav"><a href="#ex-fib" onclick="showPage('ex-fib');return false;">← 피보나치</a><a href="#ex-sort" onclick="showPage('ex-sort');return false;">다음: 버블 소트 →</a></div>
+</section>
+
+<section class="doc-section" id="ex-sort">
+<h3>버블 소트</h3>
+<pre><code><span class="kw">var</span> arr = <span class="fn">array</span>(<span class="num">5</span>);
+arr[<span class="num">0</span>] = <span class="num">3</span>; arr[<span class="num">1</span>] = <span class="num">1</span>; arr[<span class="num">2</span>] = <span class="num">4</span>; arr[<span class="num">3</span>] = <span class="num">1</span>; arr[<span class="num">4</span>] = <span class="num">5</span>;
+
+<span class="kw">for</span> (<span class="kw">var</span> i = <span class="num">0</span>; i &lt; <span class="num">5</span>; i = i + <span class="num">1</span>) {
+    <span class="kw">for</span> (<span class="kw">var</span> j = <span class="num">0</span>; j &lt; <span class="num">4</span> - i; j = j + <span class="num">1</span>) {
+        <span class="kw">if</span> (arr[j] &gt; arr[j + <span class="num">1</span>]) {
+            <span class="kw">var</span> tmp = arr[j];
+            arr[j] = arr[j + <span class="num">1</span>];
+            arr[j + <span class="num">1</span>] = tmp;
+        }
+    }
+}
+<span class="kw">print</span> arr;</code></pre>
+<div class="output-block"><code>[1, 1, 3, 4, 5]</code></div>
+<div class="page-nav"><a href="#ex-sum" onclick="showPage('ex-sum');return false;">← 합산</a><a href="#ex-string" onclick="showPage('ex-string');return false;">다음: 문자열 유틸 →</a></div>
+</section>
+
+<section class="doc-section" id="ex-string">
+<h3>문자열 유틸</h3>
+<pre><code><span class="kw">func</span> <span class="fn">repeat</span>(s, n) {
+    <span class="kw">var</span> result = <span class="str">""</span>;
+    <span class="kw">for</span> (<span class="kw">var</span> i = <span class="num">0</span>; i &lt; n; i = i + <span class="num">1</span>) {
+        result = result + s;
+    }
+    <span class="kw">return</span> result;
+}
+
+<span class="kw">func</span> <span class="fn">max</span>(a, b) {
+    <span class="kw">if</span> (a &gt; b) <span class="kw">return</span> a;
+    <span class="kw">return</span> b;
+}
+
+<span class="kw">print</span> <span class="fn">repeat</span>(<span class="str">"ha"</span>, <span class="num">3</span>);
+<span class="kw">print</span> <span class="fn">repeat</span>(<span class="str">"-"</span>, <span class="num">10</span>);
+<span class="kw">print</span> <span class="fn">max</span>(<span class="num">7</span>, <span class="num">13</span>);</code></pre>
+<div class="output-block"><code>hahaha
+----------
+13</code></div>
+<div class="page-nav"><a href="#ex-sort" onclick="showPage('ex-sort');return false;">← 버블 소트</a><a href="#quickstart" onclick="showPage('quickstart');return false;">↑ 처음으로</a></div>
+</section>
+
+</main>
+</div>
+
+<script>
+// ── Sidebar group toggle ────────────────────────────────
+function toggleGroup(btn) {
+  btn.classList.toggle('open');
+  btn.nextElementSibling.classList.toggle('open');
+}
+
+// ── Page switching ──────────────────────────────────────
+function showPage(id) {
+  // hide all
+  document.querySelectorAll('.doc-section').forEach(s => s.classList.remove('active'));
+  // show target
+  const target = document.getElementById(id);
+  if (target) target.classList.add('active');
+  // update nav active state
+  document.querySelectorAll('.sidebar [data-page]').forEach(a => {
+    a.classList.toggle('active', a.dataset.page === id);
+  });
+  // scroll content area to top
+  window.scrollTo(0, 0);
+  // update hash without triggering scroll
+  history.pushState(null, '', '#' + id);
+}
+
+// ── Init: read hash or default to quickstart ───────────
+function initPage() {
+  const hash = location.hash.replace('#', '') || 'quickstart';
+  const exists = document.getElementById(hash);
+  showPage(exists ? hash : 'quickstart');
+}
+
+// ── Wire up all sidebar nav links ──────────────────────
+document.querySelectorAll('.sidebar [data-page]').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    showPage(a.dataset.page);
+  });
+});
+
+// ── Browser back/forward ───────────────────────────────
+window.addEventListener('popstate', initPage);
+
+initPage();
+</script>
+
+</body>
+</html>
