@@ -1,0 +1,16 @@
+var a = 12;
+var b = 5;
+print a + b;
+print a * b;
+print a % b;
+if (a > b) {
+    print "a is bigger";
+} else {
+    print "b is bigger";
+}
+func factorial(n) {
+    if (n <= 1) return 1;
+    return n * factorial(n - 1);
+}
+print factorial(5);
+print factorial(10);

@@ -1,0 +1,10 @@
+print "=== Execution starts ===";
+var total = 0;
+for (var i = 1; i <= 5; i = i + 1) {
+    total = total + i;
+    print total;
+}
+print "=== Sum(1~5) done ===";
+print "Dividing by zero now...";
+print total / 0;
+print "This line should not be printed.";
